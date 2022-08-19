@@ -1,0 +1,84 @@
+﻿/*
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+#pragma once
+
+#include "TTS/Cache/Memory/TtsMemoryCache.h"
+#include "TTS/Cache/Storage/TtsStorageCache.h"
+#include "Wit/TTS/WitTtsService.h"
+#include "WitTtsSpeaker.generated.h"
+
+/**
+ * The base class of TtsSpeaker
+ */
+UCLASS( ClassGroup=(Meta) )
+class WIT_API AWitTtsSpeaker : public AActor
+{
+	GENERATED_BODY()
+	
+public:
+
+	/**
+	 * Sets default values for this actor's properties
+	 */
+	AWitTtsSpeaker();
+
+	/**
+	 * The wit TTS service
+	 */
+	UPROPERTY(VisibleAnywhere)
+	UWitTtsService* WitTtsService{};
+
+	/**
+	 * The audio source to play sounds
+	 */
+	UPROPERTY(VisibleAnywhere)
+	UAudioComponent* AudioComponent{};
+
+	/**
+	 * The memory cache to use
+	 */
+	UPROPERTY(VisibleAnywhere)
+	UTtsMemoryCache* MemoryCache{};
+
+	/**
+	 * The storage cache to use
+	 */
+	UPROPERTY(VisibleAnywhere)
+	UTtsStorageCache* StorageCache{};
+	
+	/**
+	 * Speak a phrase with the default configuration
+	 *
+	 * @param TextToSpeak [in] the text to speak
+	 */
+	UFUNCTION(BlueprintCallable)
+	void Speak(const FString& TextToSpeak);
+
+	/**
+	 * Speak a phrase with custom settings
+	 *
+	 * @param ClipSettings [in] the settings to use
+	 */
+	UFUNCTION(BlueprintCallable)
+	void SpeakWithSettings(const FTtsConfiguration& ClipSettings);
+	
+protected:
+
+	virtual void BeginPlay() override;
+	virtual void BeginDestroy() override;
+	
+	/**
+	 * Callback that is called when a Wit.ai response is received which is used to see if we have a match
+	 * 
+	 * @param bIsSuccessful [in] true if the response was successful
+	 * @param SoundWave [in] the generated sound wave
+	 */
+	UFUNCTION()
+	void OnSynthesizeResponse(const bool bIsSuccessful, USoundWave* SoundWave);
+	
+};

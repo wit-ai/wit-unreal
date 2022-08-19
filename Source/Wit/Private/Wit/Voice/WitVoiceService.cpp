@@ -1,0 +1,730 @@
+/*
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+#include "Wit/Voice/WitVoiceService.h"
+#include "JsonObjectConverter.h"
+#include "Voice/Capture/VoiceCaptureSubsystem.h"
+#include "Wit/Request/WitRequestBuilder.h"
+#include "Wit/Request/WitRequestSubsystem.h"
+#include "Wit/Utilities/WitLog.h"
+#include "AudioMixerDevice.h"
+#include "Wit/Utilities/WitHelperUtilities.h"
+
+#if WITH_EDITORONLY_DATA
+
+// Use for debug recording of the voice input
+
+static TUniquePtr<Audio::FAudioRecordingData> RecordingData;
+static TArray<uint8> RecordedVoiceInputBuffer;
+
+#endif
+
+/**
+ * Called when the component starts playing
+ */
+UWitVoiceService::UWitVoiceService()
+	: Super()
+{
+	PrimaryComponentTick.bCanEverTick = true;
+}
+
+/**
+ * Called when the component starts playing
+ */
+void UWitVoiceService::BeginPlay()
+{
+	Super::BeginPlay();
+
+	// We prevent the component ticking until voice activation occurs. This is to prevent multiple components ticking at the same time and
+	// interfering with each other and also to prevent unnecessary work
+
+	SetComponentTickEnabled(false);
+}
+
+/**
+ * Called when the component is destroyed
+ */
+void UWitVoiceService::BeginDestroy()
+{
+	UVoiceCaptureSubsystem* VoiceCaptureSubsystem = GEngine->GetEngineSubsystem<UVoiceCaptureSubsystem>();
+
+	const bool bIsVoiceCaptureAvailable = VoiceCaptureSubsystem != nullptr && VoiceCaptureSubsystem->IsCaptureAvailable();
+	
+	if (bIsVoiceCaptureAvailable)
+	{
+		VoiceCaptureSubsystem->Shutdown();
+	}
+
+	UWitRequestSubsystem* RequestSubsystem = GEngine->GetEngineSubsystem<UWitRequestSubsystem>();
+	const bool bIsRequestInProgress = RequestSubsystem != nullptr && RequestSubsystem->IsRequestInProgress();
+	
+	if (bIsRequestInProgress)
+	{
+		RequestSubsystem->CancelRequest();
+	}
+
+	bIsVoiceInputActive = false;
+	bIsVoiceStreamingActive = false;
+
+	Super::BeginDestroy();
+}
+
+/**
+ * Updates the component every frame
+ *
+ * @param DeltaTime [in] the time in seconds that has pass since the last frame
+ * @param TickType [in] the kind of tick this is, for example, are we paused, or 'simulating' in the editor
+ * @param ThisTickFunction [in] internal tick function struct that caused this to run
+ */
+void UWitVoiceService::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	if (!bIsVoiceInputActive)
+	{
+		return;
+	}
+	
+	if (Configuration == nullptr)
+	{
+		return;
+	}
+
+	UVoiceCaptureSubsystem* VoiceCaptureSubsystem = GEngine->GetEngineSubsystem<UVoiceCaptureSubsystem>();
+	UWitRequestSubsystem* RequestSubsystem = GEngine->GetEngineSubsystem<UWitRequestSubsystem>();	
+	const bool bIsRequiredSubsystems = VoiceCaptureSubsystem != nullptr && RequestSubsystem != nullptr;
+	
+	if (!bIsRequiredSubsystems || !VoiceCaptureSubsystem->IsCapturing())
+	{
+		return;
+	}
+
+	const bool bIsVoiceDataAvailable = VoiceCaptureSubsystem->Read();
+	const float CurrentVoiceAmplitude =  VoiceCaptureSubsystem->GetCurrentAmplitude();
+
+	// If we are not already streaming the voice data to Wit.ai then check to see if we've breached the threshold and should start streaming
+	
+	if (!bIsVoiceStreamingActive)
+	{
+		const bool bIsWakeThresholdReached = bIsVoiceDataAvailable && CurrentVoiceAmplitude > Configuration->Voice.WakeMinimumVolume;
+		
+		if (!bIsWakeThresholdReached)
+		{
+			return;
+		}
+	
+		BeginStreamRequest();
+	}
+	
+	LastActivateTime += DeltaTime;
+
+	// Check for and read any new voice data that is available. Voice data may or may not be available depending on
+	// whether the user breaks a pre-defined volume threshold
+	
+	if (bIsVoiceDataAvailable && RequestSubsystem->IsRequestInProgress())
+	{
+#if WITH_EDITORONLY_DATA
+		
+		if (Configuration->Voice.bIsWavFileRecordingEnabled)
+		{
+			RecordedVoiceInputBuffer.Append(VoiceCaptureSubsystem->GetVoiceBuffer());
+		}
+
+#endif
+		
+		RequestSubsystem->WriteBinaryData(VoiceCaptureSubsystem->GetVoiceBuffer());
+	}
+
+	// Keep track of whether we are actually receiving suitable voice input. This is used in deciding when to auto deactivate
+	// due to no voice input
+
+	const bool bIsAmplitudeAboveMinimumVolume = CurrentVoiceAmplitude > Configuration->Voice.KeepAliveMinimumVolume;
+	
+	if (bIsVoiceDataAvailable && bIsAmplitudeAboveMinimumVolume)
+	{
+		LastVoiceTime = 0.0f;
+	}
+	else
+	{
+		LastVoiceTime += DeltaTime;
+	}
+
+	// Check for auto deactivation. This can happen in two cases
+	// 1. If we exceed the hard maximum duration that Wit.ai allows for a single speech request
+	// 2. If we exceed a user definable duration since we last received valid voice data
+
+	const bool bIsTooLongSinceVoiceDataReceived = (LastVoiceTime >= Configuration->Voice.KeepAliveTime);
+	const bool bIsTooLongSinceActivated = (LastActivateTime >= Configuration->Voice.MaximumRecordingTime);
+	const bool bShouldDeactivate = (bIsTooLongSinceVoiceDataReceived || bIsTooLongSinceActivated);
+	
+	if (bShouldDeactivate)
+	{
+		UE_LOG(LogWit, Display, TEXT("TickComponent: deactivating voice input - too long since activation (%d) - too long since voice input (%d)"), bIsTooLongSinceActivated, bIsTooLongSinceVoiceDataReceived);
+
+		const bool bDidDeactivate = DoDeactivateVoiceInput();
+		const bool bShouldCallStopEvent = bDidDeactivate && Events != nullptr;
+		
+		if (bShouldCallStopEvent)
+		{
+			if (bIsTooLongSinceActivated)
+			{
+				Events->OnStopVoiceInputDueToTimeout.Broadcast();
+			}
+			else if (bIsTooLongSinceVoiceDataReceived)
+			{
+				Events->OnStopVoiceInputDueToInactivity.Broadcast();
+			}
+		}
+	}
+}
+
+/**
+ * Set the configuration
+ */
+void UWitVoiceService::SetConfiguration(UWitAppConfigurationAsset* ConfigurationToUse)
+{
+	Super::SetConfiguration(ConfigurationToUse);
+
+	UVoiceCaptureSubsystem* VoiceCaptureSubsystem = GEngine->GetEngineSubsystem<UVoiceCaptureSubsystem>();
+
+	const bool bShouldEnableEmulation = VoiceCaptureSubsystem != nullptr && Configuration != nullptr && Configuration->Voice.EmulationCaptureMode != EVoiceCaptureEmulationMode::None;
+
+	if (bShouldEnableEmulation)
+	{
+		VoiceCaptureSubsystem->EnableEmulation(Configuration->Voice.EmulationCaptureMode, Configuration->Voice.EmulationCaptureSoundWave);
+	}
+}
+
+/**
+ * Starts receiving voice input from the microphone and begins streaming it to Wit.ai for interpretation
+ *
+ * @return true if the activation was successful
+ */
+bool UWitVoiceService::ActivateVoiceInput()
+{
+	// Configuration is required as we need the access token
+	
+	const bool bHasConfiguration = Configuration != nullptr && !Configuration->Application.ClientAccessToken.IsEmpty();
+	
+	if (!bHasConfiguration)
+	{
+		UE_LOG(LogWit, Warning, TEXT("ActivateVoiceInput: cannot active voice input because no configuration found. Please assign a configuration and access token"));
+		return false;
+	}
+	
+	// Prevent attempts to double activate this component
+	
+	if (bIsVoiceInputActive)
+	{
+		UE_LOG(LogWit, Warning, TEXT("ActivateVoiceInput: cannot activate voice input because it is already active on this component"));
+		return false;
+	}
+
+	// Prevent attempts to activate more than one WitAPI component at a time by ensuring that all required subsystems are available and not in use
+	
+	UVoiceCaptureSubsystem* VoiceCaptureSubsystem = GEngine->GetEngineSubsystem<UVoiceCaptureSubsystem>();
+	const UWitRequestSubsystem* RequestSubsystem = GEngine->GetEngineSubsystem<UWitRequestSubsystem>();
+	const bool bIsRequiredSubsystems = VoiceCaptureSubsystem != nullptr && RequestSubsystem != nullptr;
+	
+	if (!bIsRequiredSubsystems)
+	{
+		UE_LOG(LogWit, Warning, TEXT("ActivateVoiceInput: cannot activate voice input because required subsystems do not exist"));
+		return false;
+	}
+
+	if (!VoiceCaptureSubsystem->IsCaptureAvailable())
+	{
+		// Attempt to startup the voice capture subsystem
+
+		VoiceCaptureSubsystem->Startup();
+
+		if (!VoiceCaptureSubsystem->IsCaptureAvailable())
+		{
+			UE_LOG(LogWit, Warning, TEXT("ActivateVoiceInput: cannot activate voice input because capture is not available"));
+			return false;
+		}
+	}
+	else if (VoiceCaptureSubsystem->IsCapturing())
+	{
+		UE_LOG(LogWit, Warning, TEXT("ActivateVoiceInput: cannot activate voice input because capture is already in progress"));
+		return false;
+	}
+
+	if (RequestSubsystem->IsRequestInProgress())
+	{
+		UE_LOG(LogWit, Warning, TEXT("ActivateVoiceInput: cannot activate voice input because a request is already in progress"));
+		return false;
+	}
+	
+	bIsVoiceInputActive = VoiceCaptureSubsystem->Start();
+	
+	if (!bIsVoiceInputActive)
+	{
+		UE_LOG(LogWit, Warning, TEXT("ActivateVoiceInput: voice capture subsystem failed to start"));
+		return false;
+	}
+
+	UE_LOG(LogWit, Display, TEXT("ActivateVoiceInput: activated voice input"));
+
+	// We enable the tick in order to be able to handle auto-deactivation and reading data into the request
+
+	SetComponentTickEnabled(true);
+	
+	LastVoiceTime = 0.0f;
+	LastActivateTime = 0.0f;
+	
+	// Notify that we've started accepting voice input
+
+	if (Events != nullptr)
+	{
+		Events->OnStartVoiceInput.Broadcast();
+	}
+	
+	return true;
+}
+
+/**
+ * Starts receiving voice input from the microphone and begins streaming it to Wit.ai for interpretation
+ *
+ * @return true if the activation was successful
+ */
+bool UWitVoiceService::ActivateVoiceInputWithRequestOptions(const FString& RequestOptions) 
+{
+	// TODO add RequestOptions into the url(or body), which likely will be only dynamic entities. check https://wit.ai/docs/http/20220622/#post__speech_link Arguments section. example post: https://wit.ai/docs/http/20220622/#post__entities__entity_keywords_link 
+
+	UE_LOG(LogWit, Warning, TEXT("ActivateVoiceInputWithRequestOptions is not implemented yet, will use ActivateVoiceInput for now."));
+
+	return ActivateVoiceInput();
+}
+
+/**
+ * Starts receiving voice input from the microphone and begins streaming it to Wit.ai for interpretation
+ *
+ * @return true if the activation was successful
+ */
+bool UWitVoiceService::ActivateVoiceInputImmediately()
+{
+	const bool bIsActivated = ActivateVoiceInput();
+
+	if (bIsActivated)
+	{
+		BeginStreamRequest();
+	}
+
+	return bIsActivated;
+}
+
+/**
+ * Starts receiving voice input from the microphone and begins streaming it to Wit.ai for interpretation
+ *
+ * @return true if the activation was successful
+ */
+bool UWitVoiceService::ActivateVoiceInputImmediatelyWithRequestOptions(const FString& RequestOptions) 
+{
+	// TODO add RequestOptions into the url(or body), which likely will be only dynamic entities. check https://wit.ai/docs/http/20220622/#post__speech_link Arguments section. example post: https://wit.ai/docs/http/20220622/#post__entities__entity_keywords_link 
+
+	UE_LOG(LogWit, Warning, TEXT("ActivateVoiceInputImmediatelyWithRequestOptions is not implemented yet, will use ActivateVoiceInputImmediately for now."));
+
+	return ActivateVoiceInputImmediately();
+}
+
+/**
+ * Start a streamed Wit request
+ */
+void UWitVoiceService::BeginStreamRequest()
+{
+	UE_LOG(LogWit, Display, TEXT("BeginStreamRequest: starting stream request"));
+	
+	const UVoiceCaptureSubsystem* VoiceCaptureSubsystem = GEngine->GetEngineSubsystem<UVoiceCaptureSubsystem>();
+	UWitRequestSubsystem* RequestSubsystem = GEngine->GetEngineSubsystem<UWitRequestSubsystem>();
+	
+	// Construct the request with the desired configuration. We use the /speech endpoint in Wit.ai. See the Wit.ai documentation for more
+	// specifics of the parameters to this endpoint
+
+	FWitRequestConfiguration RequestConfiguration{};
+
+	FWitRequestBuilder::SetRequestConfigurationWithDefaults(RequestConfiguration, EWitRequestEndpoint::Speech, Configuration->Application.ClientAccessToken, Configuration->Application.ApiVersion, Configuration->Application.URL);
+	FWitRequestBuilder::AddFormatContentType(RequestConfiguration, Format);
+	FWitRequestBuilder::AddEncodingContentType(RequestConfiguration, Encoding);
+	FWitRequestBuilder::AddSampleSizeContentType(RequestConfiguration, SampleSize);
+	FWitRequestBuilder::AddRateContentType(RequestConfiguration, VoiceCaptureSubsystem->SampleRate);
+	FWitRequestBuilder::AddEndianContentType(RequestConfiguration, EWitRequestEndian::Little);
+
+	RequestConfiguration.OnRequestError.BindUObject(this, &UWitVoiceService::OnWitRequestError);
+	RequestConfiguration.OnRequestProgress.BindUObject(this, &UWitVoiceService::OnSpeechRequestProgress);
+	RequestConfiguration.OnRequestComplete.BindUObject(this, &UWitVoiceService::OnSpeechRequestComplete);
+
+	// Begin a streamed request to Wit.ai. For a streamed request we open an HTTP request to the server and continually write data as it
+	// becomes available. This greatly reduces latency over waiting for the whole voice data and then sending it
+
+	RequestSubsystem->BeginStreamRequest(RequestConfiguration);
+
+	bIsVoiceStreamingActive = true;
+
+#if WITH_EDITORONLY_DATA
+	
+	if (Configuration->Voice.bIsWavFileRecordingEnabled)
+	{
+		RecordedVoiceInputBuffer.Reset();
+	}
+
+#endif
+}
+
+/**
+ * Stops receiving voice input from the microphone and stops streaming it to Wit.ai
+ *
+ * @return true if the deactivation was successful
+ */
+bool UWitVoiceService::DeactivateVoiceInput()
+{
+	const bool bDidDeactivate = DoDeactivateVoiceInput();
+	const bool bShouldCallStopEvent = bDidDeactivate && Events != nullptr;
+	
+	if (bShouldCallStopEvent)
+	{
+		Events->OnStopVoiceInputDueToDeactivation.Broadcast();
+	}
+
+	return bDidDeactivate;
+}
+
+bool UWitVoiceService::DeactivateAndAbortRequest() 
+{
+	// TODO also unbind all delegates
+	
+	return DeactivateVoiceInput();
+}
+
+/**
+ * Internal function that does the main work of deactivating voice input
+ *
+ * @return true if the deactivation was successful
+ */
+bool UWitVoiceService::DoDeactivateVoiceInput()
+{
+	if (!bIsVoiceInputActive)
+	{
+		UE_LOG(LogWit, Warning, TEXT("DeactivateVoiceInput: cannot deactivate voice input because it is not active on this component"));
+		return false;
+	}
+	
+	UVoiceCaptureSubsystem* VoiceCaptureSubsystem = GEngine->GetEngineSubsystem<UVoiceCaptureSubsystem>();
+	const bool bIsVoiceCapturing = VoiceCaptureSubsystem != nullptr && VoiceCaptureSubsystem->IsCapturing();
+	
+	if (bIsVoiceCapturing)
+	{
+		VoiceCaptureSubsystem->Stop();
+	}
+	else
+	{
+		UE_LOG(LogWit, Warning, TEXT("DeactivateVoiceInput: cannot deactivate voice capture because capture is not in progress"));
+	}
+
+	// End the streamed request. This will tell the HTTP client to send any remaining data and the close the request
+
+	UWitRequestSubsystem* RequestSubsystem = GEngine->GetEngineSubsystem<UWitRequestSubsystem>();
+	const bool bIsRequestInProgress = RequestSubsystem != nullptr && RequestSubsystem->IsRequestInProgress();
+	
+	if (bIsRequestInProgress)
+	{
+		RequestSubsystem->EndStreamRequest();
+	}
+	else
+	{
+		UE_LOG(LogWit, Warning, TEXT("DeactivateVoiceInput: cannot end stream request input because request is not in progress"));
+	}
+
+	UE_LOG(LogWit, Display, TEXT("DeactivateVoiceInput: deactivated voice input"));
+	
+	// We disable the tick as it is only really needed when voice input is activate to handle auto-deactivation
+	
+	SetComponentTickEnabled(false);
+
+	bIsVoiceInputActive = false;
+	bIsVoiceStreamingActive = false;
+	bIsVoiceStreamingActive = false;
+	
+	// Notify that we've stopped accepting voice input
+
+	if (Events != nullptr)
+	{
+		Events->OnStopVoiceInput.Broadcast();
+	}
+	
+	// If desired write the recorded data to a wav file
+
+#if WITH_EDITORONLY_DATA
+	
+	if (Configuration->Voice.bIsWavFileRecordingEnabled)
+	{
+		WriteRawPCMDataToWavFile(RecordedVoiceInputBuffer.GetData(), RecordedVoiceInputBuffer.Num(), VoiceCaptureSubsystem->NumChannels, VoiceCaptureSubsystem->SampleRate);
+	}
+
+#endif
+	
+	return true;
+}
+
+/**
+ * Is voice input active on this component?
+ *
+ * @return true if active otherwise false
+ */
+bool UWitVoiceService::IsVoiceInputActive() const
+{
+	return bIsVoiceInputActive;
+}
+
+/**
+ * Get the current voice input volume
+ *
+ * @return if voice capture is in progress returns the current volume otherwise 0
+ */
+float UWitVoiceService::GetVoiceInputVolume() const
+{
+	if (!bIsVoiceInputActive)
+	{
+		return 0.0f;
+	}
+
+	const UVoiceCaptureSubsystem* VoiceCaptureSubsystem = GEngine->GetEngineSubsystem<UVoiceCaptureSubsystem>();
+
+	if (VoiceCaptureSubsystem == nullptr)
+	{
+		return 0.0f;
+	}
+
+	return VoiceCaptureSubsystem->GetCurrentAmplitude();
+}
+
+/**
+ * Is voice streaming to Wit.ai active on this component?
+ *
+ * @return true if active otherwise false
+ */
+bool UWitVoiceService::IsVoiceStreamingActive() const
+{
+	return bIsVoiceStreamingActive;
+}
+
+/**
+ * Is any Wit.ai request currently in progress?
+ *
+ * @return true if in progress otherwise false
+ */
+bool UWitVoiceService::IsRequestInProgress() const
+{
+	const UWitRequestSubsystem* RequestSubsystem = GEngine->GetEngineSubsystem<UWitRequestSubsystem>();
+	const bool bIsRequestInProgress = RequestSubsystem != nullptr && RequestSubsystem->IsRequestInProgress();
+
+	return bIsRequestInProgress;
+}
+
+/**
+ * Sends a text string to Wit for interpretation.
+ *
+ * @param Text [in] The string we want to interpret
+ */
+void UWitVoiceService::SendTranscription(const FString& Text)
+{	
+	const bool bHasConfiguration = Configuration != nullptr && !Configuration->Application.ClientAccessToken.IsEmpty();
+	
+	if (!bHasConfiguration)
+	{
+		UE_LOG(LogWit, Warning, TEXT("SendTranscription: cannot send transcription because no configuration found. Please assign a configuration and access token"));
+		return;
+	}
+
+	UWitRequestSubsystem* RequestSubsystem = GEngine->GetEngineSubsystem<UWitRequestSubsystem>();
+
+	if (RequestSubsystem == nullptr)
+	{
+		UE_LOG(LogWit, Warning, TEXT("SendTranscription: cannot send transcription because request subsystem does not exist"));
+		return;
+	}
+
+	if (RequestSubsystem->IsRequestInProgress())
+	{
+		UE_LOG(LogWit, Warning, TEXT("SendTranscription: cannot send transcription because a request is already in progress"));
+		return;
+	}
+
+	UE_LOG(LogWit, Display, TEXT("SendTranscription: sending transcription (%s)"), *Text);
+
+	// Construct the request with the desired configuration. We use the /message endpoint in Wit.ai. See the Wit.ai documentation for more
+	// specifics of the parameters to this endpoint
+
+	FWitRequestConfiguration RequestConfiguration{};
+
+	FWitRequestBuilder::SetRequestConfigurationWithDefaults(RequestConfiguration, EWitRequestEndpoint::Message, Configuration->Application.ClientAccessToken, Configuration->Application.ApiVersion, Configuration->Application.URL);
+
+	const FString EncodedText = FGenericPlatformHttp::UrlEncode(Text);
+	FWitRequestBuilder::AddTextParameter(RequestConfiguration, EncodedText);
+
+	RequestConfiguration.OnRequestError.BindUObject(this, &UWitVoiceService::OnWitRequestError);
+	RequestConfiguration.OnRequestComplete.BindUObject(this, &UWitVoiceService::OnSpeechRequestComplete);
+	
+	RequestSubsystem->BeginStreamRequest(RequestConfiguration);
+	RequestSubsystem->EndStreamRequest();
+}
+
+void UWitVoiceService::SendTranscriptionWithRequestOptions(const FString& Text, const FString& RequestOptions)
+{
+	//TODO add RequestOptions into the url(or body), which likely will be only dynamic entities. check https://wit.ai/docs/http/20220622/#post__speech_link Arguments section. example post: https://wit.ai/docs/http/20220622/#post__entities__entity_keywords_link 
+	UE_LOG(LogWit, Warning, TEXT("SendTranscriptionWithRequestOptions is not implemented yet, will use SendTranscription for now."));
+	SendTranscription(Text);
+}
+
+void UWitVoiceService::AcceptPartialResponseAndCancelRequest(const FWitResponse& Response) const
+{
+	
+	UWitRequestSubsystem* RequestSubsystem = GEngine->GetEngineSubsystem<UWitRequestSubsystem>();
+
+	if (RequestSubsystem == nullptr)
+	{
+		UE_LOG(LogWit, Warning, TEXT("SendTranscription: cannot send transcription because request subsystem does not exist"));
+		return;
+	}
+	RequestSubsystem->CancelRequest();
+	FWitResponse FinalResponse = Response;
+	FinalResponse.Is_Final = true;
+	OnSpeechRequestComplete(FinalResponse);
+}
+
+/**
+ * Called when a Wit speech request is in progress with any partial transcriptions
+ *
+ * @param PartialBinaryResponse [in] the partial response as binary
+ * @param PartialJsonResponse [in] the partial response as Json
+ */
+void UWitVoiceService::OnSpeechRequestProgress(const TArray<uint8>& PartialBinaryResponse, const TSharedPtr<FJsonObject> PartialJsonResponse) const
+{
+	// The text field of the final response chunk represents the most recent transcription that Wit.ai was able to discern. We pass this to the user
+	// registered callback as it can be used to display intermediate partial transcriptions which make the application feel more responsive
+
+	if (FWitHelperUtilities::IsWitResponse(PartialJsonResponse))
+	{
+		OnPartialResponse(PartialBinaryResponse, PartialJsonResponse);
+	}
+	else
+	{
+		const FString PartialTranscription = PartialJsonResponse->GetStringField("text");
+
+		if (Events != nullptr)
+		{
+			Events->OnPartialTranscription.Broadcast(PartialTranscription);
+		}
+	}
+}
+
+/**
+ *  Called when received a Wit partial response
+ *
+ * @param BinaryResponse [in] the partial binary response
+ * @param JsonResponse [in] the partial Json response
+ */
+void UWitVoiceService::OnPartialResponse(const TArray<uint8>& PartialBinaryResponse, const TSharedPtr<FJsonObject> PartialJsonResponse) const
+{
+	if (Events == nullptr)
+	{
+		return;		
+	}
+	
+	const bool bIsConversionError = !FWitHelperUtilities::ConvertJsonToWitResponse(PartialJsonResponse.ToSharedRef(), &Events->WitResponse);
+	
+	if (bIsConversionError)
+	{
+		OnWitRequestError(TEXT("Json To UStruct failed"), TEXT("Convering the Json partial response to a UStruct failed"));
+		return;
+	}
+
+	Events->OnWitPartialResponse.Broadcast(true, Events->WitResponse);
+}
+
+/**
+ * Called when a Wit speech request is successfully completed to process the final response payload
+ *
+ * @param BinaryResponse [in] the final binary response
+ * @param JsonResponse [in] the final Json response
+ */
+void UWitVoiceService::OnSpeechRequestComplete(const TArray<uint8>& BinaryResponse, const TSharedPtr<FJsonObject> JsonResponse)
+{
+	if (Events == nullptr)
+	{
+		return;		
+	}
+	
+	const bool bIsConversionError = !FWitHelperUtilities::ConvertJsonToWitResponse(JsonResponse.ToSharedRef(), &Events->WitResponse);
+	if (bIsConversionError)
+	{
+		OnWitRequestError(TEXT("Json To UStruct failed"), TEXT("Converting the Json response to a UStruct failed"));
+		return;
+	}
+	OnSpeechRequestComplete(Events->WitResponse);
+}
+
+/**
+ * Called when a Wit speech request is successfully completed to process the final response payload
+ *
+ * @param Response [in] the final binary response
+ */
+void UWitVoiceService::OnSpeechRequestComplete(const FWitResponse& Response) const
+{
+	if (Events == nullptr)
+	{
+		return;		
+	}
+	
+	Events->WitResponse = Response;
+
+	UE_LOG(LogWit, Display, TEXT("Full transcription received (%s)"), *Events->WitResponse.Text);
+	UE_LOG(LogWit, Verbose, TEXT("UStruct - Text: %s"), *Events->WitResponse.Text);
+
+	Events->OnFullTranscription.Broadcast(Events->WitResponse.Text);
+	Events->OnWitResponse.Broadcast(true, Events->WitResponse);
+}
+
+/**
+ * Called when a Wit request errors
+ *
+ * @param ErrorMessage [in] the error message
+ * @param HumanReadableErrorMessage [in] a longer human readable error message
+ */
+void UWitVoiceService::OnWitRequestError(const FString ErrorMessage, const FString HumanReadableErrorMessage) const
+{
+	UE_LOG(LogWit, Warning, TEXT("Wit request failed with error: %s - %s"), *ErrorMessage, *HumanReadableErrorMessage);
+
+	if (Events != nullptr)
+	{
+		Events->WitResponse.Reset();
+		Events->OnWitResponse.Broadcast(false, Events->WitResponse);
+		Events->OnWitError.Broadcast(ErrorMessage, HumanReadableErrorMessage);
+	}
+}
+
+#if WITH_EDITORONLY_DATA
+
+/**
+ * Write the captured voice input to a wav file. The output file will be written to the project folder's Saved/BouncedWavFiles folder as
+ * Wit/RecordedVoiceInput.wav. This only works with 16-bit samples
+ */
+void UWitVoiceService::WriteRawPCMDataToWavFile(const uint8* RawPCMData, int32 RawPCMDataSize, int32 NumChannels, int32 SampleRate)
+{
+	RecordingData.Reset(new Audio::FAudioRecordingData());
+	RecordingData->InputBuffer = Audio::TSampleBuffer<int16>(reinterpret_cast<const int16*>(RawPCMData), RawPCMDataSize / 2, NumChannels, SampleRate);
+
+	const FString WavFileName = TEXT("RecordedVoiceInput");
+	FString WavFilePath = TEXT("Wit");
+	
+	RecordingData->Writer.BeginWriteToWavFile(RecordingData->InputBuffer, WavFileName, WavFilePath, []()
+	{
+		RecordingData.Reset();
+	});
+}
+
+#endif
