@@ -8,8 +8,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Subsystems/EngineSubsystem.h"
 #include "Voice/Configuration/VoiceConfiguration.h"
 #include "VoiceCaptureSubsystem.generated.h"
+
+class USoundWave;
 
 /**
  * UE4 Voice Capture wrapper for Wit.ai integration

@@ -23,7 +23,7 @@ class WIT_API UTtsVoicePresetAsset : public UDataAsset
 public:
 	
 	//** Synthesize endpoint configuration */
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="TTS")
 	FTtsConfiguration Synthesize;
 
 };

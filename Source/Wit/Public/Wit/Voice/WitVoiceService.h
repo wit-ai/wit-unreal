@@ -12,6 +12,7 @@
 #include "Wit/Request/WitRequestTypes.h"
 #include "WitVoiceService.generated.h"
 
+class FJsonObject;
 /**
  * Component that encapsulates the Wit Voice Command API. Provides functionality for making speech and message requests
  * to Wit.ai to interpret and extract meaning. To use it simply attach the UWitVoiceService component in the hierarchy of any Actor
