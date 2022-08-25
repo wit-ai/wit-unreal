@@ -10,6 +10,8 @@
 #include "CoreMinimal.h"
 #include "TTS/Configuration/TtsConfiguration.h"
 
+class USoundWave;
+
 /**
  * Interface for implementing a memory cache. Can be overriden to implement custom functionality
  */

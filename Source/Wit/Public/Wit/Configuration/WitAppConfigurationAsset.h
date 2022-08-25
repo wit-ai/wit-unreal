@@ -24,11 +24,11 @@ class WIT_API UWitAppConfigurationAsset : public UDataAsset
 public:
 
 	/** The general configuration */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	FWitAppConfiguration Application;
 	
 	//** Speech endpoint configuration */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	FVoiceConfiguration Voice;
 	
 };
