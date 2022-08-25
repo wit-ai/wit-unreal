@@ -17,7 +17,7 @@
 /**
  * The base class of VoiceExperience
  */
-UCLASS(ClassGroup=(Meta), Abstract)
+UCLASS(ClassGroup=(Meta), Abstract, NotBlueprintable)
 class WIT_API AVoiceExperience : public AActor, public IVoiceServiceBase
 {
 	GENERATED_BODY()

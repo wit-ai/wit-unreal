@@ -16,7 +16,7 @@
  * Top level actor for Wit voice interactions. You can create a blueprint class off this actor and add whatever intent and entity matchers
  * you need to implement your voice experience
  */
-UCLASS( ClassGroup=(Meta) )
+UCLASS( ClassGroup=(Meta), Blueprintable)
 class WIT_API AWitVoiceExperience final : public AVoiceExperience
 {
 	GENERATED_BODY()
