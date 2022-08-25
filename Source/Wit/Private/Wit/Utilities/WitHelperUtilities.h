@@ -16,6 +16,7 @@ struct FWitIntent;
 struct FWitResponse;
 class UWitVoiceService;
 class AWitVoiceExperience;
+class FJsonObject;
 
 /**
  * A helper class that contains useful API utilities

@@ -7,6 +7,9 @@
 
 #include "Wit/Request/WitRequestSubsystem.h"
 #include "Wit/Utilities/WitLog.h"
+#include "Serialization/JsonWriter.h"
+#include "Serialization/JsonSerializer.h"
+#include "Dom/JsonObject.h"
 #include "Wit/Request/HTTP/WitHttpRequest.h"
 
 /**

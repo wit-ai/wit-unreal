@@ -10,7 +10,10 @@
 #include "TTS/Cache/Memory/TtsMemoryCache.h"
 #include "TTS/Cache/Storage/TtsStorageCache.h"
 #include "Wit/TTS/WitTtsService.h"
+#include "GameFramework/Actor.h"
 #include "WitTtsSpeaker.generated.h"
+
+class UAudioComponent;
 
 /**
  * The base class of TtsSpeaker
@@ -30,25 +33,25 @@ public:
 	/**
 	 * The wit TTS service
 	 */
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Category="TTS")
 	UWitTtsService* WitTtsService{};
 
 	/**
 	 * The audio source to play sounds
 	 */
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Category="TTS")
 	UAudioComponent* AudioComponent{};
 
 	/**
 	 * The memory cache to use
 	 */
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Category="TTS")
 	UTtsMemoryCache* MemoryCache{};
 
 	/**
 	 * The storage cache to use
 	 */
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Category="TTS")
 	UTtsStorageCache* StorageCache{};
 	
 	/**
@@ -56,7 +59,7 @@ public:
 	 *
 	 * @param TextToSpeak [in] the text to speak
 	 */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category="TTS")
 	void Speak(const FString& TextToSpeak);
 
 	/**
@@ -64,7 +67,7 @@ public:
 	 *
 	 * @param ClipSettings [in] the settings to use
 	 */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category="TTS")
 	void SpeakWithSettings(const FTtsConfiguration& ClipSettings);
 	
 protected:

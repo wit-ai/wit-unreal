@@ -12,6 +12,9 @@
 #include "Serialization/BufferArchive.h"
 #include "WitRequestSubsystem.generated.h"
 
+class FJsonObject;
+class FMemoryReader;
+
 DECLARE_DELEGATE_TwoParams(FOnWitRequestErrorDelegate, const FString, const FString);
 DECLARE_DELEGATE_TwoParams(FOnWitRequestProgressDelegate, const TArray<uint8>&, const TSharedPtr<FJsonObject>);
 DECLARE_DELEGATE_TwoParams(FOnWitRequestCompleteDelegate, const TArray<uint8>&, const TSharedPtr<FJsonObject>);

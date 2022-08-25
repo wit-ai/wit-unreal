@@ -12,6 +12,8 @@
 #include "Wit/Request/WitRequestTypes.h"
 #include "TtsMemoryCache.generated.h"
 
+class USoundWave;
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnClipAddedDelegate, const FString, ClipId);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnClipRemovedDelegate, const FString, ClipId);
 

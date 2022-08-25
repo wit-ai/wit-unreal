@@ -13,6 +13,8 @@
 #include "TTS/Configuration/TtsConfiguration.h"
 #include "TtsMemoryCacheHandler.generated.h"
 
+class USoundWave;
+
 /**
  * Abstract class for implementing a memory cache. This should be the base if you want to implement your own memory cache implementation
  */

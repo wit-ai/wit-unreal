@@ -16,6 +16,8 @@
 #include "Wit/Request/WitResponse.h"
 #include "WitTtsService.generated.h"
 
+class FJsonObject;
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSynthesizeResponseDelegate, const bool, bIsSuccessful, USoundWave*, SoundWave);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSynthesizeErrorDelegate, const FString&, ErrorMessage, const FString&, HumanReadableMessage);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnVoicesResponseDelegate, const bool, bIsSuccessful);
@@ -42,7 +44,7 @@ public:
 	 *
 	 * @return true if in progress otherwise false
 	 */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category="TTS")
 	bool IsRequestInProgress() const;
 	
 	/**
@@ -50,7 +52,7 @@ public:
 	 *
 	 * @param TextToConvert [in] the string we want to convert to speech
 	 */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category="TTS")
 	void ConvertTextToSpeech(const FString& TextToConvert);
 
 	/**
@@ -58,13 +60,13 @@ public:
 	 *
 	 * @param ClipSettings [in] the string we want to convert to speech
 	 */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category="TTS")
 	void ConvertTextToSpeechWithSettings(const FTtsConfiguration& ClipSettings);
 
 	/**
 	 * Fetch a list of available voices from Wit
 	 */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category="TTS")
 	void FetchAvailableVoices();
 	
 	/**
@@ -72,13 +74,13 @@ public:
 	 *
 	 * @param ClipId [in] id of the clip to unload
 	 */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category="TTS")
 	void UnloadClip(const FString& ClipId);
 	
 	/**
 	 * Unload all clips from the memory cache
 	 */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category="TTS")
 	void UnloadAllClips();
 	
 	/**
@@ -87,7 +89,7 @@ public:
 	 * @param ClipId [in] id of the clip to delete
 	 * @param CacheLocation [in] location of the clip
 	 */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category="TTS")
 	void DeleteClip(const FString& ClipId, const ETtsStorageCacheLocation CacheLocation);
 	
 	/**
@@ -95,7 +97,7 @@ public:
 	 *
 	 * @param CacheLocation [in] location of the clip
 	 */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category="TTS")
 	void DeleteAllClips(const ETtsStorageCacheLocation CacheLocation);
 	
 	/**

@@ -8,6 +8,7 @@
 #include "TTS/Cache/Memory/TtsMemoryCache.h"
 #include "Misc/EngineVersionComparison.h"
 #include "Wit/Utilities/WitLog.h"
+#include "Sound/SoundWave.h"
 
 /**
  * Default constructor
