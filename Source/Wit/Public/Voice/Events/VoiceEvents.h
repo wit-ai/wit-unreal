@@ -98,4 +98,10 @@ public:
 	 */
 	UPROPERTY(BlueprintAssignable)
 	FOnWitEventDelegate OnStopVoiceInputDueToDeactivation{};
+
+	/**
+	 * Called when the minimum wake threshold is hit
+	 */
+	UPROPERTY(BlueprintAssignable)
+	FOnWitEventDelegate OnMinimumWakeThresholdHit{};
 };
