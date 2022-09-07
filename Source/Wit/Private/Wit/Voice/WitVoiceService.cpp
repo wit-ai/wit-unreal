@@ -365,6 +365,13 @@ void UWitVoiceService::BeginStreamRequest()
 
 	bIsVoiceStreamingActive = true;
 
+	// Notify that we've started sending voice data
+
+	if (Events != nullptr)
+	{
+		Events->OnMinimumWakeThresholdHit.Broadcast();
+	}
+
 #if WITH_EDITORONLY_DATA
 	
 	if (Configuration->Voice.bIsWavFileRecordingEnabled)
@@ -446,7 +453,6 @@ bool UWitVoiceService::DoDeactivateVoiceInput()
 	SetComponentTickEnabled(false);
 
 	bIsVoiceInputActive = false;
-	bIsVoiceStreamingActive = false;
 	bIsVoiceStreamingActive = false;
 	
 	// Notify that we've stopped accepting voice input
@@ -625,8 +631,8 @@ void UWitVoiceService::OnSpeechRequestProgress(const TArray<uint8>& PartialBinar
 /**
  *  Called when received a Wit partial response
  *
- * @param BinaryResponse [in] the partial binary response
- * @param JsonResponse [in] the partial Json response
+ * @param PartialBinaryResponse [in] the partial binary response
+ * @param PartialJsonResponse [in] the partial Json response
  */
 void UWitVoiceService::OnPartialResponse(const TArray<uint8>& PartialBinaryResponse, const TSharedPtr<FJsonObject> PartialJsonResponse) const
 {
@@ -665,6 +671,7 @@ void UWitVoiceService::OnSpeechRequestComplete(const TArray<uint8>& BinaryRespon
 		OnWitRequestError(TEXT("Json To UStruct failed"), TEXT("Converting the Json response to a UStruct failed"));
 		return;
 	}
+	
 	OnSpeechRequestComplete(Events->WitResponse);
 }
 

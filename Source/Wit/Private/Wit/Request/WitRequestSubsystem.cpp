@@ -288,16 +288,16 @@ void UWitRequestSubsystem::OnRequestProgress(FHttpRequestPtr Request, int32 Byte
 
 	if (!bIsNewResponseData)
 	{
-		UE_LOG(LogWit, Verbose, TEXT("Ignoring response progress because size has not changed"));
+		UE_LOG(LogWit, Verbose, TEXT("OnRequestProgress: Ignoring response progress because size has not changed"));
 		return;	
 	}
 	
-	UE_LOG(LogWit, Verbose, TEXT("Content size (%d) bytes received (%d)"), ContentAsBytes.Num(), BytesReceived);
+	UE_LOG(LogWit, Verbose, TEXT("OnRequestProgress: Content size (%d) bytes received (%d)"), ContentAsBytes.Num(), BytesReceived);
 
 	const FUTF8ToTCHAR ContentAsTChar(reinterpret_cast<const ANSICHAR*>(ContentAsBytes.GetData()), ContentAsBytes.Num());
 	const FString Content(ContentAsTChar.Length(), ContentAsTChar.Get());
 
-	UE_LOG(LogWit, Verbose, TEXT("Content as string (%s)"), *Content);
+	UE_LOG(LogWit, Verbose, TEXT("OnRequestProgress: Content as string (%s)"), *Content);
 
 	// The speech endpoint returns chunked responses which contain multiple JSON objects. The final chunk represents the most recent response (at this time)
 	// while the other chunks are intermediate results that can be safely ignored
@@ -362,6 +362,8 @@ void UWitRequestSubsystem::OnRequestComplete(FHttpRequestPtr Request, FHttpRespo
 
 	const bool bIsJsonContentType = ContentType.Contains(TEXT("application/json"));
 	const bool bIsAudioContentType = ContentType.Contains(TEXT("audio/wav"));
+
+	UE_LOG(LogWit, Verbose, TEXT("OnRequestComplete: Content as string (%s)"), *Content);
 
 	if (bIsJsonContentType)
 	{
@@ -453,6 +455,6 @@ void UWitRequestSubsystem::SplitResponseIntoChunks(const FString& Response, TArr
 
 		ChunkedResponses.Add(ChunkedResponseString);
 
-		UE_LOG(LogWit, Verbose, TEXT("Chunk string found (%s)"), *ChunkedResponseString);
+		UE_LOG(LogWit, VeryVerbose, TEXT("Chunk string found (%s)"), *ChunkedResponseString);
 	}
 }

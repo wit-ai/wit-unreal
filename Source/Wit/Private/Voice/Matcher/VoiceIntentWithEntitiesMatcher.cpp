@@ -110,13 +110,13 @@ void UVoiceIntentWithEntitiesMatcher::OnWitResponse(const bool bIsSuccessful, co
 	{
 		UE_LOG(LogWit, Verbose, TEXT("UVoiceIntentWithEntitiesMatcher: no entity successfully matched"));
 
-		OnIntentMatched.Broadcast(*MatchingIntent, Response.Is_Final);
+		OnIntentMatched.Broadcast(MatchingIntent == nullptr ? FWitIntent() : *MatchingIntent, Response.Is_Final);
 	}
 	else
 	{
 		UE_LOG(LogWit, Verbose, TEXT("UVoiceIntentWithEntitiesMatcher: multiple entities successfully matched"));
 
-		OnEntitiesMatched.Broadcast(bIsAllRequiredEntitiesMatched, *MatchingIntent, MatchingEntities, MatchingValues, Response.Is_Final);
+		OnEntitiesMatched.Broadcast(bIsAllRequiredEntitiesMatched, MatchingIntent == nullptr ? FWitIntent() : *MatchingIntent, MatchingEntities, MatchingValues, Response.Is_Final);
 
 		AcceptPartialResponse(Response);
 	}
