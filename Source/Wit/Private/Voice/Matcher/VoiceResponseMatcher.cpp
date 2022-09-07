@@ -25,7 +25,7 @@ void UVoiceResponseMatcher::BeginPlay()
 {
 	Super::BeginPlay();
 
-	const AVoiceExperience* VoiceExperience = FWitHelperUtilities::FindVoiceExperience(this->GetWorld(), VoiceExperienceTag);
+	const AVoiceExperience* VoiceExperience = FWitHelperUtilities::FindVoiceExperience(GetWorld(), VoiceExperienceTag);
 	
 	if (VoiceExperience == nullptr)
 	{

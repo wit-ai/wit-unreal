@@ -54,6 +54,7 @@ void UVoiceIntentWithEntitiesMatcher::OnWitResponse(const bool bIsSuccessful, co
 		return;
 	}
 
+	
 	// Try to match all the required entities. We match in the order specified so that we guarantee the ordering when we
 	// have multiple entities to match
 

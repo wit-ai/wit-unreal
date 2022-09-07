@@ -97,7 +97,7 @@ void UWitRequestSubsystem::SendRequest()
 
 	// If we are using streaming then we use our custom HTTP request otherwise we fallback to UE4's standard HTTP request
 
-	HttpRequest = TSharedRef<IHttpRequest, ESPMode::ThreadSafe>(new FWitHttpRequest());
+	HttpRequest = TSharedRef<IHttpRequest, ESPMode::ThreadSafe>(dynamic_cast<IHttpRequest*>(new FWitHttpRequest()));
 
 	// Construct the final URL for the request
 	
@@ -131,7 +131,6 @@ void UWitRequestSubsystem::SendRequest()
 	const FString Authorization = FString::Format(TEXT("Bearer {0}"), { Configuration.ServerAuthToken });
 
 	HttpRequest->SetHeader("Authorization", Authorization);
-
 	HttpRequest->SetHeader("User-Agent", FWitHttpRequest::GetUserAgent());
 
 	if (!Configuration.Accept.IsEmpty())
@@ -330,10 +329,8 @@ void UWitRequestSubsystem::OnRequestProgress(FHttpRequestPtr Request, int32 Byte
 	}
 
 	LastResponseSize = ContentAsBytes.Num();
-	
-	// UE_LOG(LogWit, Display, TEXT("UWitRequestSubsystem OnRequestProgress - json: %s"), *FinalResponse);
-	
-	(void)Configuration.OnRequestProgress.ExecuteIfBound(ContentAsBytes, Json);
+			
+	Configuration.OnRequestProgress.Broadcast(ContentAsBytes, Json);
 }
 
 /**
@@ -352,7 +349,7 @@ void UWitRequestSubsystem::OnRequestComplete(FHttpRequestPtr Request, FHttpRespo
 		const FString ErrorMessage = FString::Format(TEXT("HTTP Error {0}"), { Response->GetResponseCode()});
 		const FString HumanReadableErrorMessage = FString::Format(TEXT("Request failed with error code {0}"), { Response->GetResponseCode()});
 		
-		(void)Configuration.OnRequestError.ExecuteIfBound(ErrorMessage, HumanReadableErrorMessage);
+		Configuration.OnRequestError.Broadcast(ErrorMessage, HumanReadableErrorMessage);
 		
 		return;
 	}
@@ -377,7 +374,7 @@ void UWitRequestSubsystem::OnRequestComplete(FHttpRequestPtr Request, FHttpRespo
 		const bool bIsMalformedResponse = (ChunkedResponses.Num() == 0);
 		if (bIsMalformedResponse)
 		{
-			(void)Configuration.OnRequestError.ExecuteIfBound(TEXT("Invalid response"), TEXT("Response is incomplete or otherwise invalid"));
+			Configuration.OnRequestError.Broadcast(TEXT("Invalid response"), TEXT("Response is incomplete or otherwise invalid"));
 			return;
 		}
 
@@ -389,21 +386,23 @@ void UWitRequestSubsystem::OnRequestComplete(FHttpRequestPtr Request, FHttpRespo
 		const bool bIsDeserializationError = !FJsonSerializer::Deserialize(Reader, Json);
 		if (bIsDeserializationError)
 		{
-			(void)Configuration.OnRequestError.ExecuteIfBound(TEXT("Deserialization failed"), TEXT("Deserializing the response to JSON failed"));
+			Configuration.OnRequestError.Broadcast(TEXT("Deserialization failed"), TEXT("Deserializing the response to JSON failed"));
 			return;
 		}
 
-		(void)Configuration.OnRequestComplete.ExecuteIfBound(Response->GetContent(), Json);
+		UE_LOG(LogWit, Verbose, TEXT("OnRequestComplete: calling delegate"));
+		
+		Configuration.OnRequestComplete.Broadcast(Response->GetContent(), Json);
 	}
 	else if (bIsAudioContentType)
 	{
 		// The synthesize endpoint returns binary data in the form of a wav
 		
-		(void)Configuration.OnRequestComplete.ExecuteIfBound(Response->GetContent(), nullptr);
+		Configuration.OnRequestComplete.Broadcast(Response->GetContent(), nullptr);
 	}
 	else
 	{
-		(void)Configuration.OnRequestError.ExecuteIfBound(TEXT("Invalid content type"), TEXT("Response has invalid content type"));
+		Configuration.OnRequestError.Broadcast(TEXT("Invalid content type"), TEXT("Response has invalid content type"));
 	}
 }
 

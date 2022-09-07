@@ -189,13 +189,13 @@ private:
 	void OnSynthesizeRequestComplete(const TArray<uint8>& BinaryResponse, const TSharedPtr<FJsonObject> JsonResponse);
 
 	/** Called when a synthesize request errors */
-	void OnSynthesizeRequestError(const FString ErrorMessage, const FString HumanReadableErrorMessage);
+	void OnSynthesizeRequestError(const FString& ErrorMessage, const FString& HumanReadableErrorMessage);
 
 	/** Called when a Wit voices request is fully completed to process the response payload */
 	void OnVoicesRequestComplete(const TArray<uint8>& BinaryResponse, const TSharedPtr<FJsonObject> JsonResponse);
 
 	/** Called when a voices request errors */
-	void OnVoicesRequestError(const FString ErrorMessage, const FString HumanReadableErrorMessage);
+	void OnVoicesRequestError(const FString& ErrorMessage, const FString& HumanReadableErrorMessage);
 
 	/** Creates a sound wave from binary data and adds it to the memory cache */
 	USoundWave* CreateSoundWaveAndAddToMemoryCache(const FString& ClipId, const TArray<uint8>& BinaryData, const FTtsConfiguration& ClipSettings);

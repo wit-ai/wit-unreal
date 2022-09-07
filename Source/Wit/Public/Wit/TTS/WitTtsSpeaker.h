@@ -69,6 +69,28 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category="TTS")
 	void SpeakWithSettings(const FTtsConfiguration& ClipSettings);
+
+	/**
+	 * Stop speaking
+	 */
+	UFUNCTION(BlueprintCallable)
+	void Stop();
+	
+	/**
+	 * Are we currently speaking?
+	 *
+	 * @return true if we are speaking
+	 */
+	UFUNCTION(BlueprintCallable)
+	bool IsSpeaking() const;
+
+	/**
+	 * Are we currently loading?
+	 *
+	 * @return true if we are loading
+	 */
+	UFUNCTION(BlueprintCallable)
+	bool IsLoading() const;
 	
 protected:
 

@@ -10,27 +10,25 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Wit/Request/WitResponse.h"
+#include "Wit/Request/WitRequestConfiguration.h"
 #include "VoiceEvents.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnWitEventDelegate);
-
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWitTranscriptionDelegate, const FString&, Transcription);
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnWitResponseDelegate, const bool, bIsSuccessful, const FWitResponse&,
-                                             WitResponse);
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnWitErrorDelegate, const FString&, ErrorMessage, const FString&,
-                                             HumanReadableMessage);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnWitResponseDelegate, const bool, bIsSuccessful, const FWitResponse&, WitResponse);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnWitErrorDelegate, const FString&, ErrorMessage, const FString&, HumanReadableMessage);
+DECLARE_DELEGATE_OneParam(FOnWitRequestCustomizeDelegate, FWitRequestConfiguration&);
 
 /**
- * Base class implementation of a voice service
+ * Container for all voice command events
  */
 UCLASS(ClassGroup=(Meta))
-class WIT_API UVoiceEvents : public UActorComponent
+class WIT_API UVoiceEvents final : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:
+	
 	/**
 	 * The response we receive from Wit requests parsed into UObject structures. This response contains
 	 * information about the meaning of the speech or text that was sent
@@ -68,7 +66,7 @@ public:
 	 */
 	UPROPERTY(BlueprintAssignable)
 	FOnWitTranscriptionDelegate OnFullTranscription{};
-
+	
 	/**
 	 * Called when voice capture starts capturing voice data
 	 */
@@ -104,4 +102,11 @@ public:
 	 */
 	UPROPERTY(BlueprintAssignable)
 	FOnWitEventDelegate OnMinimumWakeThresholdHit{};
+
+	/**
+	 * Called to give the opportunity to customize a voice request
+	 * Note: this is deliberately not blueprint assignable because blueprint assignable delegates do not support non-const references 
+	 */
+	FOnWitRequestCustomizeDelegate OnRequestCustomize{};
+
 };
