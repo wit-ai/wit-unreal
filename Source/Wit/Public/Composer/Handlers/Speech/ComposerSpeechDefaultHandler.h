@@ -41,19 +41,19 @@ public:
 	/**
 	 * IComposerSpeechHandlerBase default implementation
 	 */
-	virtual void SpeakPhrase(const FString& Phrase, const TSharedPtr<FJsonObject> ContextMap) override;
-	virtual bool IsSpeaking(const TSharedPtr<FJsonObject> ContextMap) override;
+	virtual void SpeakPhrase(const FString& Phrase, const UComposerContextMap* ContextMap) override;
+	virtual bool IsSpeaking(const UComposerContextMap* ContextMap) const override;
 
 	/**
 	 * The key to use to lookup the speaker name in the context map
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Composer")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Composer|Speaker")
 	FString SpeakerNameContextMapKey{TEXT("wit_composer_speaker")};
 
 	/**
 	 * The speakers that are available to be activated 
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Composer")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Composer|Speaker")
 	TArray<FComposerSpeaker> Speakers{};
 
 private:
@@ -61,10 +61,10 @@ private:
 	/**
 	 * Get a speaker give their name
 	 */
-	AWitTtsSpeaker* GetSpeaker(const TSharedPtr<FJsonObject> ContextMap) const;
+	AWitTtsSpeaker* GetSpeaker(const UComposerContextMap* ContextMap) const;
 
 	/**
 	 * Lookup the speaker name from the context map
 	 */
-	FString GetSpeakerName(const TSharedPtr<FJsonObject> ContextMap) const;
+	FString GetSpeakerName(const UComposerContextMap* ContextMap) const;
 };

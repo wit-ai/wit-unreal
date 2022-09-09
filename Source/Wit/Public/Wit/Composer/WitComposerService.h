@@ -9,6 +9,7 @@
 
 #include "CoreMinimal.h"
 #include "Composer/Configuration/ComposerConfiguration.h"
+#include "Composer/Data/ComposerContextMap.h"
 #include "Composer/Events/ComposerEvents.h"
 #include "Composer/Handlers/Action/ComposerActionHandler.h"
 #include "Composer/Handlers/Speech/ComposerSpeechHandler.h"
@@ -41,25 +42,39 @@ public:
 
 	/**
 	 * Start a new composer session
+	 *
+	 * @param NewSessionId [in] the session id to use. If empty then the default session id will be used
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Composer")
+	UFUNCTION(BlueprintCallable, Category = "Composer|Session")
 	void StartSession(FString NewSessionId);
 
 	/**
 	 * End the current composer session
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Composer")
+	UFUNCTION(BlueprintCallable, Category = "Composer|Session")
 	void EndSession();
-
+	
 	/**
-	 * Get a default session id
+	 * Creates a default session id
 	 */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Composer|Session")
 	static FString GetDefaultSessionId();
 
 	/**
 	 * Update the context map
+	 *
+	 * @param NewContextMap [in] the context map
 	 */
-	void SetContextMap(const TSharedPtr<FJsonObject> NewContextMap);
+	UFUNCTION(BlueprintSetter, Category = "Composer|ContextMap")
+	void SetContextMap(UComposerContextMap* NewContextMap);
+
+	/**
+	 * Access the the context map
+	 *
+	 * @return the current context map
+	 */
+	UFUNCTION(BlueprintGetter, Category = "Composer|ContextMap")
+	const UComposerContextMap* GetContextMap() const { return CurrentContextMap; }
 
 protected:
 
@@ -76,6 +91,9 @@ private:
 
 	/** Callback when a wit error occurs */
 	void OnComposerError(const FString& ErrorMessage, const FString& HumanReadableMessage);
+
+	/** Internal function for updating the context map from a Json object */
+	void SetContextMapInternal(TSharedPtr<FJsonObject> ContextMapJsonObject);
 
 	/** Speak a given phrase */
 	void DoSpeakPhrase(const FString& Phrase) const;
@@ -95,13 +113,10 @@ private:
 	/** When the current session started */
 	FDateTime SessionStart{};
 
-	/** Current context map being used with the composer service */
-	TSharedPtr<FJsonObject> CurrentContextMap{};
-
-	/** Composer response data */
+	/** Composer response data from the most recent request */
 	FWitComposerResponse ComposerResponse{};
 
-	/** Configuration to use */
+	/** Configuration to use with the voice service */
 	const FComposerConfiguration* Configuration{};
 
 	/** Set when we are waiting to continue after speech or an action */
@@ -133,5 +148,11 @@ private:
 	 */
 	UPROPERTY(Transient)
 	UComposerSpeechHandler* SpeechHandler{};
+
+	/**
+	 * Current context map being used with the composer service
+	 */
+	UPROPERTY(Transient, BlueprintGetter=GetContextMap, BlueprintSetter=SetContextMap)
+	UComposerContextMap* CurrentContextMap{};
 	
 };

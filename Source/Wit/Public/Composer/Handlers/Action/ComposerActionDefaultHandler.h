@@ -11,7 +11,7 @@
 #include "ComposerActionHandler.h"
 #include "ComposerActionDefaultHandler.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnComposerActionDelegate, const FString&, Action);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnComposerActionDelegate, const FString&, Action, UComposerContextMap*, ContextMap);
 
 /**
  * Default class for implementing a composer action handler. 
@@ -26,14 +26,14 @@ public:
 	/**
 	 * IComposerActionHandlerBase overrides
 	 */
-	virtual void PerformAction(const FString& Action) override;
+	virtual void PerformAction(const FString& Action, UComposerContextMap* ContextMap) override;
 	virtual bool IsPerformingAction(const FString& Action) override;
 	virtual void MarkActionComplete(const FString& Action) override;
 
 	/**
 	 * Blueprint event that can be implemented to perform the action
 	 */
-	UPROPERTY(BlueprintAssignable, Category = "Composer")
+	UPROPERTY(BlueprintAssignable, Category = "Composer|Action")
 	FOnComposerActionDelegate OnPerformAction{};
 
 

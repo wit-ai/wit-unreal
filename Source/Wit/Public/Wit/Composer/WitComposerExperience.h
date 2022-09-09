@@ -30,34 +30,34 @@ public:
 	AWitComposerExperience();
 
 	/**
-	 * The configuration that will be used 
+	 * The configuration that will be used by the voice service
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Composer")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Composer|Configuration")
 	FComposerConfiguration Configuration{};
-
-	/**
-	 * The underlying composer service that implements the composer functionality
-	 */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Composer")
-	UWitComposerService* ComposerService{};
 	
 	/**
 	 * The events used by the composer service
 	 */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Composer")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Composer|Handlers")
 	UComposerEvents* EventHandler{};
 
 	/**
-	 * The action handler
+	 * The action handler used by the composer service
 	 */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Composer")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Composer|Handlers")
 	UComposerActionHandler* ActionHandler{};
 
 	/**
-	 * The speech handler
+	 * The speech handler user by the composer service
 	 */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Composer")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Composer|Handlers")
 	UComposerSpeechHandler* SpeechHandler{};
+
+	/**
+	 * The underlying composer service that implements the composer functionality
+	 */
+	UPROPERTY()
+	UWitComposerService* ComposerService{};
 
 protected:
 

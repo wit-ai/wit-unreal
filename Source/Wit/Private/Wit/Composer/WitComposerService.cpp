@@ -139,7 +139,7 @@ void UWitComposerService::StartSession(FString NewSessionId)
 
 	if (EventHandler != nullptr)
 	{
-		EventHandler->OnComposerSessionBegin.Broadcast();
+		EventHandler->OnComposerSessionBegin.Broadcast(CurrentContextMap);
 	}
 }
 
@@ -157,7 +157,7 @@ void UWitComposerService::EndSession()
 
 	if (EventHandler != nullptr)
 	{
-		EventHandler->OnComposerSessionEnd.Broadcast();
+		EventHandler->OnComposerSessionEnd.Broadcast(CurrentContextMap);
 	}
 }
 
@@ -177,7 +177,7 @@ FString UWitComposerService::GetDefaultSessionId()
 /**
  * Update the context map
  */
-void UWitComposerService::SetContextMap(const TSharedPtr<FJsonObject> NewContextMap)
+void UWitComposerService::SetContextMap(UComposerContextMap* NewContextMap)
 {
 	if (CurrentContextMap == NewContextMap)
 	{
@@ -188,7 +188,7 @@ void UWitComposerService::SetContextMap(const TSharedPtr<FJsonObject> NewContext
 
 	if (EventHandler != nullptr)
 	{
-		EventHandler->OnComposerContextMapChange.Broadcast();
+		EventHandler->OnComposerContextMapChange.Broadcast(CurrentContextMap);
 	}
 }
 
@@ -209,12 +209,12 @@ void UWitComposerService::OnComposerRequestCustomize(FWitRequestConfiguration& R
 
 	if (CurrentContextMap == nullptr)
 	{
-		SetContextMap(MakeShareable(new FJsonObject()));
+		SetContextMapInternal(MakeShared<FJsonObject>());
 	}
 
 	if (EventHandler != nullptr)
 	{
-		EventHandler->OnComposerActivation.Broadcast();	
+		EventHandler->OnComposerActivation.Broadcast(CurrentContextMap);	
 	}
 	
 	// Redirect the endpoints from the normal voice endpoints to the corresponding composer endpoints. We also need to add
@@ -250,16 +250,18 @@ void UWitComposerService::OnComposerRequestCustomize(FWitRequestConfiguration& R
 	
 	FWitRequestBuilder::AddParameter(RequestConfiguration, EWitParameter::SessionId, FGenericPlatformHttp::UrlEncode(SessionId));
 
-	FString ContextJsonString;
-
-	if (CurrentContextMap != nullptr)
-	{
-		const TSharedRef<TJsonWriter<TCHAR>> Writer = TJsonWriterFactory<TCHAR>::Create(&ContextJsonString);
-		FJsonSerializer::Serialize(CurrentContextMap.ToSharedRef(), Writer);
-	}
+	const bool bIsValidContextMap = CurrentContextMap != nullptr && CurrentContextMap->GetJsonObject() != nullptr;
 	
-	FWitRequestBuilder::AddParameter(RequestConfiguration, EWitParameter::ContextMap, FGenericPlatformHttp::UrlEncode(ContextJsonString));
+	if (bIsValidContextMap)
+	{
+		FString ContextJsonString;
+	
+		const TSharedRef<TJsonWriter<TCHAR>> Writer = TJsonWriterFactory<TCHAR>::Create(&ContextJsonString);
+		FJsonSerializer::Serialize(CurrentContextMap->GetJsonObject().ToSharedRef(), Writer);
 
+		FWitRequestBuilder::AddParameter(RequestConfiguration, EWitParameter::ContextMap, FGenericPlatformHttp::UrlEncode(ContextJsonString));
+	}
+		
 	// Listen in to the raw response as it's different than a normal speech/message response and we will need to parse it to a different UStruct
 	
 	RequestConfiguration.OnRequestError.AddUObject(this, &UWitComposerService::OnComposerError);
@@ -286,14 +288,14 @@ void UWitComposerService::OnComposerResponse(const TArray<uint8>& BinaryResponse
 
 	if (ResponseContextMap != nullptr)
 	{
-		SetContextMap(*ResponseContextMap);
+		SetContextMapInternal(*ResponseContextMap);
 	}
 	
 	UE_LOG(LogWit, Verbose, TEXT("UStruct - Expects input (%d) action (%s) text (%s)"), ComposerResponse.Expects_Input, *ComposerResponse.Action, *ComposerResponse.Response.Text);
 
 	if (EventHandler != nullptr)
 	{
-		EventHandler->OnComposerResponse.Broadcast();
+		EventHandler->OnComposerResponse.Broadcast(CurrentContextMap);
 	}
 
 	bool bShouldContinue = false;
@@ -334,6 +336,27 @@ void UWitComposerService::OnComposerResponse(const TArray<uint8>& BinaryResponse
 }
 
 /**
+ * Internal function for setting the context map from a json object
+ */
+void UWitComposerService::SetContextMapInternal(TSharedPtr<FJsonObject> ContextMapJsonObject)
+{
+	if (CurrentContextMap == nullptr)
+	{
+		CurrentContextMap = NewObject<UComposerContextMap>();
+	}
+
+	if (CurrentContextMap->GetJsonObject() != ContextMapJsonObject)
+	{
+		CurrentContextMap->SetJsonObject(ContextMapJsonObject);
+
+		if (EventHandler != nullptr)
+		{
+			EventHandler->OnComposerContextMapChange.Broadcast(CurrentContextMap);
+		}
+	}
+}
+
+/**
  * Callback when we receive a wit error
  */
 void UWitComposerService::OnComposerError(const FString& ErrorMessage, const FString& HumanReadableMessage)
@@ -344,7 +367,7 @@ void UWitComposerService::OnComposerError(const FString& ErrorMessage, const FSt
 
 	if (EventHandler != nullptr)
 	{
-		EventHandler->OnComposerError.Broadcast();
+		EventHandler->OnComposerError.Broadcast(CurrentContextMap);
 	}
 }
 
@@ -357,7 +380,7 @@ void UWitComposerService::DoSpeakPhrase(const FString& Phrase) const
 
 	if (EventHandler != nullptr)
 	{
-		EventHandler->OnComposerSpeakPhrase.Broadcast();
+		EventHandler->OnComposerSpeakPhrase.Broadcast(CurrentContextMap);
 	}
 
 	if (SpeechHandler != nullptr)
@@ -375,12 +398,12 @@ void UWitComposerService::DoPerformAction(const FString& Action) const
 
 	if (EventHandler != nullptr)
 	{
-		EventHandler->OnComposerPerformAction.Broadcast();
+		EventHandler->OnComposerPerformAction.Broadcast(CurrentContextMap);
 	}
 
 	if (ActionHandler != nullptr)
 	{
-		ActionHandler->PerformAction(Action);
+		ActionHandler->PerformAction(Action, CurrentContextMap);
 	}
 }
 
@@ -397,10 +420,10 @@ void UWitComposerService::DoContinue()
 
 		if (EventHandler != nullptr)
 		{
-			EventHandler->OnComposerExpectsInput.Broadcast();
+			EventHandler->OnComposerExpectsInput.Broadcast(CurrentContextMap);
 		}
 		
-		const bool bShouldAutoActivateInput = VoiceExperience != nullptr && Configuration != nullptr && Configuration->bShouldExpectInputAutoActivation;
+		const bool bShouldAutoActivateInput = VoiceExperience != nullptr && Configuration != nullptr && Configuration->bShouldAutoActivateInput;
 
 		if (bShouldAutoActivateInput)
 		{
@@ -413,21 +436,21 @@ void UWitComposerService::DoContinue()
 		
 		if (EventHandler != nullptr)
 		{
-			EventHandler->OnComposerComplete.Broadcast();
+			EventHandler->OnComposerComplete.Broadcast(CurrentContextMap);
 		}
 
-		const bool bShouldEndSession = Configuration != nullptr && Configuration->bShouldEndSessionOnCompletion;
+		const bool bShouldEndSession = Configuration != nullptr && Configuration->bShouldAutoEndSession;
 
 		if (bShouldEndSession)
 		{
 			EndSession();
 		}
 
-		const bool bShouldClearContextMap = Configuration != nullptr && Configuration->bShouldClearContextMapOnCompletion;
+		const bool bShouldClearContextMap = Configuration != nullptr && Configuration->bShouldAutoClearContextMap;
 
 		if (bShouldClearContextMap)
 		{
-			SetContextMap(MakeShareable(new FJsonObject()));
+			SetContextMapInternal(MakeShared<FJsonObject>());
 		}
 	}
 }

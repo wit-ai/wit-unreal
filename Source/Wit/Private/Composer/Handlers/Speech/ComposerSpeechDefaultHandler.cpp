@@ -13,10 +13,8 @@
  * @param Phrase [in] the text to speak
  * @param ContextMap [in] the context map to check
  */
-void UComposerSpeechDefaultHandler::SpeakPhrase(const FString& Phrase, const TSharedPtr<FJsonObject> ContextMap)
+void UComposerSpeechDefaultHandler::SpeakPhrase(const FString& Phrase, const UComposerContextMap* ContextMap)
 {
-	// TODO: Need to pass the context map here
-
 	AWitTtsSpeaker* Speaker = GetSpeaker(ContextMap);
 
 	if (Speaker == nullptr)
@@ -34,7 +32,7 @@ void UComposerSpeechDefaultHandler::SpeakPhrase(const FString& Phrase, const TSh
  *
  * @return true if we are currently speaking
  */
-bool UComposerSpeechDefaultHandler::IsSpeaking(const TSharedPtr<FJsonObject> ContextMap)
+bool UComposerSpeechDefaultHandler::IsSpeaking(const UComposerContextMap* ContextMap) const
 {
 	const AWitTtsSpeaker* Speaker = GetSpeaker(ContextMap);
 
@@ -51,34 +49,41 @@ bool UComposerSpeechDefaultHandler::IsSpeaking(const TSharedPtr<FJsonObject> Con
  *
  * @param ContextMap [in] the context map to check
  */
-AWitTtsSpeaker* UComposerSpeechDefaultHandler::GetSpeaker(const TSharedPtr<FJsonObject> ContextMap) const
+AWitTtsSpeaker* UComposerSpeechDefaultHandler::GetSpeaker(const UComposerContextMap* ContextMap) const
 {
-	const bool bIsNoSpeakers = Speakers.Num() == 0;
+	const bool bIsSpeakerAvailable = Speakers.Num() > 0;
 	
-	if (bIsNoSpeakers)
+	if (!bIsSpeakerAvailable)
 	{
 		return nullptr;
 	}
 	
 	const FString SpeakerName = GetSpeakerName(ContextMap);	
-	const bool bIsValidSpeakerName = !SpeakerName.IsEmpty();
+	const bool bIsSpecificSpeakerRequested = !SpeakerName.IsEmpty();
 
-	if (bIsValidSpeakerName)
+	// If there is not specific speaker requested then we just pick the first one available
+	
+	if (!bIsSpecificSpeakerRequested)
 	{
-		for(const auto& Item : Speakers)
-		{
-			const bool bIsMatchingName = Item.SpeakerName.Equals(SpeakerName, ESearchCase::IgnoreCase);
-
-			if (bIsMatchingName)
-			{
-				return Item.Speaker;
-			}
-		}
-
-		return nullptr;
+		return Speakers[0].Speaker;
 	}
 
-	return Speakers[0].Speaker;
+	// Otherwise look for the specific speaker that was asked for
+	
+	for(const auto& Item : Speakers)
+	{
+		const bool bIsMatchingName = Item.SpeakerName.Equals(SpeakerName, ESearchCase::IgnoreCase);
+
+		if (bIsMatchingName)
+		{
+			return Item.Speaker;
+		}
+	}
+
+	// This follows Unity behaviour where if a specific speaker is asked for but not found then we don't return any speaker (as opposed to the
+	// other option of returning the first available)
+	
+	return nullptr;
 }
 
 /**
@@ -86,13 +91,15 @@ AWitTtsSpeaker* UComposerSpeechDefaultHandler::GetSpeaker(const TSharedPtr<FJson
  *
  * @param ContextMap [in] the context map to check
  */
-FString UComposerSpeechDefaultHandler::GetSpeakerName(const TSharedPtr<FJsonObject> ContextMap) const
+FString UComposerSpeechDefaultHandler::GetSpeakerName(const UComposerContextMap* ContextMap) const
 {
 	const bool bIsSpeakerName = ContextMap != nullptr && ContextMap->HasField(SpeakerNameContextMapKey);
 
 	if (bIsSpeakerName)
 	{
-		return ContextMap->GetStringField(SpeakerNameContextMapKey);
+		FString SpeakerName;
+		
+		ContextMap->GetStringField(SpeakerNameContextMapKey, SpeakerName);
 	}
 
 	return FString();

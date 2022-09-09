@@ -12,7 +12,7 @@
  *
  * @param Action [in] the id of the action to perform
  */
-void UComposerActionDefaultHandler::PerformAction(const FString& Action)
+void UComposerActionDefaultHandler::PerformAction(const FString& Action, UComposerContextMap* ContextMap)
 {
 	if (IsPerformingAction(Action))
 	{
@@ -26,7 +26,7 @@ void UComposerActionDefaultHandler::PerformAction(const FString& Action)
 	
 	ActionsInProgress.Add(Action);
 
-	OnPerformAction.Broadcast(Action);
+	OnPerformAction.Broadcast(Action, ContextMap);
 }
 
 /**

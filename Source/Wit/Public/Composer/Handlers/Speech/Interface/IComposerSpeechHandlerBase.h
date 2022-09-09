@@ -8,6 +8,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Composer/Data/ComposerContextMap.h"
 
 /**
  * Interface for implementing actions in a composer graph
@@ -27,15 +28,15 @@ public:
 	 * @param Phrase [in] the text to speak
 	 * @param ContextMap [in] the context map
 	 */
-	virtual void SpeakPhrase(const FString& Phrase, const TSharedPtr<FJsonObject> ContextMap) = 0;
+	virtual void SpeakPhrase(const FString& Phrase, const UComposerContextMap* ContextMap) = 0;
 
 	/**
-	 * Checks to see if we are in the middle of speaking a given phrase
+	 * Checks to see if we are in the middle of speaking
 	 *
 	 * @param ContextMap [in] the context map
 	 *
 	 * @return true if we are currently speaking
 	 */
-	virtual bool IsSpeaking(const TSharedPtr<FJsonObject> ContextMap) = 0;
+	virtual bool IsSpeaking(const UComposerContextMap* ContextMap) const = 0;
 	
 };

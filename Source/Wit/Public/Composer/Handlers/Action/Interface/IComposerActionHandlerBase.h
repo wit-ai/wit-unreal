@@ -8,6 +8,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Composer/Data/ComposerContextMap.h"
 
 /**
  * Interface for implementing actions in a composer graph
@@ -26,7 +27,7 @@ public:
 	 *
 	 * @param Action [in] the id of the action to perform
 	 */
-	virtual void PerformAction(const FString& Action) = 0;
+	virtual void PerformAction(const FString& Action, UComposerContextMap* ContextMap) = 0;
 
 	/**
 	 * Checks to see if we are in the middle of performing a given action

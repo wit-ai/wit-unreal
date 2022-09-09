@@ -15,7 +15,7 @@
 /**
  * Abstract class for implementing a composer action handler. This should be the base if you want to implement your own action handler implementation
  */
-UCLASS(ClassGroup=(Meta), Abstract)
+UCLASS(NotBlueprintable, Abstract)
 class WIT_API UComposerSpeechHandler : public UActorComponent, public IComposerSpeechHandlerBase
 {
 	GENERATED_BODY()
@@ -25,7 +25,7 @@ public:
 	/**
 	 * IComposerSpeechHandlerBase default implementation
 	 */
-	virtual void SpeakPhrase(const FString& Phrase, const TSharedPtr<FJsonObject> ContextMap) override {};
-	virtual bool IsSpeaking(const TSharedPtr<FJsonObject> ContextMap) override { return false; };
+	virtual void SpeakPhrase(const FString& Phrase, const UComposerContextMap* ContextMap) override {};
+	virtual bool IsSpeaking(const UComposerContextMap* ContextMap) const override { return false; };
 	
 };
