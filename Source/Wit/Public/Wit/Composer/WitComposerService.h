@@ -74,7 +74,7 @@ public:
 	 * @return the current context map
 	 */
 	UFUNCTION(BlueprintGetter, Category = "Composer|ContextMap")
-	const UComposerContextMap* GetContextMap() const { return CurrentContextMap; }
+	UComposerContextMap* GetContextMap() const { return CurrentContextMap; }
 
 protected:
 

@@ -71,13 +71,13 @@ void UWitComposerService::TickComponent(float DeltaTime, ELevelTick TickType, FA
 
 	// Wait for a period of time after continuing is allowed
 	
-	const bool bIsWaitingForDelay = ContinueDelayTimer >= 0.0f;
+	const bool bIsWaitingForDelay = ContinueDelayTimer > 0.0f;
 	
 	if (bIsWaitingForDelay)
 	{
 		ContinueDelayTimer -= DeltaTime;
 
-		const bool bIsDelayFinished = ContinueDelayTimer < 0.0f;
+		const bool bIsDelayFinished = ContinueDelayTimer <= 0.0f;
 		
 		if (bIsDelayFinished)
 		{
@@ -99,7 +99,7 @@ void UWitComposerService::TickComponent(float DeltaTime, ELevelTick TickType, FA
 		}
 		else
 		{
-			bIsWaitingToContinue = false;
+			DoContinue();
 		}
 	}
 }
@@ -414,6 +414,8 @@ void UWitComposerService::DoContinue()
 {
 	UE_LOG(LogWit, Verbose, TEXT("DoContinue - trying to continue"));
 
+	bIsWaitingToContinue = false;
+	
 	if (ComposerResponse.Expects_Input)
 	{
 		UE_LOG(LogWit, Verbose, TEXT("DoContinue - activating input"));
@@ -464,6 +466,7 @@ bool UWitComposerService::CanContinue() const
 
 	if (bIsVoiceServiceActive)
 	{
+		UE_LOG(LogWit, VeryVerbose, TEXT("CanContinue: voice service is active exiting"));
 		return false;
 	}
 
@@ -471,6 +474,7 @@ bool UWitComposerService::CanContinue() const
 
 	if (bIsSpeechActive)
 	{
+		UE_LOG(LogWit, VeryVerbose, TEXT("CanContinue: speech is active exiting"));
 		return false;
 	}
 
@@ -478,8 +482,11 @@ bool UWitComposerService::CanContinue() const
 
 	if (bIsActionActive)
 	{
+		UE_LOG(LogWit, VeryVerbose, TEXT("CanContinue: action is active exiting"));
 		return false;
 	}
+
+	UE_LOG(LogWit, VeryVerbose, TEXT("CanContinue: ready to continue"));
 
 	return true;
 }

@@ -22,7 +22,7 @@ class WIT_API UComposerContextMap final : public UObject
 	GENERATED_BODY()
 
 public:
-
+		
 	/**
 	 * Set the underlying Json object
 	 *
@@ -36,12 +36,40 @@ public:
 	TSharedPtr<FJsonObject> GetJsonObject() const { return JsonObject; }
 
 	/**
+	 * Clear the underlying Json object
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Composer|ContextMap")
+	void Reset();
+
+	/**
 	 * Is there a field with the give name?
 	 *
 	 * @return true if the field was found
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Composer|ContextMap")
 	UPARAM(DisplayName = "Is Found")bool HasField(const FString& FieldName) const;
+
+	/**
+	 * Get a named integer field
+	 *
+	 * @param FieldName [in] the field name to look for
+	 * @param Value [out] the field value if found
+	 *
+	 * @return true if the field was found
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Composer|ContextMap")
+	UPARAM(DisplayName = "Is Found")bool GetIntegerField(const FString& FieldName, UPARAM(DisplayName = "Out Value")int& Value) const;
+
+	/**
+	 * Get a named float field
+	 *
+	 * @param FieldName [in] the field name to look for
+	 * @param Value [out] the field value if found
+	 *
+	 * @return true if the field was found
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Composer|ContextMap")
+	UPARAM(DisplayName = "Is Found")bool GetNumberField(const FString& FieldName, UPARAM(DisplayName = "Out Value")float& Value) const;
 	
 	/**
 	 * Get a named string field. This can be used for any kind of value field (number, bool or string)
@@ -87,6 +115,42 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Composer|ContextMap")
 	UPARAM(DisplayName = "Is Found")bool GetStringArrayField(const FString& FieldName, UPARAM(DisplayName = "Out Value")TArray<FString>& Values) const;
+
+	/**
+	 * Set a named integer field
+	 *
+	 * @param FieldName [in] the field name to look for
+	 * @param Value [in] the field value to set
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Composer|ContextMap")
+	void SetIntegerField(const FString& FieldName, const int Value);
+
+	/**
+	 * Set a named float field
+	 *
+	 * @param FieldName [in] the field name to look for
+	 * @param Value [in] the field value to set
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Composer|ContextMap")
+	void SetNumberField(const FString& FieldName, const float Value);
+	
+	/**
+	 * Set a named string field. This can be used for any kind of value field (number, bool or string)
+	 *
+	 * @param FieldName [in] the field name to look for
+	 * @param Value [in] the field value to set
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Composer|ContextMap")
+	void SetStringField(const FString& FieldName, const FString& Value);
+
+	/**
+	 * Set a named object field
+	 *
+	 * @param FieldName [in] the field name to look for
+	 * @param Value [in] the field value to set
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Composer|ContextMap")
+	void SetObjectField(const FString& FieldName, UComposerContextMap* Value);
 
 private:
 

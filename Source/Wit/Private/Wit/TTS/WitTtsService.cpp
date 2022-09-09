@@ -155,7 +155,7 @@ void UWitTtsService::ConvertTextToSpeechWithSettings(const FTtsConfiguration& Cl
 	// Construct the body parameters. The only required one is "q" which is the text we want to convert. We could use UStructToJsonObject
 	// but since most of the arguments are optional it's easier to just set them
 
-	const TSharedPtr<FJsonObject> RequestBody = MakeShareable(new FJsonObject());
+	const TSharedPtr<FJsonObject> RequestBody = MakeShared<FJsonObject>();
 	const bool bIsTextTooLong = ClipSettings.Text.Len() > MaximumTextLengthInRequest;
 		
 	if (bIsTextTooLong)

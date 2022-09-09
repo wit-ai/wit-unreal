@@ -6,6 +6,7 @@
  */
 
 #include "Composer/Handlers/Speech/ComposerSpeechDefaultHandler.h"
+#include "Wit/Utilities/WitLog.h"
 
 /**
  * Speaks the specified phrase
@@ -40,6 +41,8 @@ bool UComposerSpeechDefaultHandler::IsSpeaking(const UComposerContextMap* Contex
 	{
 		return false;
 	}
+
+	UE_LOG(LogWit, VeryVerbose, TEXT("IsSpeaking: is loading (%d) is speaking (%d)"), Speaker->IsLoading(), Speaker->IsSpeaking());
 	
 	return Speaker->IsLoading() || Speaker->IsSpeaking();
 }
