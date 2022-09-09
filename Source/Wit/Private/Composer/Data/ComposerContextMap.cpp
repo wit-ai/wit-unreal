@@ -6,6 +6,7 @@
  */
 
 #include "Composer/Data/ComposerContextMap.h"
+#include "Dom/JsonObject.h"
 
 /**
  * Set the underlying Json object

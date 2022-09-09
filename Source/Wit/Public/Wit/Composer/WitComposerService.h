@@ -152,7 +152,7 @@ private:
 	/**
 	 * Current context map being used with the composer service
 	 */
-	UPROPERTY(Transient, BlueprintGetter=GetContextMap, BlueprintSetter=SetContextMap)
+	UPROPERTY(Transient, BlueprintGetter=GetContextMap, BlueprintSetter=SetContextMap, Category = "Composer|ContextMap")
 	UComposerContextMap* CurrentContextMap{};
 	
 };

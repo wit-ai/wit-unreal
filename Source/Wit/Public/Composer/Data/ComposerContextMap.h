@@ -10,6 +10,8 @@
 #include "CoreMinimal.h"
 #include "ComposerContextMap.generated.h"
 
+class FJsonObject;
+
 /**
  * Wrapper for accessing the context map JSON object. It caches nested Json objects as UObjects so they can be used
  * easily in blueprints
