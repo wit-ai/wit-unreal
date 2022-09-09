@@ -11,7 +11,8 @@
 #include "ComposerContextMap.generated.h"
 
 /**
- * Wrapper for accessing the context map JSON object
+ * Wrapper for accessing the context map JSON object. It caches nested Json objects as UObjects so they can be used
+ * easily in blueprints
  */
 UCLASS(NotBlueprintable)
 class WIT_API UComposerContextMap final : public UObject
@@ -22,6 +23,8 @@ public:
 
 	/**
 	 * Set the underlying Json object
+	 *
+	 * @param JsonObjectToUse [in] the underlying Json object to use
 	 */
 	void SetJsonObject(const TSharedPtr<FJsonObject> JsonObjectToUse);
 	
@@ -32,38 +35,63 @@ public:
 
 	/**
 	 * Is there a field with the give name?
+	 *
+	 * @return true if the field was found
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Composer|ContextMap")
 	UPARAM(DisplayName = "Is Found")bool HasField(const FString& FieldName) const;
 	
 	/**
-	 * Access a string field. This can be used for any kind of value field (number, bool or string)
+	 * Get a named string field. This can be used for any kind of value field (number, bool or string)
+	 *
+	 * @param FieldName [in] the field name to look for
+	 * @param Value [out] the field value if found
+	 *
+	 * @return true if the field was found
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Composer|ContextMap")
 	UPARAM(DisplayName = "Is Found")bool GetStringField(const FString& FieldName, UPARAM(DisplayName = "Out Value")FString& Value) const;
 
 	/**
-	 * Access an object field
+	 * Get a named object field
+	 *
+	 * @param FieldName [in] the field name to look for
+	 * @param Value [out] the field value if found
+	 *
+	 * @return true if the field was found
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Composer|ContextMap")
 	UPARAM(DisplayName = "Is Found")bool GetObjectField(const FString& FieldName, UPARAM(DisplayName = "Out Value")UComposerContextMap*& Value);
 
 	/**
-	 * Access a single object in an object array
+	 * Get a specific object field in a named object array
+	 *
+	 * @param FieldName [in] the field name to look for
+	 * @param ArrayIndex [in] the array index in the array to retrieve
+	 * @param Value [out] the field value if found
+	 *
+	 * @return true if the field was found
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Composer|ContextMap")
 	UPARAM(DisplayName = "Is Found")bool GetObjectFromArrayField(const FString& FieldName, const int ArrayIndex, UPARAM(DisplayName = "Out Value")UComposerContextMap*& Value);
 
 	/**
-	 * Access a string array field. This can be used for any kind of array of values field (number, bool or string)
+	 * Get a named string array. This can be used for any kind of array of values field (number, bool or string) but not objects
+	 *
+	 * @param FieldName [in] the field name to look for
+	 * @param Values [out] the field value if found
+	 *
+	 * @return true if the field was found
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Composer|ContextMap")
 	UPARAM(DisplayName = "Is Found")bool GetStringArrayField(const FString& FieldName, UPARAM(DisplayName = "Out Value")TArray<FString>& Values) const;
 
 private:
 
+	/** The underlying Json object */
 	TSharedPtr<FJsonObject> JsonObject{};
 
+	/** A cache of nested context maps. This is only lazily filled when a nested object field is accessed */
 	UPROPERTY(Transient)
 	TMap<FString, UComposerContextMap*> NestedContextMaps{};
 	

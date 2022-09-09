@@ -41,18 +41,6 @@ public:
 	 */
 	UPROPERTY(VisibleAnywhere, Category="TTS")
 	UAudioComponent* AudioComponent{};
-
-	/**
-	 * The memory cache to use
-	 */
-	UPROPERTY(VisibleAnywhere, Category="TTS")
-	UTtsMemoryCache* MemoryCache{};
-
-	/**
-	 * The storage cache to use
-	 */
-	UPROPERTY(VisibleAnywhere, Category="TTS")
-	UTtsStorageCache* StorageCache{};
 	
 	/**
 	 * Speak a phrase with the default configuration
@@ -73,7 +61,7 @@ public:
 	/**
 	 * Stop speaking
 	 */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category="TTS")
 	void Stop();
 	
 	/**
@@ -81,7 +69,7 @@ public:
 	 *
 	 * @return true if we are speaking
 	 */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category="TTS")
 	bool IsSpeaking() const;
 
 	/**
@@ -89,7 +77,7 @@ public:
 	 *
 	 * @return true if we are loading
 	 */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category="TTS")
 	bool IsLoading() const;
 	
 protected:
