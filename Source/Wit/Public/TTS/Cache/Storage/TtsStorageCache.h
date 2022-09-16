@@ -83,13 +83,13 @@ public:
 	/**
 	 * Cache directory relative to the base cache path
 	 */	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TTS Cache|Storage")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Location")
 	FString CacheDirectory{TEXT("Wit/Cache")};
 
 	/**
 	 * The default location to use for cached clips. Can be overriden on a per clip basis
 	 */	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TTS Cache|Storage")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Location")
 	ETtsStorageCacheLocation DefaultCacheLocation{ETtsStorageCacheLocation::None};
 
 private:

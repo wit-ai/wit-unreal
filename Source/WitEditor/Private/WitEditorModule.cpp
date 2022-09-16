@@ -12,6 +12,7 @@
 #include "Customization/WitIntentPropertyCustomization.h"
 #include "Customization/TtsConfigurationDetailCustomization.h"
 #include "PropertyEditor/Public/PropertyEditorModule.h"
+#include "Wit/TTS/WitTtsExperience.h"
 
 #define LOCTEXT_NAMESPACE "FWitEditorModule"
 
@@ -39,7 +40,7 @@ void FWitEditorModule::StartupModule()
 	// Register a custom class layout for the WitTextToSpeechAPI
 	// so that we can easily debug and use Wit.ai
 	
-	PropertyEditorModule.RegisterCustomClassLayout( UWitTtsService::StaticClass()->GetFName(), FOnGetDetailCustomizationInstance::CreateStatic(&FTtsConfigurationDetailCustomization::MakeInstance) );
+	PropertyEditorModule.RegisterCustomClassLayout( ATtsExperience::StaticClass()->GetFName(), FOnGetDetailCustomizationInstance::CreateStatic(&FTtsConfigurationDetailCustomization::MakeInstance) );
 
 	// After all customizations inform the property module to update
 	
@@ -61,7 +62,7 @@ void FWitEditorModule::ShutdownModule()
 		
 		PropertyEditorModule.UnregisterCustomClassLayout(UVoiceEvents::StaticClass()->GetFName());
 		PropertyEditorModule.UnregisterCustomPropertyTypeLayout(FWitIntent::StaticStruct()->GetFName());
-		PropertyEditorModule.UnregisterCustomClassLayout(UWitTtsService::StaticClass()->GetFName());
+		PropertyEditorModule.UnregisterCustomClassLayout(AWitTtsExperience::StaticClass()->GetFName());
 
 		PropertyEditorModule.NotifyCustomizationModuleChanged();
 	}

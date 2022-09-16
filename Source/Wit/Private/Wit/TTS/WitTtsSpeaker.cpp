@@ -6,10 +6,9 @@
  */
 
 #include "Wit/TTS/WitTtsSpeaker.h"
-
 #include "Components/AudioComponent.h"
-#include "TTS/Cache/Memory/TtsMemoryCache.h"
-#include "TTS/Cache/Storage/TtsStorageCache.h"
+#include "Wit/Utilities/WitHelperUtilities.h"
+#include "Wit/Utilities/WitLog.h"
 
 /**
  * Wit speaker constructor
@@ -18,10 +17,6 @@ AWitTtsSpeaker::AWitTtsSpeaker()
 	: Super()
 {
 	PrimaryActorTick.bCanEverTick = false;
-
-	WitTtsService = CreateDefaultSubobject<UWitTtsService>(TEXT("Service"));
-	WitTtsService->MemoryCache = CreateDefaultSubobject<UTtsMemoryCache>(TEXT("MemoryCache"));
-	WitTtsService->StorageCache = CreateDefaultSubobject<UTtsStorageCache>(TEXT("StorageCache"));
 	
 	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComponent"));
 }
@@ -30,13 +25,17 @@ AWitTtsSpeaker::AWitTtsSpeaker()
  * Called when play begins
  */
 void AWitTtsSpeaker::BeginPlay()
-{
-	Super::BeginPlay();
-
-	if (WitTtsService != nullptr)
+{	
+	TtsExperience = FWitHelperUtilities::FindTtsExperience(GetWorld(), TtsExperienceTag);
+	
+	if (TtsExperience != nullptr && TtsExperience->EventHandler != nullptr)
 	{
-		WitTtsService->OnSynthesizeResponse.AddUniqueDynamic(this, &AWitTtsSpeaker::OnSynthesizeResponse);
+		UE_LOG(LogWit, Verbose, TEXT("BeginPlay: adding synthesize response callback"));
+		
+		TtsExperience->EventHandler->OnSynthesizeResponse.AddUniqueDynamic(this, &AWitTtsSpeaker::OnSynthesizeResponse);
 	}
+
+	Super::BeginPlay();
 }
 
 /**
@@ -46,9 +45,9 @@ void AWitTtsSpeaker::BeginDestroy()
 {
 	Super::BeginDestroy();
 
-	if (WitTtsService != nullptr)
+	if (TtsExperience != nullptr && TtsExperience->EventHandler != nullptr)
 	{
-		WitTtsService->OnSynthesizeResponse.RemoveDynamic(this, &AWitTtsSpeaker::OnSynthesizeResponse);
+		TtsExperience->EventHandler->OnSynthesizeResponse.RemoveDynamic(this, &AWitTtsSpeaker::OnSynthesizeResponse);
 	}
 }
 
@@ -57,11 +56,11 @@ void AWitTtsSpeaker::BeginDestroy()
  *
  * @param TextToSpeak [in] the text to speak
  */
-void AWitTtsSpeaker::Speak(const FString& TextToSpeak)
+void AWitTtsSpeaker::Speak(const FString& TextToSpeak) const
 {
-	if (WitTtsService != nullptr)
+	if (TtsExperience != nullptr)
 	{
-		WitTtsService->ConvertTextToSpeech(TextToSpeak);
+		TtsExperience->ConvertTextToSpeech(TextToSpeak);
 	}
 }
 
@@ -71,12 +70,48 @@ void AWitTtsSpeaker::Speak(const FString& TextToSpeak)
  *
  * @param ClipSettings [in] the settings to use
  */
-void AWitTtsSpeaker::SpeakWithSettings(const FTtsConfiguration& ClipSettings)
+void AWitTtsSpeaker::SpeakWithSettings(const FTtsConfiguration& ClipSettings) const
 {
-	if (WitTtsService != nullptr)
+	if (TtsExperience != nullptr)
 	{
-		WitTtsService->ConvertTextToSpeechWithSettings(ClipSettings);
+		TtsExperience->ConvertTextToSpeechWithSettings(ClipSettings);
 	}
+}
+
+/**
+ * Stop speaking
+ */
+void AWitTtsSpeaker::Stop()
+{
+	if (AudioComponent->IsPlaying())
+	{
+		AudioComponent->Stop();
+	}
+}
+
+/**
+ * Are we currently speaking?
+ *
+ * @return true if we are speaking
+ */
+bool AWitTtsSpeaker::IsSpeaking() const
+{
+	return AudioComponent->IsPlaying();
+}
+
+/**
+ * Are we currently loading?
+ *
+ * @return true if we are loading
+ */
+bool AWitTtsSpeaker::IsLoading() const
+{
+	if (TtsExperience != nullptr)
+	{
+		return TtsExperience->IsRequestInProgress();
+	}
+
+	return false;
 }
 
 /**

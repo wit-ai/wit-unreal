@@ -7,16 +7,14 @@
 
 #pragma once
 
-#include "TTS/Cache/Memory/TtsMemoryCache.h"
-#include "TTS/Cache/Storage/TtsStorageCache.h"
-#include "Wit/TTS/WitTtsService.h"
+#include "WitTtsExperience.h"
 #include "GameFramework/Actor.h"
 #include "WitTtsSpeaker.generated.h"
 
 class UAudioComponent;
 
 /**
- * The base class of TtsSpeaker
+ * Represents a speaker
  */
 UCLASS( ClassGroup=(Meta) )
 class WIT_API AWitTtsSpeaker : public AActor
@@ -31,44 +29,52 @@ public:
 	AWitTtsSpeaker();
 
 	/**
-	 * The wit TTS service
+	 * The tag of the TTS experience to use in case there is more than one. If the tag is empty use the first found
 	 */
-	UPROPERTY(VisibleAnywhere, Category="TTS")
-	UWitTtsService* WitTtsService{};
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="TTS|Experience")
+	FName TtsExperienceTag{};
 
 	/**
 	 * The audio source to play sounds
 	 */
-	UPROPERTY(VisibleAnywhere, Category="TTS")
+	UPROPERTY(VisibleAnywhere, Category="TTS|Audio")
 	UAudioComponent* AudioComponent{};
-
-	/**
-	 * The memory cache to use
-	 */
-	UPROPERTY(VisibleAnywhere, Category="TTS")
-	UTtsMemoryCache* MemoryCache{};
-
-	/**
-	 * The storage cache to use
-	 */
-	UPROPERTY(VisibleAnywhere, Category="TTS")
-	UTtsStorageCache* StorageCache{};
 	
 	/**
 	 * Speak a phrase with the default configuration
 	 *
 	 * @param TextToSpeak [in] the text to speak
 	 */
-	UFUNCTION(BlueprintCallable, Category="TTS")
-	void Speak(const FString& TextToSpeak);
+	UFUNCTION(BlueprintCallable, Category="TTS|Speech")
+	void Speak(const FString& TextToSpeak) const;
+
+	/**
+	 * The memory cache to use
+	 */
+	UFUNCTION(BlueprintCallable, Category="TTS|Speech")
+	void SpeakWithSettings(const FTtsConfiguration& ClipSettings) const;
+
+	/**
+	 * The storage cache to use
+	 */
+	UFUNCTION(BlueprintCallable, Category="TTS|Speech")
+	void Stop();
+	
+	/**
+	 * Speak a phrase with the default configuration
+	 *
+	 * @param TextToSpeak [in] the text to speak
+	 */
+	UFUNCTION(BlueprintCallable, Category="TTS|Speech")
+	bool IsSpeaking() const;
 
 	/**
 	 * Speak a phrase with custom settings
 	 *
 	 * @param ClipSettings [in] the settings to use
 	 */
-	UFUNCTION(BlueprintCallable, Category="TTS")
-	void SpeakWithSettings(const FTtsConfiguration& ClipSettings);
+	UFUNCTION(BlueprintCallable, Category="TTS|Speech")
+	bool IsLoading() const;
 	
 protected:
 
@@ -83,5 +89,13 @@ protected:
 	 */
 	UFUNCTION()
 	void OnSynthesizeResponse(const bool bIsSuccessful, USoundWave* SoundWave);
+
+private:
+	
+	/**
+	 * The TTS experience that the speaker will use
+	 */
+	UPROPERTY(Transient)
+	ATtsExperience* TtsExperience{};
 	
 };

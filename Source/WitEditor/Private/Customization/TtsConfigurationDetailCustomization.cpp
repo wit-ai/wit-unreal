@@ -6,14 +6,11 @@
  */
 
 #include "TtsConfigurationDetailCustomization.h"
-#include "Wit/TTS/WitTtsService.h"
-
 #include "Input/Reply.h"
-
 #include "PropertyEditor/Public/DetailLayoutBuilder.h"
 #include "PropertyEditor/Public/DetailCategoryBuilder.h"
 #include "PropertyEditor/Public/DetailWidgetRow.h"
-
+#include "TTS/Experience/TtsExperience.h"
 #include "Widgets/Input/SButton.h"
 
 #define LOCTEXT_NAMESPACE "FWitEditorModule"
@@ -36,26 +33,13 @@ TSharedRef<IDetailCustomization> FTtsConfigurationDetailCustomization::MakeInsta
 void FTtsConfigurationDetailCustomization::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
 {
 	DetailBuilder.GetObjectsBeingCustomized(ObjectsToEdit);
-
-	// Add a text entry and button so that we can easily send message requests to the Wit API to see the response
 	
-	IDetailCategoryBuilder& CacheCategory = DetailBuilder.EditCategory("TTS Cache");
-
-	CacheCategory.AddCustomRow(LOCTEXT("Keyword", "Delete"))
-		.ValueContent()
-		[
-			SNew(SButton)
-			.Text(LOCTEXT("DeleteButtonText", "Delete Cached Files"))
-			.HAlign(HAlign_Center)
-			.OnClicked_Raw(this, &FTtsConfigurationDetailCustomization::OnDeleteButtonClicked)
-		];
-
 	// Add a text entry and button so that we can easily send message requests to the Wit API to see the response. Disabled for now until play sound works
 
-	IDetailCategoryBuilder& ConfigurationCategory = DetailBuilder.EditCategory("TTS", FText::GetEmpty(), ECategoryPriority::Important);
+	IDetailCategoryBuilder& ActionCategory = DetailBuilder.EditCategory("Action", FText::GetEmpty(), ECategoryPriority::Important);
 
 #if defined(WIT_ENABLE_SYNTHESIZE_IN_EDITOR)
-	ConfigurationCategory.AddCustomRow(LOCTEXT("Keyword", "Send"))
+	ActionCategory.AddCustomRow(LOCTEXT("Keyword", "Send"))
 		.ValueContent()
 		[
 			SNew(SButton)
@@ -64,10 +48,21 @@ void FTtsConfigurationDetailCustomization::CustomizeDetails(IDetailLayoutBuilder
 			.OnClicked_Raw(this, &FTtsConfigurationDetailCustomization::OnSendButtonClicked)
 		];
 #endif
+
+	// Add a text entry and button so that we can easily send message requests to the Wit API to see the response
 	
+	ActionCategory.AddCustomRow(LOCTEXT("Keyword", "Delete"))
+		.ValueContent()
+		[
+			SNew(SButton)
+			.Text(LOCTEXT("DeleteButtonText", "Delete Cached Files"))
+			.HAlign(HAlign_Center)
+			.OnClicked_Raw(this, &FTtsConfigurationDetailCustomization::OnDeleteButtonClicked)
+		];
+
 	// Add a button to fetch all the available voices
 
-	ConfigurationCategory.AddCustomRow(LOCTEXT("Keyword", "Voices"))
+	ActionCategory.AddCustomRow(LOCTEXT("Keyword", "Voices"))
 	.ValueContent()
 	[
 		SNew(SButton)
@@ -78,7 +73,7 @@ void FTtsConfigurationDetailCustomization::CustomizeDetails(IDetailLayoutBuilder
 
 	// Add a button to create a new voice preset
 
-	ConfigurationCategory.AddCustomRow(LOCTEXT("Keyword", "Presets"))
+	ActionCategory.AddCustomRow(LOCTEXT("Keyword", "Presets"))
 	.ValueContent()
 	[
 		SNew(SButton)
@@ -125,28 +120,14 @@ FReply FTtsConfigurationDetailCustomization::OnSendButtonClicked()
 		// Send off a message request to Wit.ai to get the response. The response can then be used to help setup
 		// response matchers easily
 
-		UWitTtsService* TtsService = Cast<UWitTtsService>(Object.Get());
+		ATtsExperience* TtsExperience = Cast<ATtsExperience>(Object.Get());
 		
-		if (TtsService == nullptr)
+		if (TtsExperience == nullptr)
 		{
 			continue;
 		}
 
-		const bool bHasConfiguration = TtsService->Configuration != nullptr && !TtsService->Configuration->Application.ClientAccessToken.IsEmpty();
-	
-		if (!bHasConfiguration)
-		{
-			continue;
-		}
-
-		const bool bHasVoicePreset = TtsService->VoicePreset != nullptr;
-	
-		if (!bHasVoicePreset)
-		{
-			continue;
-		}
-
-		if (TtsService->IsRequestInProgress())
+		if (TtsExperience->IsRequestInProgress())
 		{
 			continue;
 		}
@@ -154,7 +135,7 @@ FReply FTtsConfigurationDetailCustomization::OnSendButtonClicked()
         // At the moment all this will do is put the clip into the caches. To be useful it needs to be able to play the 
         // sound so the user can hear it. Need to investigate how to do this
         
-		TtsService->ConvertTextToSpeechWithSettings(TtsService->VoicePreset->Synthesize);
+		TtsExperience->ConvertTextToSpeechWithSettings(TtsExperience->VoicePreset->Synthesize);
 		
 		break;
 	}
@@ -178,9 +159,9 @@ FReply FTtsConfigurationDetailCustomization::OnDeleteButtonClicked()
 			continue;
 		}
 		
-		UWitTtsService* TtsService = Cast<UWitTtsService>(Object.Get());
+		ATtsExperience* TtsExperience = Cast<ATtsExperience>(Object.Get());
 
-		if (TtsService == nullptr)
+		if (TtsExperience == nullptr)
 		{
 			continue;
 		}
@@ -188,8 +169,8 @@ FReply FTtsConfigurationDetailCustomization::OnDeleteButtonClicked()
 		// This only deletes files not assets. Deleting assets from the content folder should be left to the user in the content browser
 		// as it's potentially destructive
 		
-		TtsService->DeleteAllClips(ETtsStorageCacheLocation::Persistent);
-		TtsService->DeleteAllClips(ETtsStorageCacheLocation::Temporary);
+		TtsExperience->DeleteAllClips(ETtsStorageCacheLocation::Persistent);
+		TtsExperience->DeleteAllClips(ETtsStorageCacheLocation::Temporary);
 		
 		break;
 	}
@@ -213,14 +194,19 @@ FReply FTtsConfigurationDetailCustomization::OnFetchVoicesButtonClicked()
 			continue;
 		}
 		
-		UWitTtsService* TtsService = Cast<UWitTtsService>(Object.Get());
+		ATtsExperience* TtsExperience = Cast<ATtsExperience>(Object.Get());
 
-		if (TtsService == nullptr)
+		if (TtsExperience == nullptr)
+		{
+			continue;
+		}
+
+		if (TtsExperience->IsRequestInProgress())
 		{
 			continue;
 		}
 		
-		TtsService->FetchAvailableVoices();
+		TtsExperience->FetchAvailableVoices();
 		
 		break;
 	}
@@ -244,16 +230,16 @@ FReply FTtsConfigurationDetailCustomization::OnCreatePresetButtonClicked()
 			continue;
 		}
 
-		UWitTtsService* TtsService = Cast<UWitTtsService>(Object.Get());
+		ATtsExperience* TtsExperience = Cast<ATtsExperience>(Object.Get());
 
-		if (TtsService == nullptr)
+		if (TtsExperience == nullptr)
 		{
 			continue;
 		}
 
 		// Create a preset asset from all the combinations of voice name + style
 		
-		for (const FWitTtsVoice& AvailableVoice: TtsService->AvailableVoices.En_US)
+		for (const FWitTtsVoice& AvailableVoice: TtsExperience->EventHandler->VoicesResponse.En_US)
 		{
 			const FString PresetAssetName = AvailableVoice.Name;
             const FString PackagePath = FString::Printf(TEXT("/Wit/Presets/%s"), *PresetAssetName);

@@ -9,6 +9,7 @@
 
 #include "CoreMinimal.h"
 #include "TTS/Configuration/TtsConfiguration.h"
+#include "TTS/Experience/TtsExperience.h"
 #include "Voice/Experience/VoiceExperience.h"
 
 struct FWitEntity;
@@ -28,9 +29,16 @@ public:
 	/**
 	 * Finds the WitVoiceExperience in the scene. This is slow so do not call every frame
 	 * 
-	 * @return pointer to the WitAPI component if found otherwise null
+	 * @return pointer to the Voice Experience actor if found otherwise null
 	 */
 	static AVoiceExperience* FindVoiceExperience(const UWorld* World, const FName& Tag);
+
+	/**
+	 * Finds the WitTtsExperience in the scene. This is slow so do not call every frame
+	 * 
+	 * @return pointer to the TTS Experience actor if found otherwise null
+	 */
+	static ATtsExperience* FindTtsExperience(const UWorld* World, const FName& Tag);
 	
 	/** 
 	 * Tries to find an entity in the response with the given name

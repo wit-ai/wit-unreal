@@ -6,10 +6,7 @@
  */
 
 #include "Wit/Utilities/WitHelperUtilities.h"
-
 #include "JsonObjectConverter.h"
-#include "Wit/Voice/WitVoiceExperience.h"
-#include "Wit/Voice/WitVoiceService.h"
 #include "Kismet/GameplayStatics.h"
 #include "Serialization/BufferArchive.h"
 #include "Wit/Utilities/WitLog.h"
@@ -17,7 +14,7 @@
 /**
  * Finds the WitVoiceExperience in the scene. This is slow so do not call every frame
  * 
- * @return pointer to the WitAPI component if found otherwise null
+ * @return pointer to the Voice Experience actor if found otherwise null
  */
 AVoiceExperience* FWitHelperUtilities::FindVoiceExperience(const UWorld* World, const FName& Tag)
 {
@@ -28,7 +25,7 @@ AVoiceExperience* FWitHelperUtilities::FindVoiceExperience(const UWorld* World, 
 
 	if (bIsValidTag)
 	{
-		UE_LOG(LogWit, Verbose, TEXT("FindWitVoiceExperience: Trying to find Voice Experience with tag %s"), *Tag.ToString());
+		UE_LOG(LogWit, Verbose, TEXT("FindVoiceExperience: Trying to find Voice Experience with tag %s"), *Tag.ToString());
 		
 		TArray<AActor*> VoiceExperiences;
 		
@@ -40,7 +37,7 @@ AVoiceExperience* FWitHelperUtilities::FindVoiceExperience(const UWorld* World, 
 		 
 		if (bIsVoiceExperienceWithMatchingTag)
 		{
-			UE_LOG(LogWit, Verbose, TEXT("FindWitVoiceExperience: Found Voice Experience with tag %s"), *Tag.ToString());
+			UE_LOG(LogWit, Verbose, TEXT("FindVoiceExperience: Found Voice Experience with tag %s"), *Tag.ToString());
 			
 			VoiceExperience = static_cast<AVoiceExperience*>(VoiceExperiences[0]);
 		}
@@ -57,11 +54,61 @@ AVoiceExperience* FWitHelperUtilities::FindVoiceExperience(const UWorld* World, 
 	
 	if (VoiceExperience == nullptr)
 	{
-		UE_LOG(LogWit, Warning, TEXT("FindWitVoiceExperience: No Voice Experience actor found"));
+		UE_LOG(LogWit, Warning, TEXT("FindVoiceExperience: No Voice Experience actor found"));
 		return nullptr;
 	}
 
 	return VoiceExperience;
+}
+
+/**
+ * Finds the WitTtsExperience in the scene. This is slow so do not call every frame
+ * 
+ * @return pointer to the TTS Experience actor if found otherwise null
+ */
+ATtsExperience* FWitHelperUtilities::FindTtsExperience(const UWorld* World, const FName& Tag)
+{
+	check(World != nullptr);
+
+	ATtsExperience* TtsExperience = nullptr;
+	const bool bIsValidTag = !Tag.IsNone() && Tag.IsValid();
+
+	if (bIsValidTag)
+	{
+		UE_LOG(LogWit, Verbose, TEXT("FindTtsExperience: Trying to find TTS Experience with tag %s"), *Tag.ToString());
+		
+		TArray<AActor*> TtsExperiences;
+		
+		UGameplayStatics::GetAllActorsOfClassWithTag(World, ATtsExperience::StaticClass(), Tag, TtsExperiences);
+
+		// If more than 1 match then just use the first
+
+		const bool bIsVoiceExperienceWithMatchingTag = TtsExperiences.Num() > 0;
+		 
+		if (bIsVoiceExperienceWithMatchingTag)
+		{
+			UE_LOG(LogWit, Verbose, TEXT("FindTtsExperience: Found TTS Experience with tag %s"), *Tag.ToString());
+			
+			TtsExperience = static_cast<ATtsExperience*>(TtsExperiences[0]);
+		}
+	}
+
+	// If we don't find a TTS experience with a matching tag then we try to find the first TTS experience
+	
+	if (TtsExperience == nullptr)
+	{
+		TtsExperience = static_cast<ATtsExperience*>(UGameplayStatics::GetActorOfClass(World, ATtsExperience::StaticClass()));
+	}
+
+	// If we still find nothing then not much we can do
+	
+	if (TtsExperience == nullptr)
+	{
+		UE_LOG(LogWit, Warning, TEXT("FindTtsExperience: No TTS Experience actor found"));
+		return nullptr;
+	}
+
+	return TtsExperience;
 }
 
 /**
