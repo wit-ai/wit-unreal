@@ -27,17 +27,23 @@ public:
 	 * Sets default values for this actor's properties
 	 */
 	AWitTtsSpeaker();
+	
+	/**
+	 * The Wit TTS Voice Preset that the speaker will use
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Speaker|Configuration")
+	UTtsVoicePresetAsset* VoicePreset{};
 
 	/**
 	 * The tag of the TTS experience to use in case there is more than one. If the tag is empty use the first found
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="TTS|Experience")
-	FName TtsExperienceTag{};
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Speaker|Configuration")
+	FName ExperienceTag{};
 
 	/**
 	 * The audio source to play sounds
 	 */
-	UPROPERTY(VisibleAnywhere, Category="TTS|Audio")
+	UPROPERTY(VisibleAnywhere, Category="Speaker|Audio")
 	UAudioComponent* AudioComponent{};
 	
 	/**
@@ -45,19 +51,19 @@ public:
 	 *
 	 * @param TextToSpeak [in] the text to speak
 	 */
-	UFUNCTION(BlueprintCallable, Category="TTS|Speech")
+	UFUNCTION(BlueprintCallable, Category="Speaker")
 	void Speak(const FString& TextToSpeak) const;
 
 	/**
 	 * The memory cache to use
 	 */
-	UFUNCTION(BlueprintCallable, Category="TTS|Speech")
+	UFUNCTION(BlueprintCallable, Category="Speaker")
 	void SpeakWithSettings(const FTtsConfiguration& ClipSettings) const;
 
 	/**
 	 * The storage cache to use
 	 */
-	UFUNCTION(BlueprintCallable, Category="TTS|Speech")
+	UFUNCTION(BlueprintCallable, Category="Speaker")
 	void Stop();
 	
 	/**
@@ -65,7 +71,7 @@ public:
 	 *
 	 * @param TextToSpeak [in] the text to speak
 	 */
-	UFUNCTION(BlueprintCallable, Category="TTS|Speech")
+	UFUNCTION(BlueprintCallable, Category="Speaker")
 	bool IsSpeaking() const;
 
 	/**
@@ -73,7 +79,7 @@ public:
 	 *
 	 * @param ClipSettings [in] the settings to use
 	 */
-	UFUNCTION(BlueprintCallable, Category="TTS|Speech")
+	UFUNCTION(BlueprintCallable, Category="Speaker")
 	bool IsLoading() const;
 	
 protected:

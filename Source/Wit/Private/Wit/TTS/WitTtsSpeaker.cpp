@@ -26,7 +26,7 @@ AWitTtsSpeaker::AWitTtsSpeaker()
  */
 void AWitTtsSpeaker::BeginPlay()
 {	
-	TtsExperience = FWitHelperUtilities::FindTtsExperience(GetWorld(), TtsExperienceTag);
+	TtsExperience = FWitHelperUtilities::FindTtsExperience(GetWorld(), ExperienceTag);
 	
 	if (TtsExperience != nullptr && TtsExperience->EventHandler != nullptr)
 	{
@@ -58,7 +58,20 @@ void AWitTtsSpeaker::BeginDestroy()
  */
 void AWitTtsSpeaker::Speak(const FString& TextToSpeak) const
 {
-	if (TtsExperience != nullptr)
+	if (TtsExperience == nullptr)
+	{
+		return;
+	}
+
+	if (VoicePreset != nullptr)
+	{
+		FTtsConfiguration ClipSettings = VoicePreset->Synthesize;
+		
+		ClipSettings.Text = TextToSpeak;
+		
+		TtsExperience->ConvertTextToSpeechWithSettings(ClipSettings);
+	}
+	else
 	{
 		TtsExperience->ConvertTextToSpeech(TextToSpeak);
 	}
