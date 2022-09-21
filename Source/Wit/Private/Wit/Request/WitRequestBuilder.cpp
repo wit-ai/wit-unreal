@@ -18,6 +18,7 @@ const FString FWitRequestBuilder::EndpointSynthesize = TEXT("synthesize");
 const FString FWitRequestBuilder::EndpointVoices = TEXT("voices");
 const FString FWitRequestBuilder::EndpointConverse = TEXT("converse");
 const FString FWitRequestBuilder::EndpointEvent = TEXT("event");
+const FString FWitRequestBuilder::EndpointDictation = TEXT("dictation");
 
 /** Supported wit.ai parameters */
 const FString FWitRequestBuilder::ParameterTextKey = TEXT("&q=");
@@ -59,7 +60,8 @@ const FString FWitRequestBuilder::EndianValueBig = TEXT("big");
  * @param Version the version string we want to use. This can be left empty in which case it will use the latest version
  * @param CustomUrl the custom base URL to use. Normally this should be left empty to use the default Wit.ai URL
  */
-void FWitRequestBuilder::SetRequestConfigurationWithDefaults(FWitRequestConfiguration& Configuration, const EWitRequestEndpoint Endpoint, const FString& ServerAuthToken, const FString& Version, const FString& CustomUrl)
+void FWitRequestBuilder::SetRequestConfigurationWithDefaults(FWitRequestConfiguration& Configuration, const EWitRequestEndpoint Endpoint,
+                                                             const FString& ServerAuthToken, const FString& Version, const FString& CustomUrl)
 {
 	if (!CustomUrl.IsEmpty())
 	{
@@ -69,7 +71,7 @@ void FWitRequestBuilder::SetRequestConfigurationWithDefaults(FWitRequestConfigur
 	{
 		Configuration.BaseUrl = UrlDefault;
 	}
-	
+
 	Configuration.Version = Version;
 	Configuration.ServerAuthToken = ServerAuthToken;
 	Configuration.Endpoint = GetEndpointString(Endpoint);
@@ -77,7 +79,7 @@ void FWitRequestBuilder::SetRequestConfigurationWithDefaults(FWitRequestConfigur
 	// TODO: POST/GET should be stored somewhere rather than done with a conditional
 
 	const bool bShouldUseGetVerb = Endpoint == EWitRequestEndpoint::Message || Endpoint == EWitRequestEndpoint::Voices;
-	
+
 	if (bShouldUseGetVerb)
 	{
 		Configuration.Verb = TEXT("GET");
@@ -87,7 +89,7 @@ void FWitRequestBuilder::SetRequestConfigurationWithDefaults(FWitRequestConfigur
 		Configuration.Verb = TEXT("POST");
 	}
 
-	Configuration.bShouldUseChunkedTransfer = Endpoint == EWitRequestEndpoint::Speech || Endpoint == EWitRequestEndpoint::Converse;
+	Configuration.bShouldUseChunkedTransfer = Endpoint == EWitRequestEndpoint::Speech || Endpoint == EWitRequestEndpoint::Converse || Endpoint == EWitRequestEndpoint::Dictation;
 }
 
 /**
@@ -99,8 +101,8 @@ void FWitRequestBuilder::SetRequestConfigurationWithDefaults(FWitRequestConfigur
  */
 void FWitRequestBuilder::AddParameter(FWitRequestConfiguration& Configuration, const EWitParameter ParameterKey, const FString& ParameterValue)
 {
-	const FString& ParameterKeyString( GetParameterKeyString(ParameterKey));
-	
+	const FString& ParameterKeyString(GetParameterKeyString(ParameterKey));
+
 	check(!Configuration.Parameters.Contains(ParameterKeyString));
 
 	Configuration.Parameters.Emplace(ParameterKeyString, ParameterValue);
@@ -194,34 +196,38 @@ const FString& FWitRequestBuilder::GetEndpointString(const EWitRequestEndpoint E
 	switch (Endpoint)
 	{
 	case EWitRequestEndpoint::Speech:
-	{
-		return EndpointSpeech;
-	}
+		{
+			return EndpointSpeech;
+		}
 	case EWitRequestEndpoint::Message:
-	{
-		return EndpointMessage;
-	}
+		{
+			return EndpointMessage;
+		}
 	case EWitRequestEndpoint::Synthesize:
-	{
-		return EndpointSynthesize;
-	}
+		{
+			return EndpointSynthesize;
+		}
 	case EWitRequestEndpoint::Voices:
-	{
-		return EndpointVoices;
-	}
+		{
+			return EndpointVoices;
+		}
 	case EWitRequestEndpoint::Converse:
-	{
-		return EndpointConverse;
-	}
+		{
+			return EndpointConverse;
+		}
 	case EWitRequestEndpoint::Event:
-	{
-		return EndpointEvent;
-	}
+		{
+			return EndpointEvent;
+		}
+	case EWitRequestEndpoint::Dictation:
+		{
+			return EndpointDictation;
+		}
 	default:
-	{
-		check(0);
-		return EndpointSpeech;
-	}
+		{
+			check(0);
+			return EndpointSpeech;
+		}
 	}
 }
 
@@ -245,7 +251,7 @@ const FString& FWitRequestBuilder::GetParameterKeyString(const EWitParameter Par
 		}
 	case EWitParameter::ContextMap:
 		{
-			return ParameterContextMap;		
+			return ParameterContextMap;
 		}
 	default:
 		{
@@ -266,22 +272,22 @@ const FString& FWitRequestBuilder::GetFormatString(const EWitRequestFormat Forma
 	switch (Format)
 	{
 	case EWitRequestFormat::Raw:
-	{
-		return FormatValueRaw;
-	}
+		{
+			return FormatValueRaw;
+		}
 	case EWitRequestFormat::Wav:
-	{
-		return FormatValueWav;
-	}
+		{
+			return FormatValueWav;
+		}
 	case EWitRequestFormat::Json:
-	{
-		return FormatValueJson;		
-	}
+		{
+			return FormatValueJson;
+		}
 	default:
-	{
-		check(0);
-		return FormatValueJson;
-	}
+		{
+			check(0);
+			return FormatValueJson;
+		}
 	}
 }
 
@@ -296,22 +302,22 @@ const FString& FWitRequestBuilder::GetEncodingString(const EWitRequestEncoding E
 	switch (Encoding)
 	{
 	case EWitRequestEncoding::FloatingPoint:
-	{
-		return EncodingValueFloatingPoint;
-	}
+		{
+			return EncodingValueFloatingPoint;
+		}
 	case EWitRequestEncoding::SignedInteger:
-	{
-		return EncodingValueSignedInteger;
-	}
+		{
+			return EncodingValueSignedInteger;
+		}
 	case EWitRequestEncoding::UnsignedInteger:
-	{
-		return EncodingValueUnsignedInteger;
-	}
+		{
+			return EncodingValueUnsignedInteger;
+		}
 	default:
-	{
-		check(0);
-		return EncodingValueSignedInteger;
-	}
+		{
+			check(0);
+			return EncodingValueSignedInteger;
+		}
 	}
 }
 
@@ -326,22 +332,22 @@ const FString& FWitRequestBuilder::GetSampleSizeString(const EWitRequestSampleSi
 	switch (SampleSize)
 	{
 	case EWitRequestSampleSize::Byte:
-	{
-		return SampleSizeValueByte;
-	}
+		{
+			return SampleSizeValueByte;
+		}
 	case EWitRequestSampleSize::Word:
-	{
-		return SampleSizeValueWord;
-	}
+		{
+			return SampleSizeValueWord;
+		}
 	case EWitRequestSampleSize::DoubleWord:
-	{
-		return SampleSizeValueDword;
-	}
+		{
+			return SampleSizeValueDword;
+		}
 	default:
-	{
-		check(0);
-		return SampleSizeValueWord;
-	}
+		{
+			check(0);
+			return SampleSizeValueWord;
+		}
 	}
 }
 
@@ -356,17 +362,17 @@ const FString& FWitRequestBuilder::GetEndianString(const EWitRequestEndian Endia
 	switch (Endian)
 	{
 	case EWitRequestEndian::Little:
-	{
-		return EndianValueLittle;
-	}
+		{
+			return EndianValueLittle;
+		}
 	case EWitRequestEndian::Big:
-	{
-		return EndianValueBig;
-	}
+		{
+			return EndianValueBig;
+		}
 	default:
-	{
-		check(0);
-		return EndianValueLittle;
-	}
+		{
+			check(0);
+			return EndianValueLittle;
+		}
 	}
 }

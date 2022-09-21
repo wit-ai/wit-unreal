@@ -49,9 +49,11 @@ struct WIT_API FVoiceConfiguration
 	float KeepAliveTime{2.0f};
 	
 	/**
-	 * If the voice input goes on longer than this then we automatically deactivate. 20 seconds is the hard limit for Wit.ai processing
+	 * If the voice input goes on longer than this then we automatically deactivate.
+	 * 20 seconds is the hard limit for the /speech endpoint
+	 * 300 seconds is the hard limit for the /dictation endpoint
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Keep Alive", meta=(ClampMin = 0, ClampMax = 20))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Keep Alive", meta=(ClampMin = 0, ClampMax = 300))
 	float MaximumRecordingTime{20.0f};
 
 	/**
