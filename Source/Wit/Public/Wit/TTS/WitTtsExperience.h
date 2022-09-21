@@ -15,7 +15,7 @@
  * Top level actor for Wit TTS interactions
  */
 UCLASS( ClassGroup=(Meta), Blueprintable )
-class WIT_API AWitTtsExperience final : public ATtsExperience
+class WIT_API AWitTtsExperience : public ATtsExperience
 {
 	GENERATED_BODY()
 

@@ -33,13 +33,13 @@ TSharedRef<IDetailCustomization> FTtsConfigurationDetailCustomization::MakeInsta
 void FTtsConfigurationDetailCustomization::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
 {
 	DetailBuilder.GetObjectsBeingCustomized(ObjectsToEdit);
-	
+
 	// Add a text entry and button so that we can easily send message requests to the Wit API to see the response. Disabled for now until play sound works
 
-	IDetailCategoryBuilder& ActionCategory = DetailBuilder.EditCategory("Action", FText::GetEmpty(), ECategoryPriority::Important);
+	IDetailCategoryBuilder& ConfigurationCategory = DetailBuilder.EditCategory("TTS", FText::GetEmpty(), ECategoryPriority::Important);
 
 #if defined(WIT_ENABLE_SYNTHESIZE_IN_EDITOR)
-	ActionCategory.AddCustomRow(LOCTEXT("Keyword", "Send"))
+	ConfigurationCategory.AddCustomRow(LOCTEXT("Keyword", "Send"))
 		.ValueContent()
 		[
 			SNew(SButton)
@@ -48,21 +48,10 @@ void FTtsConfigurationDetailCustomization::CustomizeDetails(IDetailLayoutBuilder
 			.OnClicked_Raw(this, &FTtsConfigurationDetailCustomization::OnSendButtonClicked)
 		];
 #endif
-
-	// Add a text entry and button so that we can easily send message requests to the Wit API to see the response
 	
-	ActionCategory.AddCustomRow(LOCTEXT("Keyword", "Delete"))
-		.ValueContent()
-		[
-			SNew(SButton)
-			.Text(LOCTEXT("DeleteButtonText", "Delete Cached Files"))
-			.HAlign(HAlign_Center)
-			.OnClicked_Raw(this, &FTtsConfigurationDetailCustomization::OnDeleteButtonClicked)
-		];
-
 	// Add a button to fetch all the available voices
 
-	ActionCategory.AddCustomRow(LOCTEXT("Keyword", "Voices"))
+	ConfigurationCategory.AddCustomRow(LOCTEXT("Keyword", "Voices"))
 	.ValueContent()
 	[
 		SNew(SButton)
@@ -73,15 +62,27 @@ void FTtsConfigurationDetailCustomization::CustomizeDetails(IDetailLayoutBuilder
 
 	// Add a button to create a new voice preset
 
-	ActionCategory.AddCustomRow(LOCTEXT("Keyword", "Presets"))
+	ConfigurationCategory.AddCustomRow(LOCTEXT("Keyword", "Presets"))
 	.ValueContent()
 	[
 		SNew(SButton)
 		.Text(LOCTEXT("PresetsButtonText", "Create Presets"))
 		.HAlign(HAlign_Center)
 		.OnClicked_Raw(this, &FTtsConfigurationDetailCustomization::OnCreatePresetButtonClicked)
-	];	
+	];
 
+	// Add a text entry and button so that we can easily send message requests to the Wit API to see the response
+	
+	IDetailCategoryBuilder& CacheCategory = DetailBuilder.EditCategory("TTS Cache", FText::GetEmpty(), ECategoryPriority::Important);
+
+	CacheCategory.AddCustomRow(LOCTEXT("Keyword", "Delete"))
+	.ValueContent()
+	[
+		SNew(SButton)
+		.Text(LOCTEXT("DeleteButtonText", "Delete Cached Files"))
+		.HAlign(HAlign_Center)
+		.OnClicked_Raw(this, &FTtsConfigurationDetailCustomization::OnDeleteButtonClicked)
+	];
 }
 
 /**

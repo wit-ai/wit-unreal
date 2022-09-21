@@ -32,16 +32,16 @@ public:
 	/**
 	 * ITtsService overrides
 	 */
-	UFUNCTION(BlueprintCallable, Category="Experience")
+	UFUNCTION(BlueprintCallable, Category="TTS")
 	virtual bool IsRequestInProgress() const override;
 
-	UFUNCTION(BlueprintCallable, Category="Experience")
+	UFUNCTION(BlueprintCallable, Category="TTS")
 	virtual void ConvertTextToSpeech(const FString& TextToConvert) override;
 
-	UFUNCTION(BlueprintCallable, Category="Experience")
+	UFUNCTION(BlueprintCallable, Category="TTS")
 	virtual void ConvertTextToSpeechWithSettings(const FTtsConfiguration& ClipSettings) override;
 
-	UFUNCTION(BlueprintCallable, Category="Experience")
+	UFUNCTION(BlueprintCallable, Category="TTS")
 	virtual void FetchAvailableVoices() override;
 	
 	/**
@@ -49,13 +49,13 @@ public:
 	 *
 	 * @param ClipId [in] id of the clip to unload
 	 */
-	UFUNCTION(BlueprintCallable, Category="Experience")
+	UFUNCTION(BlueprintCallable, Category="TTS")
 	void UnloadClip(const FString& ClipId);
 	
 	/**
 	 * Unload all clips from the memory cache
 	 */
-	UFUNCTION(BlueprintCallable, Category="Experience")
+	UFUNCTION(BlueprintCallable, Category="TTS")
 	void UnloadAllClips();
 	
 	/**
@@ -64,7 +64,7 @@ public:
 	 * @param ClipId [in] id of the clip to delete
 	 * @param CacheLocation [in] location of the clip
 	 */
-	UFUNCTION(BlueprintCallable, Category="Experience")
+	UFUNCTION(BlueprintCallable, Category="TTS")
 	void DeleteClip(const FString& ClipId, const ETtsStorageCacheLocation CacheLocation);
 	
 	/**
@@ -72,37 +72,37 @@ public:
 	 *
 	 * @param CacheLocation [in] location of the clip
 	 */
-	UFUNCTION(BlueprintCallable, Category="Experience")
+	UFUNCTION(BlueprintCallable, Category="TTS")
 	void DeleteAllClips(const ETtsStorageCacheLocation CacheLocation);
 
 	/**
 	 * The Wit configuration that will be used by Wit.ai
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Experience|Configuration")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TTS")
 	UWitAppConfigurationAsset* Configuration{};
   
 	/**
 	 * The Wit TTS Voice Preset that will be used by Wit.ai
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Experience|Configuration")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TTS")
 	UTtsVoicePresetAsset* VoicePreset{};
 	
 	/**
 	 * The events used by the voice service
 	 */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Experience|Handlers")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "TTS")
 	UTtsEvents* EventHandler{};
 	
 	/**
 	 * Memory cache to store converted voice clips as USoundWave
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Experience|Handlers")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "TTS Cache")
 	UTtsMemoryCacheHandler* MemoryCacheHandler{};
 
 	/**
 	 * Storage cache to store converted voice clips as raw data
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Experience|Handlers")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "TTS Cache")
 	UTtsStorageCacheHandler* StorageCacheHandler{};
 
 	/**

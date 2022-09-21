@@ -45,7 +45,7 @@ public:
 	 * If set to true this will record the voice input and write it to a named wav file for debugging. The output file will be written to
 	 * the project folder's Saved/BouncedWavFiles folder as Wit/RecordedVoiceInput.wav
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TTS|Debug")
 	bool bIsWavFileOutputEnabled{false};
 
 #endif

@@ -26,13 +26,11 @@ AWitTtsSpeaker::AWitTtsSpeaker()
  */
 void AWitTtsSpeaker::BeginPlay()
 {	
-	TtsExperience = FWitHelperUtilities::FindTtsExperience(GetWorld(), ExperienceTag);
-	
-	if (TtsExperience != nullptr && TtsExperience->EventHandler != nullptr)
+	if (EventHandler != nullptr)
 	{
 		UE_LOG(LogWit, Verbose, TEXT("BeginPlay: adding synthesize response callback"));
 		
-		TtsExperience->EventHandler->OnSynthesizeResponse.AddUniqueDynamic(this, &AWitTtsSpeaker::OnSynthesizeResponse);
+		EventHandler->OnSynthesizeResponse.AddUniqueDynamic(this, &AWitTtsSpeaker::OnSynthesizeResponse);
 	}
 
 	Super::BeginPlay();
@@ -45,9 +43,9 @@ void AWitTtsSpeaker::BeginDestroy()
 {
 	Super::BeginDestroy();
 
-	if (TtsExperience != nullptr && TtsExperience->EventHandler != nullptr)
+	if (EventHandler != nullptr)
 	{
-		TtsExperience->EventHandler->OnSynthesizeResponse.RemoveDynamic(this, &AWitTtsSpeaker::OnSynthesizeResponse);
+		EventHandler->OnSynthesizeResponse.RemoveDynamic(this, &AWitTtsSpeaker::OnSynthesizeResponse);
 	}
 }
 
@@ -56,24 +54,19 @@ void AWitTtsSpeaker::BeginDestroy()
  *
  * @param TextToSpeak [in] the text to speak
  */
-void AWitTtsSpeaker::Speak(const FString& TextToSpeak) const
+void AWitTtsSpeaker::Speak(const FString& TextToSpeak)
 {
-	if (TtsExperience == nullptr)
-	{
-		return;
-	}
-
 	if (VoicePreset != nullptr)
 	{
 		FTtsConfiguration ClipSettings = VoicePreset->Synthesize;
 		
 		ClipSettings.Text = TextToSpeak;
 		
-		TtsExperience->ConvertTextToSpeechWithSettings(ClipSettings);
+		ConvertTextToSpeechWithSettings(ClipSettings);
 	}
 	else
 	{
-		TtsExperience->ConvertTextToSpeech(TextToSpeak);
+		ConvertTextToSpeech(TextToSpeak);
 	}
 }
 
@@ -83,12 +76,9 @@ void AWitTtsSpeaker::Speak(const FString& TextToSpeak) const
  *
  * @param ClipSettings [in] the settings to use
  */
-void AWitTtsSpeaker::SpeakWithSettings(const FTtsConfiguration& ClipSettings) const
+void AWitTtsSpeaker::SpeakWithSettings(const FTtsConfiguration& ClipSettings)
 {
-	if (TtsExperience != nullptr)
-	{
-		TtsExperience->ConvertTextToSpeechWithSettings(ClipSettings);
-	}
+	ConvertTextToSpeechWithSettings(ClipSettings);
 }
 
 /**
@@ -119,12 +109,7 @@ bool AWitTtsSpeaker::IsSpeaking() const
  */
 bool AWitTtsSpeaker::IsLoading() const
 {
-	if (TtsExperience != nullptr)
-	{
-		return TtsExperience->IsRequestInProgress();
-	}
-
-	return false;
+	return IsRequestInProgress();
 }
 
 /**
