@@ -20,7 +20,20 @@ enum class EWitRequestEndpoint : uint8
 	Speech,
 	Message,
 	Synthesize,
-	Voices
+	Voices,
+	Converse,
+	Event
+};
+
+/**
+ * A list of the available parameters for Wit.ai
+ */
+UENUM()
+enum class EWitParameter : uint8
+{
+	Text,
+	SessionId,
+	ContextMap
 };
 
 /**

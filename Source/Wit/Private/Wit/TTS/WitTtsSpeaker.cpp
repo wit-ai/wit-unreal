@@ -80,6 +80,42 @@ void AWitTtsSpeaker::SpeakWithSettings(const FTtsConfiguration& ClipSettings)
 }
 
 /**
+ * Stop speaking
+ */
+void AWitTtsSpeaker::Stop()
+{
+	if (AudioComponent->IsPlaying())
+	{
+		AudioComponent->Stop();
+	}
+}
+
+/**
+ * Are we currently speaking?
+ *
+ * @return true if we are speaking
+ */
+bool AWitTtsSpeaker::IsSpeaking() const
+{
+	return AudioComponent->IsPlaying();
+}
+
+/**
+ * Are we currently loading?
+ *
+ * @return true if we are loading
+ */
+bool AWitTtsSpeaker::IsLoading() const
+{
+	if (WitTtsService != nullptr)
+	{
+		return WitTtsService->IsRequestInProgress();
+	}
+
+	return false;
+}
+
+/**
  * Callback that is called when a Wit.ai response is received which is used to see if we have a match
  * 
  * @param bIsSuccessful [in] true if the response was successful
@@ -92,10 +128,7 @@ void AWitTtsSpeaker::OnSynthesizeResponse(const bool bIsSuccessful, USoundWave* 
 		return;
 	}
 
-	if (AudioComponent->IsPlaying())
-	{
-		return;
-	}
+	Stop();
 	
 	AudioComponent->SetSound(SoundWave);
 	AudioComponent->Play();

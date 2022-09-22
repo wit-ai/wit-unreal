@@ -224,3 +224,22 @@ struct WIT_API FWitTtsVoicesResponse
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	TArray<FWitTtsVoice> En_US{};
 };
+
+/**
+ * UStruct representation of the full JSON object used by Wit.ai composer
+ */
+USTRUCT(BlueprintType)
+struct WIT_API FWitComposerResponse
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Composer")
+	bool Expects_Input{false};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Composer")
+	FString Action{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Composer")
+	FWitResponse Response{};
+
+};

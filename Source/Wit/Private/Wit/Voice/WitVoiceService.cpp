@@ -24,7 +24,7 @@ static TArray<uint8> RecordedVoiceInputBuffer;
 #endif
 
 /**
- * Called when the component starts playing
+ * Constructor
  */
 UWitVoiceService::UWitVoiceService()
 	: Super()
@@ -354,10 +354,15 @@ void UWitVoiceService::BeginStreamRequest()
 	FWitRequestBuilder::AddRateContentType(RequestConfiguration, VoiceCaptureSubsystem->SampleRate);
 	FWitRequestBuilder::AddEndianContentType(RequestConfiguration, EWitRequestEndian::Little);
 
-	RequestConfiguration.OnRequestError.BindUObject(this, &UWitVoiceService::OnWitRequestError);
-	RequestConfiguration.OnRequestProgress.BindUObject(this, &UWitVoiceService::OnSpeechRequestProgress);
-	RequestConfiguration.OnRequestComplete.BindUObject(this, &UWitVoiceService::OnSpeechRequestComplete);
+	RequestConfiguration.OnRequestError.AddUObject(this, &UWitVoiceService::OnWitRequestError);
+	RequestConfiguration.OnRequestProgress.AddUObject(this, &UWitVoiceService::OnSpeechRequestProgress);
+	RequestConfiguration.OnRequestComplete.AddUObject(this, &UWitVoiceService::OnSpeechRequestComplete);
 
+	if (Events != nullptr)
+	{
+		Events->OnRequestCustomize.ExecuteIfBound(RequestConfiguration);
+	}
+	
 	// Begin a streamed request to Wit.ai. For a streamed request we open an HTTP request to the server and continually write data as it
 	// becomes available. This greatly reduces latency over waiting for the whole voice data and then sending it
 
@@ -570,25 +575,41 @@ void UWitVoiceService::SendTranscription(const FString& Text)
 	FWitRequestBuilder::SetRequestConfigurationWithDefaults(RequestConfiguration, EWitRequestEndpoint::Message, Configuration->Application.ClientAccessToken, Configuration->Application.ApiVersion, Configuration->Application.URL);
 
 	const FString EncodedText = FGenericPlatformHttp::UrlEncode(Text);
-	FWitRequestBuilder::AddTextParameter(RequestConfiguration, EncodedText);
+	FWitRequestBuilder::AddParameter(RequestConfiguration, EWitParameter::Text, EncodedText);
 
-	RequestConfiguration.OnRequestError.BindUObject(this, &UWitVoiceService::OnWitRequestError);
-	RequestConfiguration.OnRequestComplete.BindUObject(this, &UWitVoiceService::OnSpeechRequestComplete);
+	RequestConfiguration.OnRequestError.AddUObject(this, &UWitVoiceService::OnWitRequestError);
+	RequestConfiguration.OnRequestComplete.AddUObject(this, &UWitVoiceService::OnSpeechRequestComplete);
+
+	if (Events != nullptr)
+	{
+		Events->OnRequestCustomize.ExecuteIfBound(RequestConfiguration);
+	}
 	
 	RequestSubsystem->BeginStreamRequest(RequestConfiguration);
 	RequestSubsystem->EndStreamRequest();
 }
 
+/**
+ * Sends a text string to Wit for interpretation
+ *
+ * @param RequestOptions [in] the RequestOptions string, this could be used for Dynamic Entities
+ * @param Text [in] the string we want to interpret
+ */
 void UWitVoiceService::SendTranscriptionWithRequestOptions(const FString& Text, const FString& RequestOptions)
 {
-	//TODO add RequestOptions into the url(or body), which likely will be only dynamic entities. check https://wit.ai/docs/http/20220622/#post__speech_link Arguments section. example post: https://wit.ai/docs/http/20220622/#post__entities__entity_keywords_link 
+	// TODO: add RequestOptions into the url(or body), which likely will be only dynamic entities. check https://wit.ai/docs/http/20220622/#post__speech_link Arguments section. example post: https://wit.ai/docs/http/20220622/#post__entities__entity_keywords_link 
+
 	UE_LOG(LogWit, Warning, TEXT("SendTranscriptionWithRequestOptions is not implemented yet, will use SendTranscription for now."));
 	SendTranscription(Text);
 }
 
+/**
+ * Accept the given Partial Response and cancel the current request
+ *
+ * @param Response [in] the Partial Response to accept, this will be used as final response to call onResponse.
+ */
 void UWitVoiceService::AcceptPartialResponseAndCancelRequest(const FWitResponse& Response) const
 {
-	
 	UWitRequestSubsystem* RequestSubsystem = GEngine->GetEngineSubsystem<UWitRequestSubsystem>();
 
 	if (RequestSubsystem == nullptr)
@@ -596,9 +617,12 @@ void UWitVoiceService::AcceptPartialResponseAndCancelRequest(const FWitResponse&
 		UE_LOG(LogWit, Warning, TEXT("SendTranscription: cannot send transcription because request subsystem does not exist"));
 		return;
 	}
+
 	RequestSubsystem->CancelRequest();
+
 	FWitResponse FinalResponse = Response;
 	FinalResponse.Is_Final = true;
+
 	OnSpeechRequestComplete(FinalResponse);
 }
 
@@ -702,7 +726,7 @@ void UWitVoiceService::OnSpeechRequestComplete(const FWitResponse& Response) con
  * @param ErrorMessage [in] the error message
  * @param HumanReadableErrorMessage [in] a longer human readable error message
  */
-void UWitVoiceService::OnWitRequestError(const FString ErrorMessage, const FString HumanReadableErrorMessage) const
+void UWitVoiceService::OnWitRequestError(const FString& ErrorMessage, const FString& HumanReadableErrorMessage) const
 {
 	UE_LOG(LogWit, Warning, TEXT("Wit request failed with error: %s - %s"), *ErrorMessage, *HumanReadableErrorMessage);
 

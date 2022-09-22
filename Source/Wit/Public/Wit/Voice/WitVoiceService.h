@@ -31,7 +31,7 @@ public:
 	/**
 	 * VoiceService overrides
 	 */
-	virtual void SetConfiguration(UWitAppConfigurationAsset* ConfigurationToUse);
+	virtual void SetConfiguration(UWitAppConfigurationAsset* ConfigurationToUse) override;
 
 	/**
 	 * IVoiceService overrides
@@ -83,7 +83,7 @@ private:
 	void OnSpeechRequestComplete(const FWitResponse& Response) const;
 
 	/** Called when a Wit request errors */
-	void OnWitRequestError(const FString ErrorMessage, const FString HumanReadableMessaeg) const;
+	void OnWitRequestError(const FString& ErrorMessage, const FString& HumanReadableMessage) const;
 
 	/** The audio format that will be passed to Wit when making /speech requests. Currently only Raw is supported */
 	const EWitRequestFormat Format{EWitRequestFormat::Raw};

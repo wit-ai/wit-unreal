@@ -10,63 +10,11 @@
 #include "CoreMinimal.h"
 #include "Http.h"
 #include "Serialization/BufferArchive.h"
+#include "Wit/Request/WitRequestConfiguration.h"
 #include "WitRequestSubsystem.generated.h"
 
 class FJsonObject;
 class FMemoryReader;
-
-DECLARE_DELEGATE_TwoParams(FOnWitRequestErrorDelegate, const FString, const FString);
-DECLARE_DELEGATE_TwoParams(FOnWitRequestProgressDelegate, const TArray<uint8>&, const TSharedPtr<FJsonObject>);
-DECLARE_DELEGATE_TwoParams(FOnWitRequestCompleteDelegate, const TArray<uint8>&, const TSharedPtr<FJsonObject>);
-
-/**
- * A compact configuration for setting up a Wit.ai request. Use the methods in FWitRequestBuilder to construct this
- */
-struct FWitRequestConfiguration
-{
-public:
-
-    /**
-     * Default constructor
-     */
-	FWitRequestConfiguration() = default;
-
-	/** The base URL to use in the request */
-	FString BaseUrl{};
-
-	/** Optional version modifier string to use in the request */
-	FString Version{};
-
-	/** The server auth token to use in the request. Must be present */
-	FString ServerAuthToken{};
-
-	/** The verb (POST/GET) to use in the request */
-	FString Verb{};
-
-	/** The endpoint to use in the request */
-	FString Endpoint{};
-
-	/** The expect to use in the request */
-	FString Accept{};
-
-	/** Optional set of URL parameters to use in the request */
-	TMap<FString, FString> Parameters{};
-
-	/** Optional content type pairs to use in the request */
-	TMap<FString, FString> ContentTypes{};
-
-	/** Optional callback to use when the request errors */
-	FOnWitRequestErrorDelegate OnRequestError{};
-
-	/** Optional callback to use when the request is in progress */
-	FOnWitRequestProgressDelegate OnRequestProgress{};
-	
-	/** Optional callback to use when the request is complete */
-	FOnWitRequestCompleteDelegate OnRequestComplete{};
-
-	/** Tracks whether we should use the HTTP 1 chunked transfer protocol in the request */
-	bool bShouldUseChunkedTransfer{false};
-};
 
 /**
  * A class to track an in progress Wit.ai request. It essentially wraps a UE4 HTTP request

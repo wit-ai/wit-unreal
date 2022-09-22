@@ -106,7 +106,6 @@ public:
 	 * Sends a text string to Wit for interpretation
 	 *
 	 * @param RequestOptions [in] the RequestOptions string, this could be used for Dynamic Entities
-	 * 
 	 * @param Text [in] the string we want to interpret
 	 */
 	virtual void SendTranscriptionWithRequestOptions(const FString& Text, const FString& RequestOptions) = 0;
@@ -115,7 +114,6 @@ public:
 	 * Accept the given Partial Response and cancel the current request
 	 *
 	 * @param Response [in] the Partial Response to accept, this will be used as final response to call onResponse.
-	 * 
 	 */
 	virtual void AcceptPartialResponseAndCancelRequest(const FWitResponse& Response) const = 0;
 

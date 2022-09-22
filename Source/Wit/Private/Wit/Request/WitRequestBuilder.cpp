@@ -16,9 +16,13 @@ const FString FWitRequestBuilder::EndpointSpeech = TEXT("speech");
 const FString FWitRequestBuilder::EndpointMessage = TEXT("message");
 const FString FWitRequestBuilder::EndpointSynthesize = TEXT("synthesize");
 const FString FWitRequestBuilder::EndpointVoices = TEXT("voices");
+const FString FWitRequestBuilder::EndpointConverse = TEXT("converse");
+const FString FWitRequestBuilder::EndpointEvent = TEXT("event");
 
 /** Supported wit.ai parameters */
 const FString FWitRequestBuilder::ParameterTextKey = TEXT("&q=");
+const FString FWitRequestBuilder::ParameterSessionId = TEXT("&session_id=");
+const FString FWitRequestBuilder::ParameterContextMap = TEXT("&context_map=");
 
 /** Supported wit.ai content formats */
 const FString FWitRequestBuilder::FormatKey = TEXT("");
@@ -70,32 +74,36 @@ void FWitRequestBuilder::SetRequestConfigurationWithDefaults(FWitRequestConfigur
 	Configuration.ServerAuthToken = ServerAuthToken;
 	Configuration.Endpoint = GetEndpointString(Endpoint);
 
-	if (Endpoint == EWitRequestEndpoint::Speech || Endpoint == EWitRequestEndpoint::Synthesize)
-	{
-		Configuration.Verb = TEXT("POST");
-	}
-	else
+	// TODO: POST/GET should be stored somewhere rather than done with a conditional
+
+	const bool bShouldUseGetVerb = Endpoint == EWitRequestEndpoint::Message || Endpoint == EWitRequestEndpoint::Voices;
+	
+	if (bShouldUseGetVerb)
 	{
 		Configuration.Verb = TEXT("GET");
 	}
-
-	if (Endpoint == EWitRequestEndpoint::Speech)
+	else
 	{
-		Configuration.bShouldUseChunkedTransfer = true;
+		Configuration.Verb = TEXT("POST");
 	}
+
+	Configuration.bShouldUseChunkedTransfer = Endpoint == EWitRequestEndpoint::Speech || Endpoint == EWitRequestEndpoint::Converse;
 }
 
 /**
  * Add a text URL parameter. This is required when using the /message endpoint
  *
  * @param Configuration the request configuration to fill in
- * @param EncodedText the URL encoded text to use as a parameter
+ * @param ParameterKey the parameter key
+ * @param ParameterValue the URL encoded text to use as a parameter
  */
-void FWitRequestBuilder::AddTextParameter(FWitRequestConfiguration& Configuration, const FString& EncodedText)
+void FWitRequestBuilder::AddParameter(FWitRequestConfiguration& Configuration, const EWitParameter ParameterKey, const FString& ParameterValue)
 {
-	check(!Configuration.Parameters.Contains(ParameterTextKey));
+	const FString& ParameterKeyString( GetParameterKeyString(ParameterKey));
+	
+	check(!Configuration.Parameters.Contains(ParameterKeyString));
 
-	Configuration.Parameters.Emplace(ParameterTextKey, EncodedText);
+	Configuration.Parameters.Emplace(ParameterKeyString, ParameterValue);
 }
 
 /**
@@ -201,11 +209,49 @@ const FString& FWitRequestBuilder::GetEndpointString(const EWitRequestEndpoint E
 	{
 		return EndpointVoices;
 	}
+	case EWitRequestEndpoint::Converse:
+	{
+		return EndpointConverse;
+	}
+	case EWitRequestEndpoint::Event:
+	{
+		return EndpointEvent;
+	}
 	default:
 	{
 		check(0);
 		return EndpointSpeech;
 	}
+	}
+}
+
+/**
+ * Converts a parameter key to its string representation
+ *
+ * @param ParameterKey the parameter key
+ * @return the string representation of the parameter key
+ */
+const FString& FWitRequestBuilder::GetParameterKeyString(const EWitParameter ParameterKey)
+{
+	switch (ParameterKey)
+	{
+	case EWitParameter::Text:
+		{
+			return ParameterTextKey;
+		}
+	case EWitParameter::SessionId:
+		{
+			return ParameterSessionId;
+		}
+	case EWitParameter::ContextMap:
+		{
+			return ParameterContextMap;		
+		}
+	default:
+		{
+			check(0);
+			return FormatValueJson;
+		}
 	}
 }
 
