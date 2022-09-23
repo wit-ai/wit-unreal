@@ -36,35 +36,37 @@ public:
 	/**
 	 * Speak a phrase with the default configuration
 	 *
-	 * @param TextToSpeak [in] the text to speak
-	 */
-	UFUNCTION(BlueprintCallable, Category="TTS")
-	void Speak(const FString& TextToSpeak);
-
-	/**
-	 * The memory cache to use
-	 */
-	UFUNCTION(BlueprintCallable, Category="TTS")
-	void SpeakWithSettings(const FTtsConfiguration& ClipSettings);
-
-	/**
-	 * The storage cache to use
-	 */
-	UFUNCTION(BlueprintCallable, Category="TTS")
-	void Stop();
-	
-	/**
-	 * Speak a phrase with the default configuration
-	 *
 	 * @return true if speaking
 	 */
 	UFUNCTION(BlueprintCallable, Category="TTS")
-	bool IsSpeaking() const;
+	bool Speak() const;
 
 	/**
 	 * Speak a phrase with custom settings
 	 *
 	 * @return true if speech is loading
+	 */
+	UFUNCTION(BlueprintCallable, Category="TTS")
+	void SpeakWithSettings(const FTtsConfiguration& ClipSettings);
+
+	/**
+	 * Stop speaking
+	 */
+	UFUNCTION(BlueprintCallable, Category="TTS")
+	void Stop();
+	
+	/**
+	 * Are we currently speaking?
+	 *
+	 * @return true if we are speaking
+	 */
+	UFUNCTION(BlueprintCallable, Category="TTS")
+	bool IsSpeaking() const;
+
+	/**
+	 * Are we currently loading?
+	 *
+	 * @return true if we are loading
 	 */
 	UFUNCTION(BlueprintCallable, Category="TTS")
 	bool IsLoading() const;

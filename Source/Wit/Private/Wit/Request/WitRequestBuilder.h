@@ -31,12 +31,13 @@ public:
 	static void SetRequestConfigurationWithDefaults(FWitRequestConfiguration& Configuration, const EWitRequestEndpoint Endpoint, const FString& ServerAuthToken, const FString& Version, const FString& CustomUrl);
 	
 	/**
-	 * Add a text URL parameter. This is required when using the /message endpoint
+	 * Add a URL parameter
 	 *
 	 * @param Configuration [in,out] the request configuration to fill in
-	 * @param EncodedText [in] the URL encoded text to use as a parameter
+	 * @param ParameterKey [in] the parameter key
+	 * @param ParameterValue [in] the URL encoded text to use as a parameter
 	 */
-	static void AddTextParameter(FWitRequestConfiguration& Configuration, const FString& EncodedText);
+	static void AddParameter(FWitRequestConfiguration& Configuration, const EWitParameter ParameterKey, const FString& ParameterValue);
 
 	/**
 	 * Add a Mime format accept type. This is required for the /synthesize endpoint
@@ -86,8 +87,6 @@ public:
 	 */
 	static void AddEndianContentType(FWitRequestConfiguration& Configuration, const EWitRequestEndian Endian);
 
-private:
-
     /**
      * Converts an endpoint into its final string representation
      *
@@ -95,6 +94,14 @@ private:
      * @return the string representation of the endpoint
      */
 	static const FString& GetEndpointString(const EWitRequestEndpoint Endpoint);
+
+	/**
+	 * Converts a parameter key into its final string representation
+	 *
+	 * @param ParameterKey [in] the parameter key
+	 * @return the string representation of the endpoint
+	 */
+	static const FString& GetParameterKeyString(const EWitParameter ParameterKey);
 
 	/**
      * Converts an audio format into its final string representation
@@ -127,6 +134,8 @@ private:
      * @return the string representation of the audio endianness
      */
 	static const FString& GetEndianString(const EWitRequestEndian Endian);
+
+private:
 	
 	/** Default wit.ai URL */
 	static const FString UrlDefault;
@@ -136,9 +145,13 @@ private:
 	static const FString EndpointMessage;
 	static const FString EndpointSynthesize;
 	static const FString EndpointVoices;
+	static const FString EndpointConverse;
+	static const FString EndpointEvent;
 
 	/** Supported wit.ai parameters */
 	static const FString ParameterTextKey;
+	static const FString ParameterSessionId;
+	static const FString ParameterContextMap;
 	
 	/** Supported wit.ai audio formats */
 	static const FString FormatKey;

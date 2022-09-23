@@ -268,7 +268,6 @@ bool FWitHelperUtilities::IsWitResponse(const TSharedPtr<FJsonObject> JsonRespon
 
 bool FWitHelperUtilities::ConvertJsonToWitResponse(const TSharedPtr<FJsonObject> JsonResponse, FWitResponse* WitResponse)
 {
-	
 	const bool bIsConversionError = !FJsonObjectConverter::JsonObjectToUStruct(JsonResponse.ToSharedRef(), WitResponse);
 	if (bIsConversionError)
 	{
@@ -294,18 +293,18 @@ bool FWitHelperUtilities::ConvertJsonToWitResponse(const TSharedPtr<FJsonObject>
 		UE_LOG(LogWit, Verbose, TEXT("UStruct - Trait (%s): id (%lld) value (%s) confidence (%f)"), *Trait.Key, Trait.Value.Id, *Trait.Value.Value,
 			   Trait.Value.Confidence);
 	}
-	return true;
 	
+	return true;
 }
 
 void FWitHelperUtilities::AcceptPartialResponseAndCancelRequest(const UWorld* World, const FName& Tag, const FWitResponse& Response)
 {
-	
 	const AVoiceExperience* VoiceExperience = FWitHelperUtilities::FindVoiceExperience(World, Tag);
 	
 	if (VoiceExperience == nullptr)
 	{
 		return;
 	}
+	
 	VoiceExperience->AcceptPartialResponseAndCancelRequest(Response);
 }

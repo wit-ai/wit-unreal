@@ -151,15 +151,15 @@ void UWitTtsService::ConvertTextToSpeechWithSettings(const FTtsConfiguration& Cl
 	FWitRequestBuilder::AddFormatContentType(RequestConfiguration, EWitRequestFormat::Json);
 	FWitRequestBuilder::AddFormatAccept(RequestConfiguration, EWitRequestFormat::Wav);
 
-	RequestConfiguration.OnRequestError.BindUObject(this, &UWitTtsService::OnSynthesizeRequestError);
-	RequestConfiguration.OnRequestComplete.BindUObject(this, &UWitTtsService::OnSynthesizeRequestComplete);
+	RequestConfiguration.OnRequestError.AddUObject(this, &UWitTtsService::OnSynthesizeRequestError);
+	RequestConfiguration.OnRequestComplete.AddUObject(this, &UWitTtsService::OnSynthesizeRequestComplete);
 
 	RequestSubsystem->BeginStreamRequest(RequestConfiguration);
 
 	// Construct the body parameters. The only required one is "q" which is the text we want to convert. We could use UStructToJsonObject
 	// but since most of the arguments are optional it's easier to just set them
 
-	const TSharedPtr<FJsonObject> RequestBody = MakeShareable(new FJsonObject());
+	const TSharedPtr<FJsonObject> RequestBody = MakeShared<FJsonObject>();
 	const bool bIsTextTooLong = ClipSettings.Text.Len() > MaximumTextLengthInRequest;
 		
 	if (bIsTextTooLong)
@@ -244,8 +244,8 @@ void UWitTtsService::FetchAvailableVoices()
 	FWitRequestBuilder::SetRequestConfigurationWithDefaults(RequestConfiguration, EWitRequestEndpoint::Voices, Configuration->Application.ClientAccessToken, Configuration->Application.ApiVersion, Configuration->Application.URL);
 	FWitRequestBuilder::AddFormatContentType(RequestConfiguration, EWitRequestFormat::Json);
 
-	RequestConfiguration.OnRequestError.BindUObject(this, &UWitTtsService::OnVoicesRequestError);
-	RequestConfiguration.OnRequestComplete.BindUObject(this, &UWitTtsService::OnVoicesRequestComplete);
+	RequestConfiguration.OnRequestError.AddUObject(this, &UWitTtsService::OnVoicesRequestError);
+	RequestConfiguration.OnRequestComplete.AddUObject(this, &UWitTtsService::OnVoicesRequestComplete);
 
 	RequestSubsystem->BeginStreamRequest(RequestConfiguration);
 	RequestSubsystem->EndStreamRequest();
@@ -334,7 +334,7 @@ void UWitTtsService::OnSynthesizeRequestComplete(const TArray<uint8>& BinaryResp
  * @param ErrorMessage [in] the error message
  * @param HumanReadableErrorMessage [in] longer human readable error message
  */
-void UWitTtsService::OnSynthesizeRequestError(const FString ErrorMessage, const FString HumanReadableErrorMessage) const
+void UWitTtsService::OnSynthesizeRequestError(const FString& ErrorMessage, const FString& HumanReadableErrorMessage)
 {
 	UE_LOG(LogWit, Warning, TEXT("Wit request failed with error: %s - %s"), *ErrorMessage, *HumanReadableErrorMessage);
 
@@ -378,7 +378,7 @@ void UWitTtsService::OnVoicesRequestComplete(const TArray<uint8>& BinaryResponse
  * @param ErrorMessage [in] the error message
  * @param HumanReadableErrorMessage [in] longer human readable error message
  */
-void UWitTtsService::OnVoicesRequestError(const FString ErrorMessage, const FString HumanReadableErrorMessage) const
+void UWitTtsService::OnVoicesRequestError(const FString& ErrorMessage, const FString& HumanReadableErrorMessage)
 {
 	UE_LOG(LogWit, Warning, TEXT("Wit request failed with error: %s - %s"), *ErrorMessage, *HumanReadableErrorMessage);
 

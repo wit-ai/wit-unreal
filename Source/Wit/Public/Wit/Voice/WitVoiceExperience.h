@@ -33,9 +33,9 @@ public:
 	 */
 	UPROPERTY()
 	UWitVoiceService* WitVoiceService{};
-	
+
 protected:
 
 	virtual void BeginPlay() override;
-	
+
 };

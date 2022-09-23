@@ -125,10 +125,7 @@ void AWitTtsSpeaker::OnSynthesizeResponse(const bool bIsSuccessful, USoundWave* 
 		return;
 	}
 
-	if (AudioComponent->IsPlaying())
-	{
-		return;
-	}
+	Stop();
 	
 	AudioComponent->SetSound(SoundWave);
 	AudioComponent->Play();
