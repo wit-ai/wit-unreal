@@ -7,19 +7,16 @@
 
 #pragma once
 
-#include "TTS/Cache/Memory/TtsMemoryCache.h"
-#include "TTS/Cache/Storage/TtsStorageCache.h"
-#include "Wit/TTS/WitTtsService.h"
-#include "GameFramework/Actor.h"
+#include "WitTtsExperience.h"
 #include "WitTtsSpeaker.generated.h"
 
 class UAudioComponent;
 
 /**
- * The base class of TtsSpeaker
+ * Represents a speaker
  */
 UCLASS( ClassGroup=(Meta) )
-class WIT_API AWitTtsSpeaker : public AActor
+class WIT_API AWitTtsSpeaker : public AWitTtsExperience
 {
 	GENERATED_BODY()
 	
@@ -29,13 +26,7 @@ public:
 	 * Sets default values for this actor's properties
 	 */
 	AWitTtsSpeaker();
-
-	/**
-	 * The wit TTS service
-	 */
-	UPROPERTY(VisibleAnywhere, Category="TTS")
-	UWitTtsService* WitTtsService{};
-
+	
 	/**
 	 * The audio source to play sounds
 	 */
@@ -45,7 +36,7 @@ public:
 	/**
 	 * Speak a phrase with the default configuration
 	 *
-	 * @param TextToSpeak [in] the text to speak
+	 * @param TextToSpeak [in] text to speak
 	 */
 	UFUNCTION(BlueprintCallable, Category="TTS")
 	void Speak(const FString& TextToSpeak);
@@ -53,7 +44,7 @@ public:
 	/**
 	 * Speak a phrase with custom settings
 	 *
-	 * @param ClipSettings [in] the settings to use
+	 * @param ClipSettings [in] the text and settings to speak
 	 */
 	UFUNCTION(BlueprintCallable, Category="TTS")
 	void SpeakWithSettings(const FTtsConfiguration& ClipSettings);

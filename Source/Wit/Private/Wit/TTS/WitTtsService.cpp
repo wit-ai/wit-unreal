@@ -72,29 +72,33 @@ void UWitTtsService::ConvertTextToSpeechWithSettings(const FTtsConfiguration& Cl
 	
 	// Check if we already have this in the memory cache
 	
-	if (MemoryCache != nullptr) 
+	if (MemoryCacheHandler != nullptr) 
 	{
-		USoundWave* CachedClip = MemoryCache->GetClip(ClipId);
+		USoundWave* CachedClip = MemoryCacheHandler->GetClip(ClipId);
 
 		const bool bIsClipCached = CachedClip != nullptr;
 		if (bIsClipCached)
 		{
 			UE_LOG(LogWit, Verbose, TEXT("ConvertTextToSpeechWithSettings: clip found in memory cache (%s)"), *ClipId);
+
+			if (EventHandler != nullptr)
+			{
+				EventHandler->OnSynthesizeResponse.Broadcast(true, CachedClip);
+			}
 			
-			OnSynthesizeResponse.Broadcast(true, CachedClip);
 			return;
 		}
 	}
 
 	// Check if we already have this in the storage cache
 
-	const bool bShouldUseStorageCache = StorageCache != nullptr && StorageCache->ShouldCache(ClipSettings.StorageCacheLocation);
+	const bool bShouldUseStorageCache = StorageCacheHandler != nullptr && StorageCacheHandler->ShouldCache(ClipSettings.StorageCacheLocation);
 	
 	if (bShouldUseStorageCache)
 	{
 		TArray<uint8> CachedClipData;
 		
-		const bool bIsClipCached = StorageCache->RequestClip(ClipId, ClipSettings.StorageCacheLocation, CachedClipData);
+		const bool bIsClipCached = StorageCacheHandler->RequestClip(ClipId, ClipSettings.StorageCacheLocation, CachedClipData);
 		if (bIsClipCached)
 		{
 			UE_LOG(LogWit, Verbose, TEXT("ConvertTextToSpeechWithSettings: clip found in storage cache (%s)"), *ClipId);
@@ -248,75 +252,12 @@ void UWitTtsService::FetchAvailableVoices()
 }
 
 /**
- * Unload a single clip
- *
- * @param ClipId [in] Id of the clip to unload
- */
-void UWitTtsService::UnloadClip(const FString& ClipId)
-{
-	if (MemoryCache == nullptr)
-	{
-		return;
-	}
-
-	MemoryCache->RemoveClip(ClipId);
-}
-
-/**
- * Unload all clips
- */
-void UWitTtsService::UnloadAllClips()
-{
-	if (MemoryCache == nullptr)
-	{
-		return;
-	}
-
-	MemoryCache->RemoveAllClips();
-}
-
-/**
- * Remove a single clip from the storage cache
- *
- * @param ClipId [in] Id of the clip to delete
- * @param CacheLocation [in] location of the clip
- */
-void UWitTtsService::DeleteClip(const FString& ClipId, const ETtsStorageCacheLocation CacheLocation)
-{
-	UnloadClip(ClipId);
-	
-	if (StorageCache == nullptr)
-	{
-		return;
-	}
-
-	StorageCache->RemoveClip(ClipId, CacheLocation);
-}
-
-/**
- * Remove all clips from the storage cache
- *
- * @param CacheLocation [in] location of the clip
- */
-void UWitTtsService::DeleteAllClips(const ETtsStorageCacheLocation CacheLocation)
-{
-	UnloadAllClips();
-	
-	if (StorageCache == nullptr)
-	{
-		return;
-	}
-
-	StorageCache->RemoveAllClips(CacheLocation);
-}
-
-/**
  * Called when a storage cache request is successfully completed. The binary data will contain the audio wav for the converted text
  *
  * @param BinaryData [in] the binary data
  * @param ClipSettings [in] the clip settings for the clip
  */
-void UWitTtsService::OnStorageCacheRequestComplete(const TArray<uint8>& BinaryData, const FTtsConfiguration& ClipSettings)
+void UWitTtsService::OnStorageCacheRequestComplete(const TArray<uint8>& BinaryData, const FTtsConfiguration& ClipSettings) const
 {
 	UE_LOG(LogWit, Verbose, TEXT("OnStorageCacheRequestComplete - Data size: %d"), BinaryData.Num());
 
@@ -330,8 +271,11 @@ void UWitTtsService::OnStorageCacheRequestComplete(const TArray<uint8>& BinaryDa
 		OnSynthesizeRequestError(TEXT("Sound wave creation failed"), TEXT("Creating a sound wave from the response failed"));
 		return;
 	}
-	
-	OnSynthesizeResponse.Broadcast(true, SoundWave);
+
+	if (EventHandler != nullptr)
+	{
+		EventHandler->OnSynthesizeResponse.Broadcast(true, SoundWave);
+	}
 }
 
 /**
@@ -340,7 +284,7 @@ void UWitTtsService::OnStorageCacheRequestComplete(const TArray<uint8>& BinaryDa
  * @param BinaryResponse [in] the final binary response
  * @param JsonResponse [in] the final Json response
  */
-void UWitTtsService::OnSynthesizeRequestComplete(const TArray<uint8>& BinaryResponse, const TSharedPtr<FJsonObject> JsonResponse)
+void UWitTtsService::OnSynthesizeRequestComplete(const TArray<uint8>& BinaryResponse, const TSharedPtr<FJsonObject> JsonResponse) const
 {
 	UE_LOG(LogWit, Verbose, TEXT("OnSynthesizeRequestComplete - Final response size: %d"), BinaryResponse.Num());
 
@@ -357,11 +301,11 @@ void UWitTtsService::OnSynthesizeRequestComplete(const TArray<uint8>& BinaryResp
 	
 	// Add to the storage cache. The storage cache stores raw binary data rather than sound waves
 
-	const bool bShouldUseStorageCache = StorageCache != nullptr && StorageCache->ShouldCache(LastRequestedClipSettings.StorageCacheLocation);
+	const bool bShouldUseStorageCache = StorageCacheHandler != nullptr && StorageCacheHandler->ShouldCache(LastRequestedClipSettings.StorageCacheLocation);
 	
 	if (bShouldUseStorageCache)
 	{
-		StorageCache->AddClip(ClipId, BinaryResponse, LastRequestedClipSettings);
+		StorageCacheHandler->AddClip(ClipId, BinaryResponse, LastRequestedClipSettings);
 	}
 
 #if WITH_EDITORONLY_DATA
@@ -377,8 +321,11 @@ void UWitTtsService::OnSynthesizeRequestComplete(const TArray<uint8>& BinaryResp
 	}
 
 #endif
-	
-	OnSynthesizeResponse.Broadcast(true, SoundWave);
+
+	if (EventHandler != nullptr)
+	{
+		EventHandler->OnSynthesizeResponse.Broadcast(true, SoundWave);
+	}
 }
 
 /**
@@ -387,14 +334,17 @@ void UWitTtsService::OnSynthesizeRequestComplete(const TArray<uint8>& BinaryResp
  * @param ErrorMessage [in] the error message
  * @param HumanReadableErrorMessage [in] longer human readable error message
  */
-void UWitTtsService::OnSynthesizeRequestError(const FString& ErrorMessage, const FString& HumanReadableErrorMessage)
+void UWitTtsService::OnSynthesizeRequestError(const FString& ErrorMessage, const FString& HumanReadableErrorMessage) const
 {
 	UE_LOG(LogWit, Warning, TEXT("Wit request failed with error: %s - %s"), *ErrorMessage, *HumanReadableErrorMessage);
 
 	// Calling OnSynthesizeResponse is kept for backwards compatibility if people are already using it but is otherwise replaced by OnWitError
-	
-	OnSynthesizeResponse.Broadcast(false, nullptr);
-	OnSynthesizeError.Broadcast(ErrorMessage, HumanReadableErrorMessage);
+
+	if (EventHandler != nullptr)
+	{
+		EventHandler->OnSynthesizeResponse.Broadcast(false, nullptr);
+		EventHandler->OnSynthesizeError.Broadcast(ErrorMessage, HumanReadableErrorMessage);
+	}
 }
 
 /**
@@ -405,16 +355,21 @@ void UWitTtsService::OnSynthesizeRequestError(const FString& ErrorMessage, const
  */
 void UWitTtsService::OnVoicesRequestComplete(const TArray<uint8>& BinaryResponse, const TSharedPtr<FJsonObject> JsonResponse)
 {
+	if (EventHandler == nullptr)
+	{
+		return;
+	}
+	
 	UE_LOG(LogWit, Verbose, TEXT("OnVoicesRequestComplete - Final response size: %d"), BinaryResponse.Num());
 
-	const bool bIsConversionError = !FJsonObjectConverter::JsonObjectToUStruct(JsonResponse.ToSharedRef(), &AvailableVoices);
+	const bool bIsConversionError = !FJsonObjectConverter::JsonObjectToUStruct(JsonResponse.ToSharedRef(), &EventHandler->VoicesResponse);
 	if (bIsConversionError)
 	{
 		OnVoicesRequestError(TEXT("Json To UStruct failed"), TEXT("Converting the Json response to a UStruct failed"));
 		return;
 	}
-	
-	OnVoicesResponse.Broadcast(true);
+
+	EventHandler->OnVoicesResponse.Broadcast(true, EventHandler->VoicesResponse);
 }
 
 /**
@@ -423,14 +378,17 @@ void UWitTtsService::OnVoicesRequestComplete(const TArray<uint8>& BinaryResponse
  * @param ErrorMessage [in] the error message
  * @param HumanReadableErrorMessage [in] longer human readable error message
  */
-void UWitTtsService::OnVoicesRequestError(const FString& ErrorMessage, const FString& HumanReadableErrorMessage)
+void UWitTtsService::OnVoicesRequestError(const FString& ErrorMessage, const FString& HumanReadableErrorMessage) const
 {
 	UE_LOG(LogWit, Warning, TEXT("Wit request failed with error: %s - %s"), *ErrorMessage, *HumanReadableErrorMessage);
 
 	// Calling OnSynthesizeResponse is kept for backwards compatibility if people are already using it but is otherwise replaced by OnWitError
-	
-	OnVoicesResponse.Broadcast(false);
-	OnVoicesError.Broadcast(ErrorMessage, HumanReadableErrorMessage);
+
+	if (EventHandler != nullptr)
+	{
+		EventHandler->OnVoicesResponse.Broadcast(false, FWitTtsVoicesResponse());
+		EventHandler->OnVoicesError.Broadcast(ErrorMessage, HumanReadableErrorMessage);
+	}
 }
 
 /**
@@ -440,7 +398,7 @@ void UWitTtsService::OnVoicesRequestError(const FString& ErrorMessage, const FSt
  * @param BinaryData [in] the binary data
  * @param ClipSettings [in] settings used in generating the clip
  */
-USoundWave* UWitTtsService::CreateSoundWaveAndAddToMemoryCache(const FString& ClipId, const TArray<uint8>& BinaryData, const FTtsConfiguration& ClipSettings)
+USoundWave* UWitTtsService::CreateSoundWaveAndAddToMemoryCache(const FString& ClipId, const TArray<uint8>& BinaryData, const FTtsConfiguration& ClipSettings) const
 {
 	USoundWave* SoundWave = FWitHelperUtilities::CreateSoundWaveFromRawData(BinaryData.GetData(), BinaryData.Num());
 
@@ -451,9 +409,9 @@ USoundWave* UWitTtsService::CreateSoundWaveAndAddToMemoryCache(const FString& Cl
 	
 	// Add to the memory cache. The memory cache stores sound waves
 
-	if (MemoryCache != nullptr)
+	if (MemoryCacheHandler != nullptr)
 	{
-		MemoryCache->AddClip(ClipId, SoundWave, ClipSettings);
+		MemoryCacheHandler->AddClip(ClipId, SoundWave, ClipSettings);
 	}
 
 	return SoundWave;
@@ -465,7 +423,7 @@ USoundWave* UWitTtsService::CreateSoundWaveAndAddToMemoryCache(const FString& Cl
  * Write the captured voice input to a wav file. The output file will be written to the project folder's Saved/BouncedWavFiles folder as
  * Wit/RecordedVoiceInput.wav. This only works with 16-bit samples
  */
-void UWitTtsService::WriteRawPCMDataToWavFile(const uint8* RawPCMData, int32 RawPCMDataSize, int32 NumChannels, int32 SampleRate)
+void UWitTtsService::WriteRawPCMDataToWavFile(const uint8* RawPCMData, const int32 RawPCMDataSize, const int32 NumChannels, const int32 SampleRate)
 {
 	TTSRecordingData.Reset(new Audio::FAudioRecordingData());
 	TTSRecordingData->InputBuffer = Audio::TSampleBuffer<int16>(reinterpret_cast<const int16*>(RawPCMData), RawPCMDataSize / 2, NumChannels, SampleRate);

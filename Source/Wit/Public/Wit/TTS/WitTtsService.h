@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the license found in the
@@ -8,27 +8,19 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "TTS/Cache/Memory/TtsMemoryCacheHandler.h"
-#include "TTS/Cache/Storage/TtsStorageCacheHandler.h"
 #include "TTS/Configuration/TtsConfiguration.h"
-#include "TTS/Configuration/TtsVoicePresetAsset.h"
-#include "Wit/Configuration/WitAppConfigurationAsset.h"
+#include "TTS/Service/TtsService.h"
 #include "Wit/Request/WitResponse.h"
 #include "WitTtsService.generated.h"
 
 class FJsonObject;
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSynthesizeResponseDelegate, const bool, bIsSuccessful, USoundWave*, SoundWave);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSynthesizeErrorDelegate, const FString&, ErrorMessage, const FString&, HumanReadableMessage);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnVoicesResponseDelegate, const bool, bIsSuccessful);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnVoicesErrorDelegate, const FString&, ErrorMessage, const FString&, HumanReadableMessage);
 
 /**
  * Component that encapsulates the Wit Text to Speech API. Provides functionality for speech synthesis from text input
  * using Wit.ai. To use it simply attach the UWitTtsService component in the hierarchy of any Actor
  */
 UCLASS( ClassGroup=(Meta), meta=(BlueprintSpawnableComponent) )
-class WIT_API UWitTtsService final : public UActorComponent
+class WIT_API UWitTtsService final : public UTtsService
 {
 	GENERATED_BODY()
 
@@ -38,97 +30,14 @@ public:
 	 * Default constructor
 	 */
 	UWitTtsService();
-		
-	/**
-	 * Is a Wit.ai request currently in progress?
-	 *
-	 * @return true if in progress otherwise false
-	 */
-	UFUNCTION(BlueprintCallable, Category="TTS")
-	bool IsRequestInProgress() const;
 	
 	/**
-	 * Sends a text string to Wit for conversion to speech with default settings
-	 *
-	 * @param TextToConvert [in] the string we want to convert to speech
+	 * ITtsService overrides
 	 */
-	UFUNCTION(BlueprintCallable, Category="TTS")
-	void ConvertTextToSpeech(const FString& TextToConvert);
-
-	/**
-	 * Sends a text string to Wit for conversion to speech with custom settings
-	 *
-	 * @param ClipSettings [in] the string we want to convert to speech
-	 */
-	UFUNCTION(BlueprintCallable, Category="TTS")
-	void ConvertTextToSpeechWithSettings(const FTtsConfiguration& ClipSettings);
-
-	/**
-	 * Fetch a list of available voices from Wit
-	 */
-	UFUNCTION(BlueprintCallable, Category="TTS")
-	void FetchAvailableVoices();
-	
-	/**
-	 * Unload a single clip from the memory cache
-	 *
-	 * @param ClipId [in] id of the clip to unload
-	 */
-	UFUNCTION(BlueprintCallable, Category="TTS")
-	void UnloadClip(const FString& ClipId);
-	
-	/**
-	 * Unload all clips from the memory cache
-	 */
-	UFUNCTION(BlueprintCallable, Category="TTS")
-	void UnloadAllClips();
-	
-	/**
-	 * Remove a single clip from the storage cache
-	 *
-	 * @param ClipId [in] id of the clip to delete
-	 * @param CacheLocation [in] location of the clip
-	 */
-	UFUNCTION(BlueprintCallable, Category="TTS")
-	void DeleteClip(const FString& ClipId, const ETtsStorageCacheLocation CacheLocation);
-	
-	/**
-	 * Remove all clips from the storage cache
-	 *
-	 * @param CacheLocation [in] location of the clip
-	 */
-	UFUNCTION(BlueprintCallable, Category="TTS")
-	void DeleteAllClips(const ETtsStorageCacheLocation CacheLocation);
-	
-	/**
-	 * The Wit configuration that will be used by Wit.ai
-	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TTS")
-	UWitAppConfigurationAsset* Configuration{};
-  
-	/**
-	 * The Wit TTS Voice Preset that will be used by Wit.ai
-	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TTS")
-	UTtsVoicePresetAsset* VoicePreset{};
-
-	/**
-	 * The Wit TTS Voice Preset that will be used by Wit.ai
-	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TTS|Voices")
-	FWitTtsVoicesResponse AvailableVoices{};
-
-	/**
-	  * Memory cache to store converted voice clips as USoundWave
-	  */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "TTS Cache")
-	UTtsMemoryCacheHandler* MemoryCache{};
-
-	/**
-	 * Storage cache to store converted voice clips as raw data
-	 */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "TTS Cache")
-	UTtsStorageCacheHandler* StorageCache{};
+	virtual bool IsRequestInProgress() const override;
+	virtual void ConvertTextToSpeech(const FString& TextToConvert) override;
+	virtual void ConvertTextToSpeechWithSettings(const FTtsConfiguration& ClipSettings) override;
+	virtual void FetchAvailableVoices() override;
 
 #if WITH_EDITORONLY_DATA
 
@@ -140,30 +49,6 @@ public:
 	bool bIsWavFileOutputEnabled{false};
 
 #endif
-	
-	/**
-	 * Callback to call when a synthesize request has been fully processed. The callback receives a USoundWave containing the received wav
-	 */
-	UPROPERTY(BlueprintAssignable)
-	FOnSynthesizeResponseDelegate OnSynthesizeResponse{};
-
-	/**
-	 * Callback to call when a synthesize error occurs
-	 */
-	UPROPERTY(BlueprintAssignable)
-	FOnSynthesizeErrorDelegate OnSynthesizeError{};
-
-	/**
-	 * Callback to call when a voices request has been fully processed. The callback receives a list of available voices
-	 */
-	UPROPERTY(BlueprintAssignable)
-	FOnVoicesResponseDelegate OnVoicesResponse{};
-
-	/**
-	 * Callback to call when a voices error occurs
-	 */
-	UPROPERTY(BlueprintAssignable)
-	FOnVoicesErrorDelegate OnVoicesError{};
 
 protected:
 	
@@ -178,28 +63,29 @@ private:
 #if WITH_EDITORONLY_DATA
 	
 	/** Write the captured voice input to a wav file */
-	static void WriteRawPCMDataToWavFile(const uint8* RawPCMData, int32 RawPCMDataSize, int32 NumChannels, int32 SampleRate);
+	static void WriteRawPCMDataToWavFile(const uint8* RawPCMData, const int32 RawPCMDataSize, const int32 NumChannels, const int32 SampleRate);
 
 #endif
 	
 	/** Called when a storage cache request is fully completed to process the loaded data */
-	void OnStorageCacheRequestComplete(const TArray<uint8>& BinaryData, const FTtsConfiguration& ClipSettings);
+	void OnStorageCacheRequestComplete(const TArray<uint8>& BinaryData, const FTtsConfiguration& ClipSettings) const;
 
 	/** Called when a Wit synthesize request is fully completed to process the response payload */
-	void OnSynthesizeRequestComplete(const TArray<uint8>& BinaryResponse, const TSharedPtr<FJsonObject> JsonResponse);
+	void OnSynthesizeRequestComplete(const TArray<uint8>& BinaryResponse, const TSharedPtr<FJsonObject> JsonResponse) const;
 
 	/** Called when a synthesize request errors */
-	void OnSynthesizeRequestError(const FString& ErrorMessage, const FString& HumanReadableErrorMessage);
+	void OnSynthesizeRequestError(const FString& ErrorMessage, const FString& HumanReadableErrorMessage) const;
 
 	/** Called when a Wit voices request is fully completed to process the response payload */
 	void OnVoicesRequestComplete(const TArray<uint8>& BinaryResponse, const TSharedPtr<FJsonObject> JsonResponse);
 
 	/** Called when a voices request errors */
-	void OnVoicesRequestError(const FString& ErrorMessage, const FString& HumanReadableErrorMessage);
+	void OnVoicesRequestError(const FString& ErrorMessage, const FString& HumanReadableErrorMessage) const;
 
 	/** Creates a sound wave from binary data and adds it to the memory cache */
-	USoundWave* CreateSoundWaveAndAddToMemoryCache(const FString& ClipId, const TArray<uint8>& BinaryData, const FTtsConfiguration& ClipSettings);
+	USoundWave* CreateSoundWaveAndAddToMemoryCache(const FString& ClipId, const TArray<uint8>& BinaryData, const FTtsConfiguration& ClipSettings) const;
 
 	/** Last requested generation settings */
 	FTtsConfiguration LastRequestedClipSettings{};
+
 };

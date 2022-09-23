@@ -9,6 +9,8 @@
 
 #include "VoiceConfiguration.generated.h"
 
+class USoundWave;
+
 /**
  * Emulation modes
  */

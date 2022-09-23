@@ -73,25 +73,25 @@ public:
 	/**
 	 * Is the clip capacity in use or not?
 	 */	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TTS Cache|Memory")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Capacity")
 	bool bIsClipCapacityEnabled{true};
 
 	/**
 	 * Maximum number of clips that can be stored at any one time in the cache
 	 */	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TTS Cache|Memory")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Capacity")
 	int32 ClipCapacity{100};
 
 	/**
 	 * Is the memory capacity in use or not?
 	 */	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TTS Cache|Memory")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Capacity")
 	bool bIsMemoryCapacityEnabled{false};
 
 	/**
 	 * Maximum amount of clip memory that can be used at any one time by the cache
 	 */	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TTS Cache|Memory")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Capacity")
 	int32 MemoryCapacityInKilobytes{1024};
 
 	/**
@@ -126,18 +126,18 @@ private:
 	/**
 	 * All the clip ids currently stored
 	 */
-	UPROPERTY(VisibleAnywhere, Transient, Category = "TTS Cache|Memory")
+	UPROPERTY(VisibleAnywhere, Transient, Category = "Contents")
 	TArray<FString> ClipIds{};
 
 	/**
 	 * All the wav clips currently stored
 	 */
-	UPROPERTY(VisibleAnywhere, Transient, Category = "TTS Cache|Memory")
+	UPROPERTY(VisibleAnywhere, Transient, Category = "Contents")
 	TArray<USoundWave*> Clips{};
 
 	/**
 	 * All the generation settings currently stored
 	 */
-	UPROPERTY(VisibleAnywhere, Transient, Category = "TTS Cache|Memory")
+	UPROPERTY(VisibleAnywhere, Transient, Category = "Contents")
 	TArray<FTtsConfiguration> ClipSettingsArray{};
 };

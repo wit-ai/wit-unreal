@@ -6,10 +6,9 @@
  */
 
 #include "Wit/TTS/WitTtsSpeaker.h"
-
 #include "Components/AudioComponent.h"
-#include "TTS/Cache/Memory/TtsMemoryCache.h"
-#include "TTS/Cache/Storage/TtsStorageCache.h"
+#include "Wit/Utilities/WitHelperUtilities.h"
+#include "Wit/Utilities/WitLog.h"
 
 /**
  * Wit speaker constructor
@@ -18,10 +17,6 @@ AWitTtsSpeaker::AWitTtsSpeaker()
 	: Super()
 {
 	PrimaryActorTick.bCanEverTick = false;
-
-	WitTtsService = CreateDefaultSubobject<UWitTtsService>(TEXT("Service"));
-	WitTtsService->MemoryCache = CreateDefaultSubobject<UTtsMemoryCache>(TEXT("MemoryCache"));
-	WitTtsService->StorageCache = CreateDefaultSubobject<UTtsStorageCache>(TEXT("StorageCache"));
 	
 	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComponent"));
 }
@@ -30,13 +25,15 @@ AWitTtsSpeaker::AWitTtsSpeaker()
  * Called when play begins
  */
 void AWitTtsSpeaker::BeginPlay()
-{
-	Super::BeginPlay();
-
-	if (WitTtsService != nullptr)
+{	
+	if (EventHandler != nullptr)
 	{
-		WitTtsService->OnSynthesizeResponse.AddUniqueDynamic(this, &AWitTtsSpeaker::OnSynthesizeResponse);
+		UE_LOG(LogWit, Verbose, TEXT("BeginPlay: adding synthesize response callback"));
+		
+		EventHandler->OnSynthesizeResponse.AddUniqueDynamic(this, &AWitTtsSpeaker::OnSynthesizeResponse);
 	}
+
+	Super::BeginPlay();
 }
 
 /**
@@ -46,9 +43,9 @@ void AWitTtsSpeaker::BeginDestroy()
 {
 	Super::BeginDestroy();
 
-	if (WitTtsService != nullptr)
+	if (EventHandler != nullptr)
 	{
-		WitTtsService->OnSynthesizeResponse.RemoveDynamic(this, &AWitTtsSpeaker::OnSynthesizeResponse);
+		EventHandler->OnSynthesizeResponse.RemoveDynamic(this, &AWitTtsSpeaker::OnSynthesizeResponse);
 	}
 }
 
@@ -59,9 +56,17 @@ void AWitTtsSpeaker::BeginDestroy()
  */
 void AWitTtsSpeaker::Speak(const FString& TextToSpeak)
 {
-	if (WitTtsService != nullptr)
+	if (VoicePreset != nullptr)
 	{
-		WitTtsService->ConvertTextToSpeech(TextToSpeak);
+		FTtsConfiguration ClipSettings = VoicePreset->Synthesize;
+		
+		ClipSettings.Text = TextToSpeak;
+		
+		ConvertTextToSpeechWithSettings(ClipSettings);
+	}
+	else
+	{
+		ConvertTextToSpeech(TextToSpeak);
 	}
 }
 
@@ -73,10 +78,7 @@ void AWitTtsSpeaker::Speak(const FString& TextToSpeak)
  */
 void AWitTtsSpeaker::SpeakWithSettings(const FTtsConfiguration& ClipSettings)
 {
-	if (WitTtsService != nullptr)
-	{
-		WitTtsService->ConvertTextToSpeechWithSettings(ClipSettings);
-	}
+	ConvertTextToSpeechWithSettings(ClipSettings);
 }
 
 /**
@@ -107,12 +109,7 @@ bool AWitTtsSpeaker::IsSpeaking() const
  */
 bool AWitTtsSpeaker::IsLoading() const
 {
-	if (WitTtsService != nullptr)
-	{
-		return WitTtsService->IsRequestInProgress();
-	}
-
-	return false;
+	return IsRequestInProgress();
 }
 
 /**
