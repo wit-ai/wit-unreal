@@ -334,7 +334,7 @@ void UWitTtsService::OnSynthesizeRequestComplete(const TArray<uint8>& BinaryResp
  * @param ErrorMessage [in] the error message
  * @param HumanReadableErrorMessage [in] longer human readable error message
  */
-void UWitTtsService::OnSynthesizeRequestError(const FString& ErrorMessage, const FString& HumanReadableErrorMessage)
+void UWitTtsService::OnSynthesizeRequestError(const FString& ErrorMessage, const FString& HumanReadableErrorMessage) const
 {
 	UE_LOG(LogWit, Warning, TEXT("Wit request failed with error: %s - %s"), *ErrorMessage, *HumanReadableErrorMessage);
 
@@ -378,7 +378,7 @@ void UWitTtsService::OnVoicesRequestComplete(const TArray<uint8>& BinaryResponse
  * @param ErrorMessage [in] the error message
  * @param HumanReadableErrorMessage [in] longer human readable error message
  */
-void UWitTtsService::OnVoicesRequestError(const FString& ErrorMessage, const FString& HumanReadableErrorMessage)
+void UWitTtsService::OnVoicesRequestError(const FString& ErrorMessage, const FString& HumanReadableErrorMessage) const
 {
 	UE_LOG(LogWit, Warning, TEXT("Wit request failed with error: %s - %s"), *ErrorMessage, *HumanReadableErrorMessage);
 

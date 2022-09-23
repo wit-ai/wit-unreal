@@ -36,15 +36,15 @@ public:
 	/**
 	 * Speak a phrase with the default configuration
 	 *
-	 * @return true if speaking
+	 * @param TextToSpeak [in] text to speak
 	 */
 	UFUNCTION(BlueprintCallable, Category="TTS")
-	bool Speak() const;
+	void Speak(const FString& TextToSpeak);
 
 	/**
 	 * Speak a phrase with custom settings
 	 *
-	 * @return true if speech is loading
+	 * @param ClipSettings [in] the text and settings to speak
 	 */
 	UFUNCTION(BlueprintCallable, Category="TTS")
 	void SpeakWithSettings(const FTtsConfiguration& ClipSettings);
