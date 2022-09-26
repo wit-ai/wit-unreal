@@ -11,10 +11,12 @@
 #include "Http.h"
 #include "Serialization/BufferArchive.h"
 #include "Wit/Request/WitRequestConfiguration.h"
+#include "Subsystems/EngineSubsystem.h"
 #include "WitRequestSubsystem.generated.h"
 
 class FJsonObject;
 class FMemoryReader;
+class FSubsystemCollectionBase;
 
 /**
  * A class to track an in progress Wit.ai request. It essentially wraps a UE4 HTTP request
