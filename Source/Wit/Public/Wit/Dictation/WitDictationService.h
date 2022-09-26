@@ -8,6 +8,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Dictation/Configuration/DictationConfiguration.h"
 #include "Dictation/Service/DictationService.h"
 #include "Voice/Experience/VoiceExperience.h"
 #include "WitDictationService.generated.h"
@@ -51,10 +52,10 @@ private:
 	/** Callbacks that we will connect to the voice events */
 
 	UFUNCTION()
-	void OnFullTranscripton(const FString& Transcription);
+	void OnFullTranscription(const FString& Transcription);
 
 	UFUNCTION()
-	void OnPartialTranscripton(const FString& Transcription);
+	void OnPartialTranscription(const FString& Transcription);
 
 	UFUNCTION()
 	void OnStartVoiceInput();
@@ -67,7 +68,7 @@ private:
 
 	UFUNCTION()
 	void OnWitError(const FString& ErrorMessage, const FString& HumanReadableMessage);
-
+	
 	/**
 	 * The voice experience that dictation will use
 	 */

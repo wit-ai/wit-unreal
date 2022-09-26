@@ -24,20 +24,15 @@ UWitDictationService::UWitDictationService()
  */
 void UWitDictationService::BeginPlay()
 {
-	// TODO: Add configuration
-	
-	VoiceExperience = FWitHelperUtilities::FindVoiceExperience(GetWorld(), /*Configuration != nullptr ? Configuration->VoiceExperienceTag :*/ FName());
+	VoiceExperience = FWitHelperUtilities::FindVoiceExperience(GetWorld(), Configuration != nullptr ? Configuration->VoiceExperienceTag : FName());
 	
 	if (VoiceExperience != nullptr && VoiceExperience->VoiceEvents != nullptr)
 	{
 		UE_LOG(LogWit, Verbose, TEXT("BeginPlay: adding request customise callback"));
-
-		// TODO: Overriding the request customization globally is not great because it will affect all calls that go through this
-		// particular voice experience. This should really be done in a begin/end session for dictation
 		
 		VoiceExperience->VoiceEvents->OnRequestCustomize.BindUObject(this, &UWitDictationService::OnDictationRequestCustomize);
-		VoiceExperience->VoiceEvents->OnFullTranscription.AddUniqueDynamic(this, &UWitDictationService::OnFullTranscripton);
-		VoiceExperience->VoiceEvents->OnPartialTranscription.AddUniqueDynamic(this, &UWitDictationService::OnPartialTranscripton);
+		VoiceExperience->VoiceEvents->OnFullTranscription.AddUniqueDynamic(this, &UWitDictationService::OnFullTranscription);
+		VoiceExperience->VoiceEvents->OnPartialTranscription.AddUniqueDynamic(this, &UWitDictationService::OnPartialTranscription);
 		VoiceExperience->VoiceEvents->OnStartVoiceInput.AddUniqueDynamic(this, &UWitDictationService::OnStartVoiceInput);
 		VoiceExperience->VoiceEvents->OnStopVoiceInput.AddUniqueDynamic(this, &UWitDictationService::OnStopVoiceInput);
 		VoiceExperience->VoiceEvents->OnWitResponse.AddUniqueDynamic(this, &UWitDictationService::OnWitResponse);
@@ -57,8 +52,8 @@ void UWitDictationService::BeginDestroy()
 		UE_LOG(LogWit, Verbose, TEXT("BeginDestroy: removing request customise callback"));
 		
 		VoiceExperience->VoiceEvents->OnRequestCustomize.Unbind();
-		VoiceExperience->VoiceEvents->OnFullTranscription.RemoveDynamic(this, &UWitDictationService::OnFullTranscripton);
-		VoiceExperience->VoiceEvents->OnPartialTranscription.RemoveDynamic(this, &UWitDictationService::OnPartialTranscripton);
+		VoiceExperience->VoiceEvents->OnFullTranscription.RemoveDynamic(this, &UWitDictationService::OnFullTranscription);
+		VoiceExperience->VoiceEvents->OnPartialTranscription.RemoveDynamic(this, &UWitDictationService::OnPartialTranscription);
 		VoiceExperience->VoiceEvents->OnStartVoiceInput.RemoveDynamic(this, &UWitDictationService::OnStartVoiceInput);
 		VoiceExperience->VoiceEvents->OnStopVoiceInput.RemoveDynamic(this, &UWitDictationService::OnStopVoiceInput);
 		VoiceExperience->VoiceEvents->OnWitResponse.RemoveDynamic(this, &UWitDictationService::OnWitResponse);
@@ -180,7 +175,7 @@ void UWitDictationService::OnDictationRequestCustomize(FWitRequestConfiguration&
 /**
  * Callback to catch and pass on the full transcription event
  */
-void UWitDictationService::OnFullTranscripton(const FString& Transcription)
+void UWitDictationService::OnFullTranscription(const FString& Transcription)
 {
 	if (Events != nullptr)
 	{
@@ -191,7 +186,7 @@ void UWitDictationService::OnFullTranscripton(const FString& Transcription)
 /**
  * Callback to catch and pass on the partial transcription event
  */
-void UWitDictationService::OnPartialTranscripton(const FString& Transcription)
+void UWitDictationService::OnPartialTranscription(const FString& Transcription)
 {
 	if (Events != nullptr)
 	{

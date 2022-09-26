@@ -26,7 +26,7 @@ public:
 	 * Sets default values for this actor's properties
 	 */
 	AWitDictationExperience();
-
+	
 	/**
 	 * The wit dictation service
 	 */

@@ -8,6 +8,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Dictation/Configuration/DictationConfiguration.h"
 #include "GameFramework/Actor.h"
 #include "Dictation/Service/DictationService.h"
 #include "Dictation/Events/DictationEvents.h"
@@ -29,6 +30,12 @@ public:
 	ADictationExperience();
 
 	/**
+	 * The configuration that will be used by the voice service
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dictation")
+	FDictationConfiguration Configuration{};
+
+	/**
 	 * The underlying dictation service that implements the dictation functionality
 	 */
 	UPROPERTY(Transient)
@@ -37,28 +44,28 @@ public:
 	/**
 	 * The events used by the voice service
 	 */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Experience")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dictation")
 	UDictationEvents* DictationEvents{};
 	
 	/**
 	 * IDictationService overrides
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Experience")
+	UFUNCTION(BlueprintCallable, Category = "Dictation")
 	virtual bool ActivateDictation() override;
 	
-	UFUNCTION(BlueprintCallable, Category = "Experience")
+	UFUNCTION(BlueprintCallable, Category = "Dictation")
 	virtual bool ActivateDictationWithRequestOptions(const FString& RequestOptions) override;
 
-	UFUNCTION(BlueprintCallable, Category = "Experience")
+	UFUNCTION(BlueprintCallable, Category = "Dictation")
 	virtual bool ActivateDictationImmediately() override;
 
-	UFUNCTION(BlueprintCallable, Category = "Experience")
+	UFUNCTION(BlueprintCallable, Category = "Dictation")
 	virtual bool DeactivateDictation() override;
 
-	UFUNCTION(BlueprintCallable, Category = "Experience")
+	UFUNCTION(BlueprintCallable, Category = "Dictation")
 	virtual bool IsDictationActive() const override;
 	
-	UFUNCTION(BlueprintCallable, Category = "Experience")
+	UFUNCTION(BlueprintCallable, Category = "Dictation")
 	virtual bool IsRequestInProgress() const override;
 
 protected:

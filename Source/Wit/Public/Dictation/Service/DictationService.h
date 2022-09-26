@@ -24,7 +24,12 @@ class WIT_API UDictationService : public UActorComponent, public IDictationServi
 public:
 	
 	UDictationService() : Super() {};
-	
+
+	/**
+	 * Set the configuration to use for composer
+	 */
+	void SetConfiguration(const FDictationConfiguration* ConfigurationToUse) { Configuration = ConfigurationToUse; }
+
 	/**
 	 * Set the events to use with this service
 	 */
@@ -41,6 +46,9 @@ public:
 	virtual bool IsRequestInProgress() const override { return false; }
 
 protected:
+
+	/** Configuration to use with the voice service */
+	const FDictationConfiguration* Configuration{};
 
 	/**
 	 * The events that this service should use in callbacks

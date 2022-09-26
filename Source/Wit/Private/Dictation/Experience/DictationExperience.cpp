@@ -24,6 +24,7 @@ void ADictationExperience::BeginPlay()
 {
 	if (DictationService != nullptr)
 	{
+		DictationService->SetConfiguration(&Configuration);
 		DictationService->SetEvents(DictationEvents);
 	}
 	
