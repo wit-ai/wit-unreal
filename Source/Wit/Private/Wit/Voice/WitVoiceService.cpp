@@ -106,13 +106,16 @@ void UWitVoiceService::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	const bool bIsVoiceDataAvailable = VoiceCaptureSubsystem->Read();
 	const float CurrentVoiceAmplitude =  VoiceCaptureSubsystem->GetCurrentAmplitude();
 
+	LastActivateTime += DeltaTime;
+
 	// If we are not already streaming the voice data to Wit.ai then check to see if we've breached the threshold and should start streaming
 	
 	if (!bIsVoiceStreamingActive)
 	{
 		const bool bIsWakeThresholdReached = bIsVoiceDataAvailable && CurrentVoiceAmplitude > Configuration->Voice.WakeMinimumVolume;
-		
-		if (!bIsWakeThresholdReached)
+		const bool bIsWakeTimeReached = LastActivateTime >= Configuration->Voice.WakeMinimumTime;
+			
+		if (!bIsWakeThresholdReached || !bIsWakeTimeReached)
 		{
 			return;
 		}
@@ -120,7 +123,7 @@ void UWitVoiceService::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 		BeginStreamRequest();
 	}
 	
-	LastActivateTime += DeltaTime;
+	LastWakeTime += DeltaTime;
 
 	// Check for and read any new voice data that is available. Voice data may or may not be available depending on
 	// whether the user breaks a pre-defined volume threshold
@@ -158,7 +161,7 @@ void UWitVoiceService::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	// 2. If we exceed a user definable duration since we last received valid voice data
 
 	const bool bIsTooLongSinceVoiceDataReceived = (LastVoiceTime >= Configuration->Voice.KeepAliveTime);
-	const bool bIsTooLongSinceActivated = (LastActivateTime >= Configuration->Voice.MaximumRecordingTime);
+	const bool bIsTooLongSinceActivated = (LastWakeTime >= Configuration->Voice.MaximumRecordingTime);
 	const bool bShouldDeactivate = (bIsTooLongSinceVoiceDataReceived || bIsTooLongSinceActivated);
 	
 	if (bShouldDeactivate)
@@ -270,12 +273,29 @@ bool UWitVoiceService::ActivateVoiceInput()
 
 	UE_LOG(LogWit, Display, TEXT("ActivateVoiceInput: activated voice input"));
 
+	// Set the mic thresholds
+	
+	IConsoleVariable* SilenceDetectionThreshold = IConsoleManager::Get().FindConsoleVariable(TEXT("voice.SilenceDetectionThreshold"));
+	
+	if (SilenceDetectionThreshold != nullptr)
+	{
+		SilenceDetectionThreshold->Set(Configuration->Voice.MicNoiseThreshold);
+	}
+	
+	IConsoleVariable* NoiseGateThreshold = IConsoleManager::Get().FindConsoleVariable(TEXT("voice.MicNoiseGateThreshold"));
+	
+	if (NoiseGateThreshold != nullptr)
+	{
+		NoiseGateThreshold->Set(Configuration->Voice.MicNoiseThreshold);
+	}
+	
 	// We enable the tick in order to be able to handle auto-deactivation and reading data into the request
 
 	SetComponentTickEnabled(true);
 	
 	LastVoiceTime = 0.0f;
 	LastActivateTime = 0.0f;
+	LastWakeTime = 0.0f;
 	
 	// Notify that we've started accepting voice input
 

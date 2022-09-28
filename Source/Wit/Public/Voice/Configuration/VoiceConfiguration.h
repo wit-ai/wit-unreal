@@ -31,10 +31,22 @@ struct WIT_API FVoiceConfiguration
 	GENERATED_BODY()
 
 	/**
+	 * The mic noise threshold
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Activation", meta=(ClampMin = 0, ClampMax = 1))
+	float MicNoiseThreshold{0.01f};
+
+	/**
 	 * Until we reach this minimum voice volume the data will not start streaming to Wit.ai
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Activation", meta=(ClampMin = 0, ClampMax = 1))
 	float WakeMinimumVolume{0.01f};
+
+	/**
+	 * Until we reach this amount of time the data will not start streaming to Wit.ai
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Activation", meta=(ClampMin = 0, ClampMax = 10))
+	float WakeMinimumTime{0.5f};
 
 	/**
 	 * The minimum voice volume for keeping the voice input active
@@ -49,9 +61,11 @@ struct WIT_API FVoiceConfiguration
 	float KeepAliveTime{2.0f};
 	
 	/**
-	 * If the voice input goes on longer than this then we automatically deactivate. 20 seconds is the hard limit for Wit.ai processing
+	 * If the voice input goes on longer than this then we automatically deactivate.
+	 * 20 seconds is the hard limit for the /speech endpoint
+	 * 300 seconds is the hard limit for the /dictation endpoint
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Keep Alive", meta=(ClampMin = 0, ClampMax = 20))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Keep Alive", meta=(ClampMin = 0, ClampMax = 300))
 	float MaximumRecordingTime{20.0f};
 
 	/**
