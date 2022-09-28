@@ -105,5 +105,7 @@ private:
 
 	/** Used to track how long since we activated voice input when capturing */
 	float LastActivateTime{0.0f};
-	
+
+	/** Used to track how long since we reached wake volume when capturing */
+	float LastWakeTime{0.0f};
 };
