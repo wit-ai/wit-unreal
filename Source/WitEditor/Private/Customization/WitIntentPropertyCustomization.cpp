@@ -318,7 +318,7 @@ UActorComponent* FWitIntentPropertyCustomization::AddNewComponent(AActor* ActorI
 
 	for (UActorComponent* ActorComponent : PostInstanceComponents)
 	{
-		if (!ActorComponent->IsRegistered() && ActorComponent->bAutoRegister && !ActorComponent->IsPendingKill() && !PreInstanceComponents.Contains(ActorComponent))
+		if (!ActorComponent->IsRegistered() && ActorComponent->bAutoRegister && IsValid(ActorComponent) && !PreInstanceComponents.Contains(ActorComponent))
 		{
 			ActorComponent->RegisterComponent();
 		}

@@ -14,7 +14,11 @@
 /**
  * Null implementation of voice capture. This just returns 1 second of known input to hit the wake volume and then silence after
  */
+#if UE_VERSION_OLDER_THAN(5,0,0)
 class FVoiceCaptureEmulation final : public IVoiceCapture, public FTickerObjectBase
+#else
+class FVoiceCaptureEmulation final : public IVoiceCapture, public FTSTickerObjectBase
+#endif
 {
 public:
 
