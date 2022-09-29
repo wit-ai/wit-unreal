@@ -64,4 +64,10 @@ struct WIT_API FWitRequestConfiguration
 
 	/** Tracks whether we should use the HTTP 1 chunked transfer protocol in the request */
 	bool bShouldUseChunkedTransfer{false};
+
+	/** Custom timeout */
+	bool bShouldUseCustomHttpTimeout{false};
+
+	/** Custom timeout duration */
+	float HttpTimeout{180.0f};
 };

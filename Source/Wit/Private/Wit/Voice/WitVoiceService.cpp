@@ -367,12 +367,16 @@ void UWitVoiceService::BeginStreamRequest()
 
 	FWitRequestConfiguration RequestConfiguration{};
 
-	FWitRequestBuilder::SetRequestConfigurationWithDefaults(RequestConfiguration, EWitRequestEndpoint::Speech, Configuration->Application.ClientAccessToken, Configuration->Application.ApiVersion, Configuration->Application.URL);
+	FWitRequestBuilder::SetRequestConfigurationWithDefaults(RequestConfiguration, EWitRequestEndpoint::Speech, Configuration->Application.ClientAccessToken,
+		Configuration->Application.Advanced.ApiVersion, Configuration->Application.Advanced.URL);
 	FWitRequestBuilder::AddFormatContentType(RequestConfiguration, Format);
 	FWitRequestBuilder::AddEncodingContentType(RequestConfiguration, Encoding);
 	FWitRequestBuilder::AddSampleSizeContentType(RequestConfiguration, SampleSize);
 	FWitRequestBuilder::AddRateContentType(RequestConfiguration, VoiceCaptureSubsystem->SampleRate);
 	FWitRequestBuilder::AddEndianContentType(RequestConfiguration, EWitRequestEndian::Little);
+
+	RequestConfiguration.bShouldUseCustomHttpTimeout = Configuration->Application.Advanced.bIsCustomHttpTimeout;
+	RequestConfiguration.HttpTimeout = Configuration->Application.Advanced.HttpTimeout;
 
 	RequestConfiguration.OnRequestError.AddUObject(this, &UWitVoiceService::OnWitRequestError);
 	RequestConfiguration.OnRequestProgress.AddUObject(this, &UWitVoiceService::OnSpeechRequestProgress);
@@ -592,10 +596,14 @@ void UWitVoiceService::SendTranscription(const FString& Text)
 
 	FWitRequestConfiguration RequestConfiguration{};
 
-	FWitRequestBuilder::SetRequestConfigurationWithDefaults(RequestConfiguration, EWitRequestEndpoint::Message, Configuration->Application.ClientAccessToken, Configuration->Application.ApiVersion, Configuration->Application.URL);
+	FWitRequestBuilder::SetRequestConfigurationWithDefaults(RequestConfiguration, EWitRequestEndpoint::Message, Configuration->Application.ClientAccessToken,
+		Configuration->Application.Advanced.ApiVersion, Configuration->Application.Advanced.URL);
 
 	const FString EncodedText = FGenericPlatformHttp::UrlEncode(Text);
 	FWitRequestBuilder::AddParameter(RequestConfiguration, EWitParameter::Text, EncodedText);
+
+	RequestConfiguration.bShouldUseCustomHttpTimeout = Configuration->Application.Advanced.bIsCustomHttpTimeout;
+	RequestConfiguration.HttpTimeout = Configuration->Application.Advanced.HttpTimeout;
 
 	RequestConfiguration.OnRequestError.AddUObject(this, &UWitVoiceService::OnWitRequestError);
 	RequestConfiguration.OnRequestComplete.AddUObject(this, &UWitVoiceService::OnSpeechRequestComplete);

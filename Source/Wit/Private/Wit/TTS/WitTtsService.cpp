@@ -147,9 +147,13 @@ void UWitTtsService::ConvertTextToSpeechWithSettings(const FTtsConfiguration& Cl
 
 	FWitRequestConfiguration RequestConfiguration{};
 
-	FWitRequestBuilder::SetRequestConfigurationWithDefaults(RequestConfiguration, EWitRequestEndpoint::Synthesize, Configuration->Application.ClientAccessToken, Configuration->Application.ApiVersion, Configuration->Application.URL);
+	FWitRequestBuilder::SetRequestConfigurationWithDefaults(RequestConfiguration, EWitRequestEndpoint::Synthesize, Configuration->Application.ClientAccessToken,
+		Configuration->Application.Advanced.ApiVersion, Configuration->Application.Advanced.URL);
 	FWitRequestBuilder::AddFormatContentType(RequestConfiguration, EWitRequestFormat::Json);
 	FWitRequestBuilder::AddFormatAccept(RequestConfiguration, EWitRequestFormat::Wav);
+
+	RequestConfiguration.bShouldUseCustomHttpTimeout = Configuration->Application.Advanced.bIsCustomHttpTimeout;
+	RequestConfiguration.HttpTimeout = Configuration->Application.Advanced.HttpTimeout;
 
 	RequestConfiguration.OnRequestError.AddUObject(this, &UWitTtsService::OnSynthesizeRequestError);
 	RequestConfiguration.OnRequestComplete.AddUObject(this, &UWitTtsService::OnSynthesizeRequestComplete);
@@ -241,8 +245,12 @@ void UWitTtsService::FetchAvailableVoices()
 
 	FWitRequestConfiguration RequestConfiguration{};
 
-	FWitRequestBuilder::SetRequestConfigurationWithDefaults(RequestConfiguration, EWitRequestEndpoint::Voices, Configuration->Application.ClientAccessToken, Configuration->Application.ApiVersion, Configuration->Application.URL);
+	FWitRequestBuilder::SetRequestConfigurationWithDefaults(RequestConfiguration, EWitRequestEndpoint::Voices, Configuration->Application.ClientAccessToken,
+		Configuration->Application.Advanced.ApiVersion, Configuration->Application.Advanced.URL);
 	FWitRequestBuilder::AddFormatContentType(RequestConfiguration, EWitRequestFormat::Json);
+
+	RequestConfiguration.bShouldUseCustomHttpTimeout = Configuration->Application.Advanced.bIsCustomHttpTimeout;
+	RequestConfiguration.HttpTimeout = Configuration->Application.Advanced.HttpTimeout;
 
 	RequestConfiguration.OnRequestError.AddUObject(this, &UWitTtsService::OnVoicesRequestError);
 	RequestConfiguration.OnRequestComplete.AddUObject(this, &UWitTtsService::OnVoicesRequestComplete);
