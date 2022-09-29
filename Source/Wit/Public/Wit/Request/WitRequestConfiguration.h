@@ -10,6 +10,8 @@
 #include "CoreMinimal.h"
 #include "WitRequestConfiguration.generated.h"
 
+class FJsonObject;
+
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnWitRequestErrorDelegate, const FString&, const FString&);
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnWitRequestProgressDelegate, const TArray<uint8>&, const TSharedPtr<FJsonObject>);
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnWitRequestCompleteDelegate, const TArray<uint8>&, const TSharedPtr<FJsonObject>);
