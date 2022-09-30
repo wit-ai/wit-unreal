@@ -26,19 +26,19 @@ struct WIT_API FWitAppAdvancedConfiguration
 	/**
 	 * The optional API version to use when making requests to Wit.ai
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Request")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Request Overrides")
 	FString ApiVersion{};
 
 	/**
 	 * Should we use a custom HTTP request timeout?
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Request")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Request Overrides")
 	bool bIsCustomHttpTimeout{false};
 
 	/**
 	 * Custom request timeout in seconds
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Request", meta=(ClampMin = 1, ClampMax = 180))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Request Overrides", meta=(ClampMin = 1, ClampMax = 180))
 	float HttpTimeout{180.0f};
 	
 };
