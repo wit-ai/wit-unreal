@@ -1,26 +1,14 @@
-var fs = require('fs');
-const KEY_STRING = 'FString ApiVersion{"';
+/*
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
 
-function readWriteAsync() {
-  fs.readFile('..\\Source\\Wit\\Public\\Wit\\Configuration\\WitAppConfiguration.h', 'utf-8', function(err, data){
-    if (err) throw err;
-    let index = data.indexOf(KEY_STRING);
-    if(index === -1) {
-      console.log('Cannot find API version, please check WitAppConfiguration.h');
-      return;
-    }
-    index = index + KEY_STRING.length;
-    const version = getLatestVersion()
-    console.log(`Going to update version to ${version}`);
 
-    data = data.substring(0, index) + version + data.substring(index + version.length);
-
-    fs.writeFile('..\\Source\\Wit\\Public\\Wit\\Configuration\\WitAppConfiguration.h', data, 'utf-8', function (err) {
-      if (err) throw err;
-      console.log('filelistAsync complete');
-    });
-  });
-}
+const updateFileAsync = require("./helper");
+const KEY_STRING_START = 'FString ApiVersion{"';
+const KEY_STRING_END = '"';
 
 function getLatestVersion() {
   let date_ob = new Date();
@@ -30,4 +18,4 @@ function getLatestVersion() {
   return `${year}${month}${date}`
 }
 
-readWriteAsync()
+updateFileAsync('..\\Source\\Wit\\Public\\Wit\\Configuration\\WitAppConfiguration.h', KEY_STRING_START, getLatestVersion(), KEY_STRING_END);
