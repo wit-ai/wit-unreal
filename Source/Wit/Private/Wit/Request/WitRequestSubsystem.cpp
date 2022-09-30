@@ -85,13 +85,13 @@ void UWitRequestSubsystem::SendRequest()
 {
 	if (IsRequestInProgress())
 	{
-		UE_LOG(LogWit, Warning, TEXT("ProcessRequest: Attempting to process request when one is already in progress"));
+		UE_LOG(LogWit, Warning, TEXT("SendRequest: Attempting to process request when one is already in progress"));
 		return;
 	}
 
 	if (!bHasConfiguration)
 	{
-		UE_LOG(LogWit, Warning, TEXT("ProcessRequest: No configuration has been specified for the request"));
+		UE_LOG(LogWit, Warning, TEXT("SendRequest: No configuration has been specified for the request"));
 		return;
 	}
 
@@ -175,14 +175,26 @@ void UWitRequestSubsystem::SendRequest()
 	HttpRequest->OnRequestProgress().BindUObject(this, &UWitRequestSubsystem::OnRequestProgress);
 	HttpRequest->OnProcessRequestComplete().BindUObject(this, &UWitRequestSubsystem::OnRequestComplete);
 
+	// Set custom timeout
+
+	if (Configuration.bShouldUseCustomHttpTimeout)
+	{
+		UE_LOG(LogWit, Verbose, TEXT("SendRequest: Setting custom timeout to (%f)"), Configuration.HttpTimeout);
+
+		HttpRequest->SetTimeout(Configuration.HttpTimeout);	
+	}
+
+	// Finally send off the request
+	
 	if (HttpRequest != nullptr)
 	{
 		HttpRequest->ProcessRequest();
-		UE_LOG(LogWit, Verbose, TEXT("ProcessRequest: Url is (%s), Content type is (%s) and Content length is (%d)"), *HttpRequest->GetURL(), *HttpRequest->GetHeader("Content-Type"), ContentStream.Num());
+
+		UE_LOG(LogWit, Verbose, TEXT("SendRequest: Url is (%s), Content type is (%s) and Content length is (%d)"), *HttpRequest->GetURL(), *HttpRequest->GetHeader("Content-Type"), ContentStream.Num());
 	}
 	else
 	{
-		UE_LOG(LogWit, Warning, TEXT("ProcessRequest: failed"));
+		UE_LOG(LogWit, Warning, TEXT("SendRequest: failed"));
 	}
 }
 
