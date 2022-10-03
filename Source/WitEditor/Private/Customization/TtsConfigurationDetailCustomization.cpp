@@ -243,8 +243,14 @@ FReply FTtsConfigurationDetailCustomization::OnCreatePresetButtonClicked()
 		for (const FWitTtsVoice& AvailableVoice: TtsExperience->EventHandler->VoicesResponse.En_US)
 		{
 			const FString PresetAssetName = AvailableVoice.Name;
-            const FString PackagePath = FString::Printf(TEXT("/Wit/Presets/%s"), *PresetAssetName);
+			
 
+            FString PackagePath = FString::Printf(TEXT("/Wit/Presets/%s"), *PresetAssetName);
+
+#if WITH_VOICESDK
+			PackagePath = FString::Printf(TEXT("/VoiceSDK/Presets/%s"), *PresetAssetName);
+#endif
+			
             UPackage* PresetPackage = CreatePackage(*PackagePath);
 
             if (PresetPackage == nullptr)
