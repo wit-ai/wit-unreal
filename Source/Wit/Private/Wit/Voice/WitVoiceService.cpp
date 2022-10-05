@@ -717,6 +717,7 @@ void UWitVoiceService::OnSpeechRequestComplete(const TArray<uint8>& BinaryRespon
 		return;		
 	}
 	
+	Events->WitResponse.Is_Final = false;
 	const bool bIsConversionError = !FWitHelperUtilities::ConvertJsonToWitResponse(JsonResponse.ToSharedRef(), &Events->WitResponse);
 	if (bIsConversionError)
 	{
