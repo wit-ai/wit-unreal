@@ -647,6 +647,8 @@ void UWitVoiceService::AcceptPartialResponseAndCancelRequest(const FWitResponse&
 	}
 
 	RequestSubsystem->CancelRequest();
+	
+	 const_cast<UWitVoiceService*>(this)->DeactivateVoiceInput();
 
 	FWitResponse FinalResponse = Response;
 	FinalResponse.Is_Final = true;
@@ -693,6 +695,8 @@ void UWitVoiceService::OnPartialResponse(const TArray<uint8>& PartialBinaryRespo
 		return;		
 	}
 	
+	Events->WitResponse.Reset();
+	
 	const bool bIsConversionError = !FWitHelperUtilities::ConvertJsonToWitResponse(PartialJsonResponse.ToSharedRef(), &Events->WitResponse);
 	
 	if (bIsConversionError)
@@ -717,7 +721,8 @@ void UWitVoiceService::OnSpeechRequestComplete(const TArray<uint8>& BinaryRespon
 		return;		
 	}
 	
-	Events->WitResponse.Is_Final = false;
+	Events->WitResponse.Reset();
+	
 	const bool bIsConversionError = !FWitHelperUtilities::ConvertJsonToWitResponse(JsonResponse.ToSharedRef(), &Events->WitResponse);
 	if (bIsConversionError)
 	{
