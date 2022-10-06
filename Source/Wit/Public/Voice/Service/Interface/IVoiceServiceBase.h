@@ -115,6 +115,6 @@ public:
 	 *
 	 * @param Response [in] the Partial Response to accept, this will be used as final response to call onResponse.
 	 */
-	virtual void AcceptPartialResponseAndCancelRequest(const FWitResponse& Response) const = 0;
+	virtual void AcceptPartialResponseAndCancelRequest(const FWitResponse& Response) = 0;
 
 };

@@ -636,7 +636,7 @@ void UWitVoiceService::SendTranscriptionWithRequestOptions(const FString& Text, 
  *
  * @param Response [in] the Partial Response to accept, this will be used as final response to call onResponse.
  */
-void UWitVoiceService::AcceptPartialResponseAndCancelRequest(const FWitResponse& Response) const
+void UWitVoiceService::AcceptPartialResponseAndCancelRequest(const FWitResponse& Response)
 {
 	UWitRequestSubsystem* RequestSubsystem = GEngine->GetEngineSubsystem<UWitRequestSubsystem>();
 
@@ -647,8 +647,8 @@ void UWitVoiceService::AcceptPartialResponseAndCancelRequest(const FWitResponse&
 	}
 
 	RequestSubsystem->CancelRequest();
-	
-	 const_cast<UWitVoiceService*>(this)->DeactivateVoiceInput();
+
+	DeactivateVoiceInput();
 
 	FWitResponse FinalResponse = Response;
 	FinalResponse.Is_Final = true;

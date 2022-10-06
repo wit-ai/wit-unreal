@@ -299,7 +299,7 @@ bool FWitHelperUtilities::ConvertJsonToWitResponse(const TSharedPtr<FJsonObject>
 
 void FWitHelperUtilities::AcceptPartialResponseAndCancelRequest(const UWorld* World, const FName& Tag, const FWitResponse& Response)
 {
-	const AVoiceExperience* VoiceExperience = FWitHelperUtilities::FindVoiceExperience(World, Tag);
+	AVoiceExperience* VoiceExperience = FWitHelperUtilities::FindVoiceExperience(World, Tag);
 	
 	if (VoiceExperience == nullptr)
 	{
