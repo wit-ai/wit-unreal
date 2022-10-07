@@ -34,59 +34,59 @@ public:
 	 */
 	UPROPERTY(Transient)
 	UVoiceService* VoiceService{};
-	
-	/**
-	 * The events used by the voice service
-	 */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Voice Experience")
-	UVoiceEvents* VoiceEvents{};
-
+		
 	/**
 	 * The configuration that will be used 
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Voice Experience")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Voice")
 	UWitAppConfigurationAsset* Configuration{};
+
+	/**
+	 * The events used by the voice service
+	 */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Voice")
+	UVoiceEvents* VoiceEvents{};
 
 	/**
 	 * IVoiceService overrides
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Voice Experience")
+	UFUNCTION(BlueprintCallable, Category = "Voice")
 	virtual bool ActivateVoiceInput() override;
 	
-	UFUNCTION(BlueprintCallable, Category = "Voice Experience")
+	UFUNCTION(BlueprintCallable, Category = "Voice")
 	virtual bool ActivateVoiceInputWithRequestOptions(const FString& RequestOptions) override;
 
-	UFUNCTION(BlueprintCallable, Category = "Voice Experience")
+	UFUNCTION(BlueprintCallable, Category = "Voice")
 	virtual bool ActivateVoiceInputImmediately() override;
 	
-	UFUNCTION(BlueprintCallable, Category = "Voice Experience")
+	UFUNCTION(BlueprintCallable, Category = "Voice")
 	virtual bool ActivateVoiceInputImmediatelyWithRequestOptions(const FString& RequestOptions) override;
 
-	UFUNCTION(BlueprintCallable, Category = "Voice Experience")
+	UFUNCTION(BlueprintCallable, Category = "Voice")
 	virtual bool DeactivateVoiceInput() override;
 	
-	UFUNCTION(BlueprintCallable, Category = "Voice Experience")
+	UFUNCTION(BlueprintCallable, Category = "Voice")
 	virtual bool DeactivateAndAbortRequest() override;
 
-	UFUNCTION(BlueprintCallable, Category = "Voice Experience")
+	UFUNCTION(BlueprintCallable, Category = "Voice")
 	virtual bool IsVoiceInputActive() const override;
 
-	UFUNCTION(BlueprintCallable, Category = "Voice Experience")
+	UFUNCTION(BlueprintCallable, Category = "Voice")
 	virtual float GetVoiceInputVolume() const override;
 
-	UFUNCTION(BlueprintCallable, Category = "Voice Experience")
+	UFUNCTION(BlueprintCallable, Category = "Voice")
 	virtual bool IsVoiceStreamingActive() const override;
 
-	UFUNCTION(BlueprintCallable, Category = "Voice Experience")
+	UFUNCTION(BlueprintCallable, Category = "Voice")
 	virtual bool IsRequestInProgress() const override;
 
-	UFUNCTION(BlueprintCallable, Category = "Voice Experience")
+	UFUNCTION(BlueprintCallable, Category = "Voice")
 	virtual void SendTranscription(const FString& Text) override;
 
-	UFUNCTION(BlueprintCallable, Category = "Voice Experience")
+	UFUNCTION(BlueprintCallable, Category = "Voice")
 	virtual void SendTranscriptionWithRequestOptions(const FString& Text, const FString& RequestOptions) override;
 
-	UFUNCTION(BlueprintCallable, BlueprintPure=false, Category = "Voice Experience")
+	UFUNCTION(BlueprintCallable, BlueprintPure=false, Category = "Voice")
 	virtual void AcceptPartialResponseAndCancelRequest(const FWitResponse& Response) override;
 
 protected:
