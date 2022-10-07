@@ -636,7 +636,7 @@ void UWitVoiceService::SendTranscriptionWithRequestOptions(const FString& Text, 
  *
  * @param Response [in] the Partial Response to accept, this will be used as final response to call onResponse.
  */
-void UWitVoiceService::AcceptPartialResponseAndCancelRequest(const FWitResponse& Response) const
+void UWitVoiceService::AcceptPartialResponseAndCancelRequest(const FWitResponse& Response)
 {
 	UWitRequestSubsystem* RequestSubsystem = GEngine->GetEngineSubsystem<UWitRequestSubsystem>();
 
@@ -647,6 +647,8 @@ void UWitVoiceService::AcceptPartialResponseAndCancelRequest(const FWitResponse&
 	}
 
 	RequestSubsystem->CancelRequest();
+
+	DeactivateVoiceInput();
 
 	FWitResponse FinalResponse = Response;
 	FinalResponse.Is_Final = true;
@@ -693,6 +695,8 @@ void UWitVoiceService::OnPartialResponse(const TArray<uint8>& PartialBinaryRespo
 		return;		
 	}
 	
+	Events->WitResponse.Reset();
+	
 	const bool bIsConversionError = !FWitHelperUtilities::ConvertJsonToWitResponse(PartialJsonResponse.ToSharedRef(), &Events->WitResponse);
 	
 	if (bIsConversionError)
@@ -716,6 +720,8 @@ void UWitVoiceService::OnSpeechRequestComplete(const TArray<uint8>& BinaryRespon
 	{
 		return;		
 	}
+	
+	Events->WitResponse.Reset();
 	
 	const bool bIsConversionError = !FWitHelperUtilities::ConvertJsonToWitResponse(JsonResponse.ToSharedRef(), &Events->WitResponse);
 	if (bIsConversionError)

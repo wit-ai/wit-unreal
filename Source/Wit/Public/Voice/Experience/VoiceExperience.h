@@ -87,7 +87,7 @@ public:
 	virtual void SendTranscriptionWithRequestOptions(const FString& Text, const FString& RequestOptions) override;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure=false, Category = "Voice Experience")
-	virtual void AcceptPartialResponseAndCancelRequest(const FWitResponse& Response) const override;
+	virtual void AcceptPartialResponseAndCancelRequest(const FWitResponse& Response) override;
 
 protected:
 

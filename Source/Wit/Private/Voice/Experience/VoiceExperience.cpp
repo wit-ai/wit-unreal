@@ -221,7 +221,7 @@ void AVoiceExperience::SendTranscriptionWithRequestOptions(const FString& Text, 
  * @param Response [in] the Partial Response to accept, this will be used as final response to call onResponse.
  * 
  */
-void AVoiceExperience::AcceptPartialResponseAndCancelRequest(const FWitResponse& Response) const
+void AVoiceExperience::AcceptPartialResponseAndCancelRequest(const FWitResponse& Response)
 {
 	if (VoiceService != nullptr)
 	{

@@ -52,7 +52,7 @@ public:
 	virtual bool IsRequestInProgress() const override { return false; }
 	virtual void SendTranscription(const FString& Text) override {}
 	virtual void SendTranscriptionWithRequestOptions(const FString& Text, const FString& RequestOptions) override {}
-	virtual void AcceptPartialResponseAndCancelRequest(const FWitResponse& Response) const override {}
+	virtual void AcceptPartialResponseAndCancelRequest(const FWitResponse& Response) override {}
 
 protected:
 

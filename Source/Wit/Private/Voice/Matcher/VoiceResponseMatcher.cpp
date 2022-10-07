@@ -37,7 +37,7 @@ void UVoiceResponseMatcher::BeginPlay()
 		return;
 	}
 
-	UE_LOG(LogWit, Verbose, TEXT("UVoiceIntentMatcher: Registering response callback"));
+	UE_LOG(LogWit, Verbose, TEXT("UVoiceResponseMatcher: Registering response callback"));
 
 	VoiceExperience->VoiceEvents->OnWitResponse.AddUniqueDynamic(this, &UVoiceResponseMatcher::OnWitResponse);
 		
@@ -59,13 +59,13 @@ void UVoiceResponseMatcher::AcceptPartialResponse(const FWitResponse& Response)
 		return;
 	}
 	
-	UE_LOG(LogWit, Verbose, TEXT("UVoiceIntentMatcher: the partial response matched the intent and confidence threshold"));
+	UE_LOG(LogWit, Verbose, TEXT("UVoiceResponseMatcher: the partial responhe partial response matched the intent and confidence threshold"));
 
 	bool bShouldAcceptPartialResponse = false;
 	
 	if (bAutoAcceptPartialResponseOncePastMatcherCriteria)
 	{
-		UE_LOG(LogWit, Display, TEXT("UVoiceIntentMatcher: auto accept is on - accepting the partial response"));
+		UE_LOG(LogWit, Display, TEXT("UVoiceResponseMatcher: auto accept is on - accepting the partial response"));
 
 		bShouldAcceptPartialResponse = true;
 	}
@@ -78,7 +78,7 @@ void UVoiceResponseMatcher::AcceptPartialResponse(const FWitResponse& Response)
 		
 		if (PartialResponseValidatorInstance != nullptr && IWitPartialResponseValidator::Execute_ValidatePartialResponse(PartialResponseValidatorInstance, Response))
 		{
-			UE_LOG(LogWit, Display, TEXT("UVoiceIntentMatcher: partial response validator is supplied and validated - accepting the partial response"));
+			UE_LOG(LogWit, Display, TEXT("UVoiceResponseMatcher: partial response validator is supplied and validated - accepting the partial response"));
 
 			bShouldAcceptPartialResponse = true;
 		}
