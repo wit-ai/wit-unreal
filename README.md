@@ -10,5 +10,9 @@ The license for `wit-unreal` can be found in [LICENSE](https://github.com/wit-ai
 ## Terms of Use
 Our terms of use can be found at https://opensource.facebook.com/legal/terms.
 
+Use of Wit.ai services fall under the terms of use found here: https://wit.ai/terms.
+
 ## Privacy Policy
 Our privacy policy can be found at https://opensource.facebook.com/legal/privacy.
+
+The privacy policy for the Wit.ai service can be found at https://wit.ai/privacy.
