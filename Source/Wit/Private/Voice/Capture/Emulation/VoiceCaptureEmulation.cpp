@@ -6,6 +6,10 @@
  */
 
 #include "VoiceCaptureEmulation.h"
+
+#include "AudioDecompress.h"
+#include "AudioDevice.h"
+#include "Interfaces/IAudioFormat.h"
 #include "Wit/Utilities/WitLog.h"
 
 /**
@@ -51,8 +55,36 @@ bool FVoiceCaptureEmulation::Start()
 
 	if (SoundWave != nullptr)
 	{
-		UE_LOG(LogWit, Verbose, TEXT("FVoiceCaptureEmulation: starting with soundwave with duration (%f) and element count (%llu)"), SoundWave->GetDuration(), SoundWave->RawData.GetElementCount());
-		
+		UE_LOG(LogWit, Verbose, TEXT("FVoiceCaptureEmulation: starting with soundwave with duration (%f), element count (%llu), RawPCMDataSize (%lu), bDecompressedFromOgg (%s), ResourceSize (%lu)"),
+			SoundWave->GetDuration(), SoundWave->RawData.GetElementCount(), SoundWave->RawPCMDataSize, SoundWave->bDecompressedFromOgg? TEXT("yes"):TEXT("no") ,SoundWave->ResourceSize);
+
+        if (SoundWave->RawData.GetElementCount() == 0) {
+			bIsPackagedBuild = true;
+			
+			FAudioDevice * AudioDevice = GEngine ? GEngine->GetMainAudioDeviceRaw() : nullptr;
+
+			if (!AudioDevice) {
+				return false;
+			}
+
+			if (!SoundWave) {
+				return false;
+			}
+
+			if (SoundWave->GetName() == TEXT("None")) {
+				return false;
+			}
+
+			SoundWave->InitAudioResource(AudioDevice->GetRuntimeFormat(SoundWave));
+			ICompressedAudioInfo* CompressedAudioInfo = AudioDevice->CreateCompressedAudioInfo(SoundWave);
+			FSoundQualityInfo SoundQualityInfo = { 0 };
+			if (CompressedAudioInfo->ReadCompressedInfo(SoundWave->ResourceData, SoundWave->ResourceSize, &SoundQualityInfo))
+			{
+				DecompressedRawPCMData.SetNumZeroed(SoundQualityInfo.SampleDataSize);
+				CompressedAudioInfo->ExpandFile(DecompressedRawPCMData.GetData(), &SoundQualityInfo);
+			}
+			delete CompressedAudioInfo;
+        }
 		ProduceSoundDuration = SoundWave->Duration;
 	}
 	else
@@ -203,8 +235,11 @@ bool FVoiceCaptureEmulation::Tick(float DeltaTime)
 	
 	if (SoundWave != nullptr)
 	{
-		const uint64 ElementCount = SoundWave->RawData.GetElementCount();
+		uint64 ElementCount = SoundWave->RawData.GetElementCount();
 		
+		if (bIsPackagedBuild) {
+			ElementCount = SoundWave->RawPCMDataSize;
+		}
 		// Use the sound wave samples to generate capture data
 		
 		const uint64 LastSampleOffset = LastProduceSoundTimer / SoundWave->GetDuration() * static_cast<float>(ElementCount) / sizeof(int16);
@@ -232,10 +267,13 @@ bool FVoiceCaptureEmulation::Tick(float DeltaTime)
 		if (bIsAnyDataToCopy)
 		{
 			UncompressedAudioBuffer.AddUninitialized(DataSizeToCopy);
-		
-			const uint8* SoundData = static_cast<const uint8*>(SoundWave->RawData.LockReadOnly());
-			FMemory::Memcpy(UncompressedAudioBuffer.GetData(), &SoundData[LastDataIndex], DataSizeToCopy);
-			SoundWave->RawData.Unlock();
+			if (bIsPackagedBuild) {
+				FMemory::Memcpy(UncompressedAudioBuffer.GetData(), &DecompressedRawPCMData[LastDataIndex], DataSizeToCopy);
+			} else {
+				const uint8* SoundData = static_cast<const uint8*>(SoundWave->RawData.LockReadOnly());
+				FMemory::Memcpy(UncompressedAudioBuffer.GetData(), &SoundData[LastDataIndex], DataSizeToCopy);
+				SoundWave->RawData.Unlock();
+			}
 		}
 	}
 	else
