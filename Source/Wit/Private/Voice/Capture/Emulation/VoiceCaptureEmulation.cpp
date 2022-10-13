@@ -64,12 +64,12 @@ bool FVoiceCaptureEmulation::Start()
 			
 			FAudioDevice * AudioDevice = GEngine ? GEngine->GetMainAudioDeviceRaw() : nullptr;
 
-			if (AudioDevice != nullptr)
+			if (AudioDevice == nullptr)
 			{
 				return false;
 			}
 
-			if (SoundWave != nullptr)
+			if (SoundWave == nullptr)
 			{
 				return false;
 			}
