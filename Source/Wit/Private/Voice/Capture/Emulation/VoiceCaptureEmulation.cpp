@@ -60,16 +60,16 @@ bool FVoiceCaptureEmulation::Start()
 
         if (SoundWave->RawData.GetElementCount() == 0)
         {
-			bIsPackagedBuild = true;
+			bHasPreviewSampleData = false;
 			
 			FAudioDevice * AudioDevice = GEngine ? GEngine->GetMainAudioDeviceRaw() : nullptr;
 
-			if (!AudioDevice)
+			if (AudioDevice != nullptr)
             {
 				return false;
 			}
 
-			if (!SoundWave)
+			if (SoundWave != nullptr)
             {
 				return false;
 			}
@@ -241,7 +241,7 @@ bool FVoiceCaptureEmulation::Tick(float DeltaTime)
 	{
 		uint64 ElementCount = SoundWave->RawData.GetElementCount();
 		
-		if (bIsPackagedBuild)
+		if (!bHasPreviewSampleData)
         {
 			ElementCount = SoundWave->RawPCMDataSize;
 		}
@@ -272,15 +272,15 @@ bool FVoiceCaptureEmulation::Tick(float DeltaTime)
 		if (bIsAnyDataToCopy)
 		{
 			UncompressedAudioBuffer.AddUninitialized(DataSizeToCopy);
-			if (bIsPackagedBuild)
-            {
-				FMemory::Memcpy(UncompressedAudioBuffer.GetData(), &DecompressedRawPCMData[LastDataIndex], DataSizeToCopy);
-			}
-            else
-            {
+			if (bHasPreviewSampleData)
+			{
 				const uint8* SoundData = static_cast<const uint8*>(SoundWave->RawData.LockReadOnly());
 				FMemory::Memcpy(UncompressedAudioBuffer.GetData(), &SoundData[LastDataIndex], DataSizeToCopy);
 				SoundWave->RawData.Unlock();
+			}
+            else
+            {
+				FMemory::Memcpy(UncompressedAudioBuffer.GetData(), &DecompressedRawPCMData[LastDataIndex], DataSizeToCopy);
 			}
 		}
 	}

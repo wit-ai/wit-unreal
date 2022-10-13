@@ -75,9 +75,9 @@ private:
 	/** Uncompressed audio buffer */
 	TArray<uint8> UncompressedAudioBuffer{};
   
-    /** Are we currently on a packaged build, for example running on Oculus */
-    bool bIsPackagedBuild{false};
+    /** Whether the SoundWave has PreviewSampleData. SoundWave will have no PreviewSampleData(RawData) in packaged builds. For example running on Oculus */
+    bool bHasPreviewSampleData{true};
   
-    /** When bIsPackagedBuild is true, the SoundWave is compressed, the RawData is null. In this case we will  decompress it. DecompressedRawPCMData is for holding the decompressed data */
+    /** When bHasPreviewSampleData is true, the SoundWave is compressed, the RawData is null. In this case we will decompress it. DecompressedRawPCMData is for holding the decompressed data */
     TArray<uint8> DecompressedRawPCMData{};
 };
