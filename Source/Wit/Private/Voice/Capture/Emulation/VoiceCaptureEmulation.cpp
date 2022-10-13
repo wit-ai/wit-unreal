@@ -84,7 +84,8 @@ bool FVoiceCaptureEmulation::Start()
 			FSoundQualityInfo SoundQualityInfo = { 0 };
 			if (CompressedAudioInfo->ReadCompressedInfo(SoundWave->ResourceData, SoundWave->ResourceSize, &SoundQualityInfo))
 			{
-				DecompressedRawPCMData.SetNumZeroed(SoundQualityInfo.SampleDataSize);
+				DecompressedRawPCMDataSize = SoundQualityInfo.SampleDataSize;
+				DecompressedRawPCMData.SetNumZeroed(DecompressedRawPCMDataSize);
 				CompressedAudioInfo->ExpandFile(DecompressedRawPCMData.GetData(), &SoundQualityInfo);
 			}
 			delete CompressedAudioInfo;
@@ -243,7 +244,7 @@ bool FVoiceCaptureEmulation::Tick(float DeltaTime)
 		
 		if (!bHasPreviewSampleData)
 		{
-			ElementCount = SoundWave->RawPCMDataSize;
+			ElementCount = DecompressedRawPCMDataSize;
 		}
 		// Use the sound wave samples to generate capture data
 		

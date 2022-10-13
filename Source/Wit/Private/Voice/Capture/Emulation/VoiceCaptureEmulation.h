@@ -78,6 +78,9 @@ private:
     /** Whether the SoundWave has PreviewSampleData. SoundWave will have no PreviewSampleData(RawData) in packaged builds. For example running on Oculus */
     bool bHasPreviewSampleData{true};
   
-    /** When bHasPreviewSampleData is true, the SoundWave is compressed, the RawData is null. In this case we will decompress it. DecompressedRawPCMData is for holding the decompressed data */
+    /** When bHasPreviewSampleData is false, the SoundWave is compressed, the RawData is null. In this case we will decompress it. DecompressedRawPCMData is for holding the decompressed data */
     TArray<uint8> DecompressedRawPCMData{};
+
+	/** Holds the size of DecompressedRawPCMData. */
+	uint32 DecompressedRawPCMDataSize{0};
 };
