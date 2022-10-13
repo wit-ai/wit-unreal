@@ -65,17 +65,17 @@ bool FVoiceCaptureEmulation::Start()
 			FAudioDevice * AudioDevice = GEngine ? GEngine->GetMainAudioDeviceRaw() : nullptr;
 
 			if (AudioDevice != nullptr)
-            {
+			{
 				return false;
 			}
 
 			if (SoundWave != nullptr)
-            {
+			{
 				return false;
 			}
 
 			if (SoundWave->GetName() == TEXT("None"))
-            {
+			{
 				return false;
 			}
 
@@ -242,7 +242,7 @@ bool FVoiceCaptureEmulation::Tick(float DeltaTime)
 		uint64 ElementCount = SoundWave->RawData.GetElementCount();
 		
 		if (!bHasPreviewSampleData)
-        {
+		{
 			ElementCount = SoundWave->RawPCMDataSize;
 		}
 		// Use the sound wave samples to generate capture data
@@ -278,8 +278,8 @@ bool FVoiceCaptureEmulation::Tick(float DeltaTime)
 				FMemory::Memcpy(UncompressedAudioBuffer.GetData(), &SoundData[LastDataIndex], DataSizeToCopy);
 				SoundWave->RawData.Unlock();
 			}
-            else
-            {
+			else
+			{
 				FMemory::Memcpy(UncompressedAudioBuffer.GetData(), &DecompressedRawPCMData[LastDataIndex], DataSizeToCopy);
 			}
 		}
