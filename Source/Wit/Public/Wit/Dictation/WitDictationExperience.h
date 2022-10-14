@@ -13,7 +13,7 @@
 #include "WitDictationExperience.generated.h"
 
 /**
- * Top level actor for Wit TTS interactions
+ * Top level actor for Wit dictation interactions
  */
 UCLASS( ClassGroup=(Meta), Blueprintable )
 class WIT_API AWitDictationExperience final : public ADictationExperience

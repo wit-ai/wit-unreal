@@ -14,8 +14,8 @@
 #include "WitDictationService.generated.h"
 
 /**
- * Component that encapsulates the Wit Text to Speech API. Provides functionality for speech synthesis from text input
- * using Wit.ai. To use it simply attach the UWitTtsService component in the hierarchy of any Actor
+ * Component that encapsulates the Wit dictation API. Provides functionality for long form speech to text
+ * using Wit.ai
  */
 UCLASS( ClassGroup=(Meta), meta=(BlueprintSpawnableComponent) )
 class WIT_API UWitDictationService final : public UDictationService
@@ -46,7 +46,7 @@ protected:
 
 private:
 
-	/** Callback to redirect the speech and message endpoints to the composer equivalents */
+	/** Callback to redirect the speech endpoint to the dictation equivalent */
 	void OnDictationRequestCustomize(FWitRequestConfiguration& RequestConfiguration);
 
 	/** Callbacks that we will connect to the voice events */

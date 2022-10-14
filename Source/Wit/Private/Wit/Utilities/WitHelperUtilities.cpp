@@ -143,7 +143,7 @@ ADictationExperience* FWitHelperUtilities::FindDictationExperience(const UWorld*
 		}
 	}
 
-	// If we don't find a TTS experience with a matching tag then we try to find the first TTS experience
+	// If we don't find a dictation experience with a matching tag then we try to find the first TTS experience
 	
 	if (DictationExperience == nullptr)
 	{

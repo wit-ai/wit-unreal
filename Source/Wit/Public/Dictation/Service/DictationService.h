@@ -14,7 +14,7 @@
 #include "DictationService.generated.h"
 
 /**
- * Base class implementation of a TTS service
+ * Base class implementation of a dictation service
  */
 UCLASS(ClassGroup=(Meta), Abstract)
 class WIT_API UDictationService : public UActorComponent, public IDictationServiceBase
@@ -26,7 +26,7 @@ public:
 	UDictationService() : Super() {};
 
 	/**
-	 * Set the configuration to use for composer
+	 * Set the configuration to use for dictation
 	 */
 	void SetConfiguration(const FDictationConfiguration* ConfigurationToUse) { Configuration = ConfigurationToUse; }
 
@@ -47,7 +47,7 @@ public:
 
 protected:
 
-	/** Configuration to use with the voice service */
+	/** Configuration to use with the dictation service */
 	const FDictationConfiguration* Configuration{};
 
 	/**

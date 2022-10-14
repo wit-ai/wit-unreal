@@ -23,7 +23,7 @@ class WIT_API UDictationMultiTranscription final : public UActorComponent
 
 public:
 
-	/** The tag of the voice experience to use in case there is more than one. If the tag is empty use the first found */
+	/** The tag of the dictation experience to use in case there is more than one. If the tag is empty use the first found */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Settings")
 	FName DictationExperienceTag{};
 

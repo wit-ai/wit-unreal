@@ -59,7 +59,7 @@ public:
 	virtual bool IsDictationActive() const = 0;
 	
 	/**
-	 * Is a VoiceService request currently in progress?
+	 * Is a dictation service request currently in progress?
 	 *
 	 * @return true if in progress otherwise false
 	 */

@@ -15,7 +15,7 @@
 #include "DictationExperience.generated.h"
 
 /**
- * The base class of TtsExperience
+ * The base class of dictation experiences
  */
 UCLASS(ClassGroup=(Meta), Abstract, NotBlueprintable)
 class WIT_API ADictationExperience : public AActor, public IDictationServiceBase
@@ -30,7 +30,7 @@ public:
 	ADictationExperience();
 
 	/**
-	 * The configuration that will be used by the voice service
+	 * The configuration that will be used by the dictation service
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dictation")
 	FDictationConfiguration Configuration{};
@@ -42,7 +42,7 @@ public:
 	UDictationService* DictationService{};
 	
 	/**
-	 * The events used by the voice service
+	 * The events used by the dictation service
 	 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dictation")
 	UDictationEvents* DictationEvents{};

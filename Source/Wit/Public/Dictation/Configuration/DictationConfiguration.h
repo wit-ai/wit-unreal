@@ -17,8 +17,8 @@ struct WIT_API FDictationConfiguration
 {
 	GENERATED_BODY()
 
-	/** The tag of the voice experience to use for voice activation */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Composer|Configuration")
+	/** The tag of the voice experience to use for dictation activation */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Dictation|Configuration")
 	FName VoiceExperienceTag{};
 	
 };
