@@ -128,7 +128,7 @@ void UWitRequestSubsystem::SendRequest()
 
 	// Add headers. This varies per endpoint but all requests require the Authorization header
 	
-	const FString Authorization = FString::Format(TEXT("Bearer {0}"), { Configuration.ServerAuthToken });
+	const FString Authorization = FString::Format(TEXT("Bearer {0}"), { Configuration.AuthToken });
 
 	HttpRequest->SetHeader("Authorization", Authorization);
 	HttpRequest->SetHeader("User-Agent", FWitHttpRequest::GetUserAgent());

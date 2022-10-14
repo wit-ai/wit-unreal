@@ -18,11 +18,18 @@ const FString FWitRequestBuilder::EndpointSynthesize = TEXT("synthesize");
 const FString FWitRequestBuilder::EndpointVoices = TEXT("voices");
 const FString FWitRequestBuilder::EndpointConverse = TEXT("converse");
 const FString FWitRequestBuilder::EndpointEvent = TEXT("event");
+const FString FWitRequestBuilder::EndpointGetApps = TEXT("apps");
+const FString FWitRequestBuilder::EndpointGetEntities = TEXT("entities");
+const FString FWitRequestBuilder::EndpointGetIntents = TEXT("intents");
+const FString FWitRequestBuilder::EndpointGetTraits = TEXT("traits");
+const FString FWitRequestBuilder::EndpointClientToken = TEXT("apps/{0}/client_tokens");
 
 /** Supported wit.ai parameters */
 const FString FWitRequestBuilder::ParameterTextKey = TEXT("&q=");
 const FString FWitRequestBuilder::ParameterSessionId = TEXT("&session_id=");
 const FString FWitRequestBuilder::ParameterContextMap = TEXT("&context_map=");
+const FString FWitRequestBuilder::ParameterOffset = TEXT("&offset=");
+const FString FWitRequestBuilder::ParameterLimit = TEXT("&limit=");
 
 /** Supported wit.ai content formats */
 const FString FWitRequestBuilder::FormatKey = TEXT("");
@@ -55,11 +62,11 @@ const FString FWitRequestBuilder::EndianValueBig = TEXT("big");
  *
  * @param Configuration the request configuration to fill in
  * @param Endpoint the endpoint we want to use
- * @param ServerAuthToken the server auth token for our application (this can be retrieved from the setup in Wit.ai)
+ * @param AuthToken the server auth token for our application (this can be retrieved from the setup in Wit.ai)
  * @param Version the version string we want to use. This can be left empty in which case it will use the latest version
  * @param CustomUrl the custom base URL to use. Normally this should be left empty to use the default Wit.ai URL
  */
-void FWitRequestBuilder::SetRequestConfigurationWithDefaults(FWitRequestConfiguration& Configuration, const EWitRequestEndpoint Endpoint, const FString& ServerAuthToken, const FString& Version, const FString& CustomUrl)
+void FWitRequestBuilder::SetRequestConfigurationWithDefaults(FWitRequestConfiguration& Configuration, const EWitRequestEndpoint Endpoint, const FString& AuthToken, const FString& Version, const FString& CustomUrl)
 {
 	if (!CustomUrl.IsEmpty())
 	{
@@ -71,22 +78,9 @@ void FWitRequestBuilder::SetRequestConfigurationWithDefaults(FWitRequestConfigur
 	}
 	
 	Configuration.Version = Version;
-	Configuration.ServerAuthToken = ServerAuthToken;
+	Configuration.AuthToken = AuthToken;
 	Configuration.Endpoint = GetEndpointString(Endpoint);
-
-	// TODO: POST/GET should be stored somewhere rather than done with a conditional
-
-	const bool bShouldUseGetVerb = Endpoint == EWitRequestEndpoint::Message || Endpoint == EWitRequestEndpoint::Voices;
-	
-	if (bShouldUseGetVerb)
-	{
-		Configuration.Verb = TEXT("GET");
-	}
-	else
-	{
-		Configuration.Verb = TEXT("POST");
-	}
-
+	Configuration.Verb = GetVerbString(Endpoint);
 	Configuration.bShouldUseChunkedTransfer = Endpoint == EWitRequestEndpoint::Speech || Endpoint == EWitRequestEndpoint::Converse;
 }
 
@@ -194,35 +188,82 @@ const FString& FWitRequestBuilder::GetEndpointString(const EWitRequestEndpoint E
 	switch (Endpoint)
 	{
 	case EWitRequestEndpoint::Speech:
-	{
-		return EndpointSpeech;
-	}
+		{
+			return EndpointSpeech;
+		}
 	case EWitRequestEndpoint::Message:
-	{
-		return EndpointMessage;
-	}
+		{
+			return EndpointMessage;
+		}
 	case EWitRequestEndpoint::Synthesize:
-	{
-		return EndpointSynthesize;
-	}
+		{
+			return EndpointSynthesize;
+		}
 	case EWitRequestEndpoint::Voices:
-	{
-		return EndpointVoices;
-	}
+		{
+			return EndpointVoices;
+		}
 	case EWitRequestEndpoint::Converse:
-	{
-		return EndpointConverse;
-	}
+		{
+			return EndpointConverse;
+		}
 	case EWitRequestEndpoint::Event:
-	{
-		return EndpointEvent;
-	}
+		{
+			return EndpointEvent;
+		}
+	case EWitRequestEndpoint::GetApps:
+		{
+			return EndpointGetApps;
+		}
+	case EWitRequestEndpoint::GetEntities:
+		{
+			return EndpointGetEntities;
+		}
+	case EWitRequestEndpoint::GetIntents:
+		{
+			return EndpointGetIntents;
+		}
+	case EWitRequestEndpoint::GetTraits:
+		{
+			return EndpointGetTraits;
+		}
+	case EWitRequestEndpoint::ClientToken:
+		{
+			return EndpointClientToken;
+		}
 	default:
+		{
+			check(0);
+			return EndpointSpeech;
+		}
+	}
+}
+
+/**
+ * Converts an endpoint into its verb string representation
+ *
+ * @param Endpoint the endpoint
+ * @return the string representation of the verb
+ */
+FString FWitRequestBuilder::GetVerbString(const EWitRequestEndpoint Endpoint)
+{
+	switch (Endpoint)
 	{
-		check(0);
-		return EndpointSpeech;
+	case EWitRequestEndpoint::Speech:
+	case EWitRequestEndpoint::Synthesize:
+	case EWitRequestEndpoint::Converse:
+	case EWitRequestEndpoint::Event:
+	case EWitRequestEndpoint::ClientToken:
+		{
+			return TEXT("POST");
+		}
+	default:
+		{
+			break;
+		}
 	}
-	}
+
+	return TEXT("GET");
 }
 
 /**
@@ -247,10 +288,18 @@ const FString& FWitRequestBuilder::GetParameterKeyString(const EWitParameter Par
 		{
 			return ParameterContextMap;		
 		}
+	case EWitParameter::Offset:
+		{
+			return ParameterOffset;
+		}
+	case EWitParameter::Limit:
+		{
+			return ParameterLimit;
+		}
 	default:
 		{
 			check(0);
-			return FormatValueJson;
+			return ParameterTextKey;
 		}
 	}
 }

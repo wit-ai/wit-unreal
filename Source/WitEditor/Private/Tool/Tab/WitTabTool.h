@@ -10,7 +10,7 @@
 #include "IWitEditorModuleInterface.h"
 #include "WitEditorModule.h"
 
-class WitTabTool : public IWitEditorModuleListenerInterface, public TSharedFromThis<WitTabTool>
+class FWitTabTool : public IWitEditorModuleListenerInterface, public TSharedFromThis<FWitTabTool>
 {
 public:
 	

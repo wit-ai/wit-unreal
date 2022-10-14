@@ -15,25 +15,25 @@
 /**
  * Called on module startup
  */
-void WitUnderstandingViewerTabTool::OnStartupModule()
+void FWitUnderstandingViewerTabTool::OnStartupModule()
 {
-	WitTabTool::OnStartupModule();
+	FWitTabTool::OnStartupModule();
 	
-	FWitEditorModule::Get().AddMenuExtension(FMenuExtensionDelegate::CreateRaw(this, &WitUnderstandingViewerTabTool::MakeMenuEntry), FName("OculusVoiceSDK"), nullptr, EExtensionHook::First);
+	FWitEditorModule::Get().AddMenuExtension(FMenuExtensionDelegate::CreateRaw(this, &FWitUnderstandingViewerTabTool::MakeMenuEntry), FName("OculusVoiceSDK"), nullptr, EExtensionHook::First);
 }
 
 /**
  * Called on module shutdown
  */
-void WitUnderstandingViewerTabTool::OnShutdownModule()
+void FWitUnderstandingViewerTabTool::OnShutdownModule()
 {
-	WitTabTool::OnShutdownModule();
+	FWitTabTool::OnShutdownModule();
 }
 
 /**
  * Initialize common properties
  */
-void WitUnderstandingViewerTabTool::Initialize()
+void FWitUnderstandingViewerTabTool::Initialize()
 {
 	TabName = "UnderstandingViewer";
 	TabDisplayName = FText::FromString("Understanding Viewer");
@@ -43,7 +43,7 @@ void WitUnderstandingViewerTabTool::Initialize()
 /**
  * Spawn the associated slate tab widget
  */
-TSharedRef<SDockTab> WitUnderstandingViewerTabTool::SpawnTab(const FSpawnTabArgs& TabSpawnArgs)
+TSharedRef<SDockTab> FWitUnderstandingViewerTabTool::SpawnTab(const FSpawnTabArgs& TabSpawnArgs)
 {
 	TSharedRef<SDockTab> SpawnedTab = SNew(SDockTab)
 		.TabRole(ETabRole::NomadTab)

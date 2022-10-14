@@ -9,11 +9,11 @@
 
 #include "Tool/Tab/WitTabTool.h"
 
-class FWitUnderstandingViewerTabTool : public FWitTabTool
+class FWitConfigurationEditorTabTool : public FWitTabTool
 {
 public:
 	
-	virtual ~FWitUnderstandingViewerTabTool() override {}
+	virtual ~FWitConfigurationEditorTabTool() override {}
 
 	/** IWitEditorModuleListenerInterface implementation */
 	virtual void OnStartupModule() override;

@@ -13,8 +13,11 @@
 #include "Customization/WitIntentPropertyCustomization.h"
 #include "Customization/TtsConfigurationDetailCustomization.h"
 #include "PropertyEditor/Public/PropertyEditorModule.h"
+#include "Tool/ConfigurationEditor/WitConfigurationDetailCustomization.h"
+#include "Tool/ConfigurationEditor/WitConfigurationEditorTabTool.h"
 #include "Tool/UnderstandingViewer/WitUnderstandingViewerTabTool.h"
 #include "Wit/TTS/WitTtsExperience.h"
+#include "Wit/Voice/WitVoiceExperience.h"
 
 #define LOCTEXT_NAMESPACE "FWitEditorModule"
 
@@ -31,15 +34,9 @@ void FWitEditorModule::StartupModule()
 
 	FPropertyEditorModule& PropertyEditorModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
 
-	// Register a custom property layout for the WitIntent and WitEntity. This is used to add buttons so we can add
-	// handlers to specific response entities and intents
-
 	PropertyEditorModule.RegisterCustomPropertyTypeLayout( FWitIntent::StaticStruct()->GetFName(), FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FWitIntentPropertyCustomization::MakeInstance) );
-	
-	// Register a custom class layout for the WitTextToSpeechAPI
-	// so that we can easily debug and use Wit.ai
-	
 	PropertyEditorModule.RegisterCustomClassLayout( ATtsExperience::StaticClass()->GetFName(), FOnGetDetailCustomizationInstance::CreateStatic(&FTtsConfigurationDetailCustomization::MakeInstance) );
+	PropertyEditorModule.RegisterCustomClassLayout( UWitAppConfigurationAsset::StaticClass()->GetFName(), FOnGetDetailCustomizationInstance::CreateStatic(&FWitConfigurationDetailCustomization::MakeInstance) );
 
 	// After all customizations inform the property module to update
 	
@@ -76,6 +73,7 @@ void FWitEditorModule::ShutdownModule()
 		
 		PropertyEditorModule.UnregisterCustomPropertyTypeLayout(FWitIntent::StaticStruct()->GetFName());
 		PropertyEditorModule.UnregisterCustomClassLayout(AWitTtsExperience::StaticClass()->GetFName());
+		PropertyEditorModule.UnregisterCustomClassLayout(UWitAppConfigurationAsset::StaticClass()->GetFName());
 
 		PropertyEditorModule.NotifyCustomizationModuleChanged();
 	}
@@ -87,8 +85,9 @@ void FWitEditorModule::ShutdownModule()
  * Add any custom tools here
  */
 void FWitEditorModule::AddModuleListeners()
-{ 
-	ModuleListeners.Add(MakeShareable(new WitUnderstandingViewerTabTool));
+{
+	ModuleListeners.Add(MakeShareable(new FWitConfigurationEditorTabTool));
+	ModuleListeners.Add(MakeShareable(new FWitUnderstandingViewerTabTool));
 }
 
 /**

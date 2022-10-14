@@ -24,11 +24,11 @@ public:
      *
      * @param Configuration [in,out] the request configuration to fill in
      * @param Endpoint [in] the endpoint we want to use
-     * @param ServerAuthToken [in] the server auth token for our application (this can be retrieved from the setup in Wit.ai)
+     * @param AuthToken [in] the server auth token for our application (this can be retrieved from the setup in Wit.ai)
      * @param Version [in] the version string we want to use. This can be left empty in which case it will use the latest version
      * @param CustomUrl [in] the custom base URL to use. Normally this should be left empty to use the default Wit.ai URL
      */
-	static void SetRequestConfigurationWithDefaults(FWitRequestConfiguration& Configuration, const EWitRequestEndpoint Endpoint, const FString& ServerAuthToken, const FString& Version, const FString& CustomUrl);
+	static void SetRequestConfigurationWithDefaults(FWitRequestConfiguration& Configuration, const EWitRequestEndpoint Endpoint, const FString& AuthToken, const FString& Version, const FString& CustomUrl);
 	
 	/**
 	 * Add a URL parameter
@@ -96,6 +96,14 @@ public:
 	static const FString& GetEndpointString(const EWitRequestEndpoint Endpoint);
 
 	/**
+	 * Converts an endpoint into the required verb string
+	 *
+	 * @param Endpoint [in] the endpoint
+	 * @return the string representation of the verb
+	 */
+	static FString GetVerbString(const EWitRequestEndpoint Endpoint);
+
+	/**
 	 * Converts a parameter key into its final string representation
 	 *
 	 * @param ParameterKey [in] the parameter key
@@ -134,7 +142,7 @@ public:
      * @return the string representation of the audio endianness
      */
 	static const FString& GetEndianString(const EWitRequestEndian Endian);
-
+	
 private:
 	
 	/** Default wit.ai URL */
@@ -147,12 +155,19 @@ private:
 	static const FString EndpointVoices;
 	static const FString EndpointConverse;
 	static const FString EndpointEvent;
+	static const FString EndpointGetApps;
+	static const FString EndpointGetEntities;
+	static const FString EndpointGetIntents;
+	static const FString EndpointGetTraits;
+	static const FString EndpointClientToken;
 
 	/** Supported wit.ai parameters */
 	static const FString ParameterTextKey;
 	static const FString ParameterSessionId;
 	static const FString ParameterContextMap;
-	
+	static const FString ParameterOffset;
+	static const FString ParameterLimit;
+		
 	/** Supported wit.ai audio formats */
 	static const FString FormatKey;
 	static const FString FormatValueRaw;

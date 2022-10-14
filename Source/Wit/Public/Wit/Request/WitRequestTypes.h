@@ -22,7 +22,12 @@ enum class EWitRequestEndpoint : uint8
 	Synthesize,
 	Voices,
 	Converse,
-	Event
+	Event,
+	GetApps,
+	GetEntities,
+	GetIntents,
+	GetTraits,
+	ClientToken
 };
 
 /**
@@ -33,7 +38,9 @@ enum class EWitParameter : uint8
 {
 	Text,
 	SessionId,
-	ContextMap
+	ContextMap,
+	Offset,
+	Limit
 };
 
 /**

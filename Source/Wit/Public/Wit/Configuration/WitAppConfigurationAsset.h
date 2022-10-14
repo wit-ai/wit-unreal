@@ -22,13 +22,13 @@ class WIT_API UWitAppConfigurationAsset : public UDataAsset
 	GENERATED_BODY()
 
 public:
-
+	
 	/** The general configuration */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Configuration")
 	FWitAppConfiguration Application;
 	
 	//** Speech endpoint configuration */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Configuration")
 	FVoiceConfiguration Voice;
 	
 };
