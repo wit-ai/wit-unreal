@@ -93,7 +93,7 @@ void SWitConfigurationEditorTab::Construct(const FArguments& InArgs)
 						[
 							SNew(SEditableTextBox)
 							.Font(IDetailLayoutBuilder::GetDetailFont())
-							.OnTextChanged_Raw(this, &SWitConfigurationEditorTab::OnNewConfigurationTextChanged)
+							.OnTextChanged(this, &SWitConfigurationEditorTab::OnNewConfigurationTextChanged)
 						]
 					]
 					
@@ -113,7 +113,7 @@ void SWitConfigurationEditorTab::Construct(const FArguments& InArgs)
 							SNew(SEditableTextBox)
 							.IsPassword(true)
 							.Font(IDetailLayoutBuilder::GetDetailFont())
-							.OnTextChanged_Raw(this, &SWitConfigurationEditorTab::OnServerTokenTextChanged)
+							.OnTextChanged(this, &SWitConfigurationEditorTab::OnServerTokenTextChanged)
 						]
 					]
 
@@ -125,8 +125,8 @@ void SWitConfigurationEditorTab::Construct(const FArguments& InArgs)
 						[
 							SNew(SButton)
 							.Text(FText::FromString(TEXT("Create")))
-							.IsEnabled_Raw(this, &SWitConfigurationEditorTab::IsNewButtonEnabled)
-							.OnClicked_Raw(this, &SWitConfigurationEditorTab::OnNewButtonClicked)
+							.IsEnabled(this, &SWitConfigurationEditorTab::IsNewButtonEnabled)
+							.OnClicked(this, &SWitConfigurationEditorTab::OnNewButtonClicked)
 						]
 					]
 				]

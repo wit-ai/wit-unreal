@@ -69,6 +69,7 @@ protected:
 	EVisibility GetSelectMessageVisibility() const;
 	EVisibility GetUtteranceMessageVisibility() const;
 	EVisibility GetWaitMessageVisibility() const;
+	EVisibility GetResultVisibility() const;
 
 	/** The current text entered by the user as an utterance */
 	FText UtteranceText{};

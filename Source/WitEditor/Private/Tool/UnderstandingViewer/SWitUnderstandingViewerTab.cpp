@@ -8,6 +8,8 @@
 #pragma once
 
 #include "SWitUnderstandingViewerTab.h"
+
+#include "DetailLayoutBuilder.h"
 #include "Voice/Experience/VoiceExperience.h"
 #include "Widgets/Layout/SScrollBox.h"
 #include "Selection.h"
@@ -49,37 +51,67 @@ void SWitUnderstandingViewerTab::Construct(const FArguments& InArgs)
 
 			// Section to contain the text input and send button
 			
+			+ SVerticalBox::Slot().AutoHeight().Padding(5)
+			[
+				SNew(STextBlock)
+				.Font(FCoreStyle::GetDefaultFontStyle("Bold", 9))
+				.ColorAndOpacity( FLinearColor( 0.5f, 0.5f, 0.5f, 1.0f ) )
+				.Text(FText::FromString(TEXT("Send message")))
+			]
+			
 			+ SVerticalBox::Slot().AutoHeight()
 			[
-				SNew(SHorizontalBox)
+				SNew(SBorder)
+				.Padding(5)
+				.BorderImage( FEditorStyle::GetBrush("ToolPanel.GroupBorder") )
+				.Content()
+				[
+					SNew(SVerticalBox)
 
-				+ SHorizontalBox::Slot().VAlign(VAlign_Center).AutoWidth().Padding(10, 0)
-				[
-					SNew(STextBlock)
-					.Text(FText::FromString(TEXT("Utterance")))
-				]
+					+ SVerticalBox::Slot().Padding(0, 0).AutoHeight()
+					[
+						SNew(SHorizontalBox)
+						
+						+ SHorizontalBox::Slot().VAlign(VAlign_Center).FillWidth(0.1f).Padding(10, 0)
+						[
+							SNew(STextBlock)
+							.Font(IDetailLayoutBuilder::GetDetailFont())
+							.Text(FText::FromString(TEXT("Utterance")))
+						]
 
-				+ SHorizontalBox::Slot().Padding(10, 1)
-				[
-					SNew(SEditableTextBox)
-					.SelectAllTextWhenFocused(true)
-					.OnTextCommitted_Raw(this, &SWitUnderstandingViewerTab::OnUtteranceTextCommitted)
-					.OnTextChanged_Raw(this, &SWitUnderstandingViewerTab::OnUtteranceTextChanged)
-					.OnKeyDownHandler_Raw(this, &SWitUnderstandingViewerTab::OnUtteranceKeyDown)
+						+ SHorizontalBox::Slot().FillWidth(0.9f).Padding(0, 1, 10, 1)
+						[
+							SNew(SEditableTextBox)
+							.Font(IDetailLayoutBuilder::GetDetailFont())
+							.OnTextCommitted(this, &SWitUnderstandingViewerTab::OnUtteranceTextCommitted)
+							.OnTextChanged(this, &SWitUnderstandingViewerTab::OnUtteranceTextChanged)
+							.OnKeyDownHandler(this, &SWitUnderstandingViewerTab::OnUtteranceKeyDown)
+						]
+					]
+
+					+ SVerticalBox::Slot().Padding(0, 0).AutoHeight()
+					[
+						SNew(SHorizontalBox)
+			
+						+ SHorizontalBox::Slot().HAlign(HAlign_Right).Padding(10,5,10,2)
+						[
+							SNew(SButton)
+							.Text(FText::FromString(TEXT("Send")))
+							.IsEnabled(this, &SWitUnderstandingViewerTab::IsSendButtonEnabled)
+							.OnClicked(this, &SWitUnderstandingViewerTab::OnSendButtonClicked)
+						]
+					]
 				]
-					
-				+ SHorizontalBox::Slot().AutoWidth()
-				[
-					SNew(SButton)
-					.Text(FText::FromString(TEXT("Send")))
-					.IsEnabled_Raw(this, &SWitUnderstandingViewerTab::IsSendButtonEnabled)
-					.OnClicked_Raw(this, &SWitUnderstandingViewerTab::OnSendButtonClicked)
-				]
+			]	
+
+			+ SVerticalBox::Slot().Padding(0,10)
+			[
+				SNew(SBox)
 			]
-
+			
 			// Section to contain both the usage messaging and the actual response from Wit.ai
 			
-			+ SVerticalBox::Slot().Padding(0, 10)
+			+ SVerticalBox::Slot().AutoHeight()
 			[
 				SNew(SOverlay)
 
@@ -106,8 +138,28 @@ void SWitUnderstandingViewerTab::Construct(const FArguments& InArgs)
 
 				+ SOverlay::Slot()
 				[
-					DetailsWidget.ToSharedRef()
-				]
+					SNew(SVerticalBox)
+					.Visibility(this, &SWitUnderstandingViewerTab::GetResultVisibility)
+										
+					+ SVerticalBox::Slot().AutoHeight().Padding(5)
+					[
+						SNew(STextBlock)
+						.Font(FCoreStyle::GetDefaultFontStyle("Bold", 9))
+						.ColorAndOpacity( FLinearColor( 0.5f, 0.5f, 0.5f, 1.0f ) )
+						.Text(FText::FromString(TEXT("Result")))
+					]
+
+					+ SVerticalBox::Slot().AutoHeight()
+					[
+						SNew(SBorder)
+						.Padding(5)
+						.BorderImage( FEditorStyle::GetBrush("ToolPanel.GroupBorder") )
+						.Content()
+						[
+							DetailsWidget.ToSharedRef()
+						]
+					]
+				]	
 			]
 		]
 	];
@@ -124,20 +176,15 @@ EVisibility SWitUnderstandingViewerTab::GetSelectMessageVisibility() const
 	{
 		return EVisibility::Hidden;
 	}
-	
-	if (DetailsWidget->GetVisibility() == EVisibility::Visible)
-	{
-		return EVisibility::Hidden;
-	}
-	
+
 	const AVoiceExperience* VoiceExperience = GetSelectedVoiceExperience();
 	
-	if (VoiceExperience != nullptr)
+	if (VoiceExperience == nullptr)
 	{
-		return EVisibility::Hidden;	
+		return EVisibility::Visible;	
 	}
 	
-	return EVisibility::Visible;
+	return EVisibility::Hidden;
 }
 
 /**
@@ -187,6 +234,31 @@ EVisibility SWitUnderstandingViewerTab::GetWaitMessageVisibility() const
 	}
 	
 	return EVisibility::Hidden;
+}
+
+/**
+ * Whether we should show the result
+ * 
+ * @return true if we should show otherwise false
+ */
+EVisibility SWitUnderstandingViewerTab::GetResultVisibility() const
+{
+	if (GetSelectMessageVisibility() == EVisibility::Visible)
+	{
+		return EVisibility::Hidden;
+	}
+
+	if (GetUtteranceMessageVisibility() == EVisibility::Visible)
+	{
+		return EVisibility::Hidden;
+	}
+
+	if (GetWaitMessageVisibility() == EVisibility::Visible)
+	{
+		return EVisibility::Hidden;
+	}
+
+	return EVisibility::Visible;
 }
 
 /**
