@@ -14,8 +14,6 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSynthesizeResponseDelegate, const bool, bIsSuccessful, USoundWave*, SoundWave);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSynthesizeErrorDelegate, const FString&, ErrorMessage, const FString&, HumanReadableMessage);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnVoicesResponseDelegate, const bool, bIsSuccessful, const FWitTtsVoicesResponse&, VoicesResponse);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnVoicesErrorDelegate, const FString&, ErrorMessage, const FString&, HumanReadableMessage);
 
 /**
  * Container for all TTS events
@@ -31,7 +29,7 @@ public:
 	 * The response we receive from Wit requests parsed into UObject structures
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Transient, Category = "Action")
-	FWitTtsVoicesResponse VoicesResponse{};
+	FWitVoicesResponse VoicesResponse{};
 
 	/**
 	 * Callback to call when a synthesize request has been fully processed. The callback receives a USoundWave containing the received wav
@@ -44,17 +42,5 @@ public:
 	 */
 	UPROPERTY(BlueprintAssignable)
 	FOnSynthesizeErrorDelegate OnSynthesizeError{};
-
-	/**
-	 * Callback to call when a voices request has been fully processed. The callback receives a list of available voices
-	 */
-	UPROPERTY(BlueprintAssignable)
-	FOnVoicesResponseDelegate OnVoicesResponse{};
-
-	/**
-	 * Callback to call when a voices error occurs
-	 */
-	UPROPERTY(BlueprintAssignable)
-	FOnVoicesErrorDelegate OnVoicesError{};
-
+	
 };

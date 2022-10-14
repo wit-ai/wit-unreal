@@ -195,7 +195,7 @@ struct WIT_API FWitResponse
  * UStruct representation of the JSON voice preset object
  */
 USTRUCT(BlueprintType)
-struct WIT_API FWitTtsVoice
+struct WIT_API FWitVoiceDefinition
 {
 	GENERATED_BODY()
 
@@ -217,12 +217,12 @@ struct WIT_API FWitTtsVoice
  * documentation for the meaning of each specific field.
  */
 USTRUCT(BlueprintType)
-struct WIT_API FWitTtsVoicesResponse
+struct WIT_API FWitVoicesResponse
 {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
-	TArray<FWitTtsVoice> En_US{};
+	TArray<FWitVoiceDefinition> En_US{};
 };
 
 /**
@@ -251,10 +251,10 @@ struct WIT_API FWitEntityShortDefinition
 {
 	GENERATED_BODY()
 		
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	FString Name{};
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	int64 Id{0};
 };
 
@@ -266,16 +266,16 @@ struct WIT_API FWitEntityDefinition
 {
 	GENERATED_BODY()
 		
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	FString Name{};
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	int64 Id{0};
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	TArray<FString> Lookups{};
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	TArray<FString> Roles{};
 };
 
@@ -287,13 +287,13 @@ struct WIT_API FWitIntentDefinition
 {
 	GENERATED_BODY()
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	FString Name{};
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	int64 Id{0};
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	TArray<FWitEntityShortDefinition> Entities{};
 };
 
@@ -305,10 +305,10 @@ struct WIT_API FWitTraitValueDefinition
 {
 	GENERATED_BODY()
 		
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	FString Name{};
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	FString Value{};
 };
 
@@ -320,13 +320,13 @@ struct WIT_API FWitTraitDefinition
 {
 	GENERATED_BODY()
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	FString Name{};
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	int64 Id{0};
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	TArray<FWitTraitValueDefinition> Values{};
 };
 
@@ -338,21 +338,21 @@ struct WIT_API FWitAppDefinition
 {
 	GENERATED_BODY()
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	FString Name{};
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	FString Id{};
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	FString Lang{};
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	bool Private{};
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	FString Created_At{};
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	bool Is_App_For_Token{};
 };

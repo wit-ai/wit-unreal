@@ -27,7 +27,7 @@ class UWitResponseObject final : public UObject
 public:
 
 	/** The underlying response structure */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	UPROPERTY(Transient, EditAnywhere, Category = "Voice Experience")
 	FWitResponse Response{};
 	
 	/** The details widget that will display this response */

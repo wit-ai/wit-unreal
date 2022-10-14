@@ -40,9 +40,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category="TTS")
 	virtual void ConvertTextToSpeechWithSettings(const FTtsConfiguration& ClipSettings) override;
-
-	UFUNCTION(BlueprintCallable, Category="TTS")
-	virtual void FetchAvailableVoices() override;
 	
 	/**
 	 * Unload a single clip from the memory cache

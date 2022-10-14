@@ -43,9 +43,9 @@ void SWitUnderstandingViewerTab::Construct(const FArguments& InArgs)
 	
 	ChildSlot
 	[
-		SNew(SVerticalBox)
+		SNew(SScrollBox)
 		 
-		+ SVerticalBox::Slot().VAlign(VAlign_Top).FillHeight(1).Padding(10)
+		+ SScrollBox::Slot().VAlign(VAlign_Top).Padding(10)
 		[
 			SNew(SVerticalBox)
 

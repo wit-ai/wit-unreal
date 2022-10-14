@@ -42,9 +42,4 @@ public:
 	 */
 	virtual void ConvertTextToSpeechWithSettings(const FTtsConfiguration& ClipSettings) = 0;
 
-	/**
-	 * Fetch a list of available voices from Wit
-	 */
-	virtual void FetchAvailableVoices() = 0;
-
 };

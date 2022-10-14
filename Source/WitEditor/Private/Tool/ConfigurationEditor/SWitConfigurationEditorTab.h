@@ -26,7 +26,7 @@ class UWitEditedConfiguration final : public UObject
 public:
 
 	/** The underlying response structure */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Selected")
+	UPROPERTY(Transient, EditAnywhere, Category = "Selected")
 	UWitAppConfigurationAsset* Configuration{};
 	
 	/** The details widget that will display this UObject */
@@ -56,6 +56,12 @@ class SWitConfigurationEditorTab : public SCompoundWidget
 	void Construct(const FArguments& InArgs);
 
 protected:
+
+	/** Callback used to determine visibility of the create preset */
+	EVisibility GetCreatePresetVisibility() const;
+
+	/** Callback when the create preset button is clicked */
+	FReply OnCreatePresetButtonClicked();
 
 	/** Callback when the new button is clicked */
 	FReply OnNewButtonClicked();

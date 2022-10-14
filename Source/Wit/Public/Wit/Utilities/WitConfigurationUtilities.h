@@ -34,6 +34,9 @@ private:
 	static void RequestEntityList();
 	static void RequestTraitList();
 
+	/** Request the list of voices for an app */
+	static void RequestVoiceList();
+
 	/** Called when a Wit apps request is completed */
 	static void OnAppsRequestComplete(const TArray<uint8>& BinaryResponse, const TSharedPtr<FJsonObject> JsonResponse);
 	static void OnAppsRequestError(const FString& ErrorMessage, const FString& HumanReadableErrorMessage);
@@ -53,6 +56,10 @@ private:
 	/** Called when a Wit traits request is completed */
 	static void OnTraitsRequestComplete(const TArray<uint8>& BinaryResponse, const TSharedPtr<FJsonObject> JsonResponse);
 	static void OnTraitsRequestError(const FString& ErrorMessage, const FString& HumanReadableErrorMessage);
+
+	/** Called when a Wit vocies request is completed */
+	static void OnVoicesRequestComplete(const TArray<uint8>& BinaryResponse, const TSharedPtr<FJsonObject> JsonResponse);
+	static void OnVoicesRequestError(const FString& ErrorMessage, const FString& HumanReadableErrorMessage);
 
 	/** Helper for making list requests */
 	static bool SetupListRequest(FWitRequestConfiguration& RequestConfiguration, EWitRequestEndpoint Endpoint, const bool bIsServerAuthRequired);

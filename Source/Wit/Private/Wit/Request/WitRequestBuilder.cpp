@@ -199,7 +199,7 @@ const FString& FWitRequestBuilder::GetEndpointString(const EWitRequestEndpoint E
 		{
 			return EndpointSynthesize;
 		}
-	case EWitRequestEndpoint::Voices:
+	case EWitRequestEndpoint::GetVoices:
 		{
 			return EndpointVoices;
 		}

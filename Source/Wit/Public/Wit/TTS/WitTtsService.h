@@ -37,7 +37,6 @@ public:
 	virtual bool IsRequestInProgress() const override;
 	virtual void ConvertTextToSpeech(const FString& TextToConvert) override;
 	virtual void ConvertTextToSpeechWithSettings(const FTtsConfiguration& ClipSettings) override;
-	virtual void FetchAvailableVoices() override;
 
 #if WITH_EDITORONLY_DATA
 

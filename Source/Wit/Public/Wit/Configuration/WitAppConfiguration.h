@@ -63,6 +63,10 @@ struct WIT_API FWitAppDataConfiguration
 	/** List of intents available in the app */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Traits")
 	TArray<FWitTraitDefinition> Traits;
+
+	/** List of voices available in the app */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Voices")
+	TArray<FWitVoiceDefinition> Voices;
 	
 };
 

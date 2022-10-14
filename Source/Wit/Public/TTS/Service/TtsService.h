@@ -54,7 +54,6 @@ public:
 	virtual bool IsRequestInProgress() const override { return false; }
 	virtual void ConvertTextToSpeech(const FString& TextToConvert) override {}
 	virtual void ConvertTextToSpeechWithSettings(const FTtsConfiguration& ClipSettings) override {}
-	virtual void FetchAvailableVoices() override {}
 
 protected:
 

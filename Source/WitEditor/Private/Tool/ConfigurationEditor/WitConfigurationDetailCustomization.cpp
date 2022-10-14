@@ -78,8 +78,8 @@ void FWitConfigurationDetailCustomization::CustomizeDetails(IDetailLayoutBuilder
 			[
 				SNew(SButton)
 				.Text(FText::FromString(TEXT("Refresh")))
-				.IsEnabled_Raw(this, &FWitConfigurationDetailCustomization::IsRefreshButtonEnabled)
-				.OnClicked_Raw(this, &FWitConfigurationDetailCustomization::OnRefreshButtonClicked)
+				.IsEnabled(this, &FWitConfigurationDetailCustomization::IsRefreshButtonEnabled)
+				.OnClicked(this, &FWitConfigurationDetailCustomization::OnRefreshButtonClicked)
 			]
 		];
 

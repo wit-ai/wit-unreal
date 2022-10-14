@@ -65,21 +65,7 @@ private:
      * @return whether the reply was handled or not
      */
     FReply OnDeleteButtonClicked();
-
-	/**
-	 * Callback when the fetch available voices button is clicked
-	 * 
-	 * @return whether the reply was handled or not
-	 */
-	FReply OnFetchVoicesButtonClicked();
-
-	/**
-	 * Callback when the create preset button is clicked
-	 * 
-	 * @return whether the reply was handled or not
-	 */
-	FReply OnCreatePresetButtonClicked();
-
+	
 	/**
 	 * Callback when synthesize response returns
 	 */

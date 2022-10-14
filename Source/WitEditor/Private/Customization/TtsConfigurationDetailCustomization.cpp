@@ -33,7 +33,7 @@ TSharedRef<IDetailCustomization> FTtsConfigurationDetailCustomization::MakeInsta
 void FTtsConfigurationDetailCustomization::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
 {
 	DetailBuilder.GetObjectsBeingCustomized(ObjectsToEdit);
-
+	
 	// Add a text entry and button so that we can easily send message requests to the Wit API to see the response. Disabled for now until play sound works
 
 	IDetailCategoryBuilder& ConfigurationCategory = DetailBuilder.EditCategory("TTS", FText::GetEmpty(), ECategoryPriority::Important);
@@ -49,28 +49,6 @@ void FTtsConfigurationDetailCustomization::CustomizeDetails(IDetailLayoutBuilder
 		];
 #endif
 	
-	// Add a button to fetch all the available voices
-
-	ConfigurationCategory.AddCustomRow(LOCTEXT("Keyword", "Voices"))
-	.ValueContent()
-	[
-		SNew(SButton)
-		.Text(LOCTEXT("VoicesButtonText", "Fetch Voices"))
-		.HAlign(HAlign_Center)
-		.OnClicked_Raw(this, &FTtsConfigurationDetailCustomization::OnFetchVoicesButtonClicked)
-	];
-
-	// Add a button to create a new voice preset
-
-	ConfigurationCategory.AddCustomRow(LOCTEXT("Keyword", "Presets"))
-	.ValueContent()
-	[
-		SNew(SButton)
-		.Text(LOCTEXT("PresetsButtonText", "Create Presets"))
-		.HAlign(HAlign_Center)
-		.OnClicked_Raw(this, &FTtsConfigurationDetailCustomization::OnCreatePresetButtonClicked)
-	];
-
 	// Add a text entry and button so that we can easily send message requests to the Wit API to see the response
 	
 	IDetailCategoryBuilder& CacheCategory = DetailBuilder.EditCategory("TTS Cache", FText::GetEmpty(), ECategoryPriority::Important);
@@ -172,105 +150,6 @@ FReply FTtsConfigurationDetailCustomization::OnDeleteButtonClicked()
 		
 		TtsExperience->DeleteAllClips(ETtsStorageCacheLocation::Persistent);
 		TtsExperience->DeleteAllClips(ETtsStorageCacheLocation::Temporary);
-		
-		break;
-	}
-
-	return FReply::Handled();
-}
-
-/**
- * Callback when the fetch available voices button is clicked
- * 
- * @return whether the reply was handled or not
- */
-FReply FTtsConfigurationDetailCustomization::OnFetchVoicesButtonClicked()
-{
-	UE_LOG(LogTemp, Display, TEXT("Fetch available voices"));
-
-	for (TWeakObjectPtr<UObject> Object : ObjectsToEdit)
-	{
-		if (!Object.IsValid())
-		{
-			continue;
-		}
-		
-		ATtsExperience* TtsExperience = Cast<ATtsExperience>(Object.Get());
-
-		if (TtsExperience == nullptr)
-		{
-			continue;
-		}
-
-		if (TtsExperience->IsRequestInProgress())
-		{
-			continue;
-		}
-		
-		TtsExperience->FetchAvailableVoices();
-		
-		break;
-	}
-
-	return FReply::Handled();
-}
-
-/**
- * Callback when the create preset button is clicked
- * 
- * @return whether the reply was handled or not
- */
-FReply FTtsConfigurationDetailCustomization::OnCreatePresetButtonClicked()
-{
-	UE_LOG(LogTemp, Display, TEXT("Create Preset"));
-
-	for (TWeakObjectPtr<UObject> Object : ObjectsToEdit)
-	{
-		if (!Object.IsValid())
-		{
-			continue;
-		}
-
-		ATtsExperience* TtsExperience = Cast<ATtsExperience>(Object.Get());
-
-		if (TtsExperience == nullptr)
-		{
-			continue;
-		}
-
-		// Create a preset asset from all the combinations of voice name + style
-		
-		for (const FWitTtsVoice& AvailableVoice: TtsExperience->EventHandler->VoicesResponse.En_US)
-		{
-			const FString PresetAssetName = AvailableVoice.Name;
-			
-
-            FString PackagePath = FString::Printf(TEXT("/Wit/Presets/%s"), *PresetAssetName);
-
-#if WITH_VOICESDK
-			PackagePath = FString::Printf(TEXT("/VoiceSDK/Presets/%s"), *PresetAssetName);
-#endif
-			
-            UPackage* PresetPackage = CreatePackage(*PackagePath);
-
-            if (PresetPackage == nullptr)
-            {
-                UE_LOG(LogTemp, Warning, TEXT("OnCreatePresetButtonClicked: failed to create package file for (%s)"), *PresetAssetName);
-                continue;
-            }
-    
-            UTtsVoicePresetAsset* PresetAsset = NewObject<UTtsVoicePresetAsset>(PresetPackage, UTtsVoicePresetAsset::StaticClass(), *PresetAssetName, RF_Public | RF_Standalone);
-
-            if (PresetAsset == nullptr)
-            {
-                UE_LOG(LogTemp, Warning, TEXT("OnCreatePresetButtonClicked: failed to create asset file for (%s)"), *PresetAssetName);
-                continue;
-            }
-
-            PresetAsset->Synthesize.Voice = AvailableVoice.Name;
-        
-            (void)PresetAsset->MarkPackageDirty();
-		}
 		
 		break;
 	}

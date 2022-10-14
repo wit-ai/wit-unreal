@@ -39,6 +39,7 @@ void FWitConfigurationUtilities::RefreshConfiguration(UWitAppConfigurationAsset*
 	Configuration->Application.Data.Intents.Empty();
 	Configuration->Application.Data.Entities.Empty();
 	Configuration->Application.Data.Traits.Empty();
+	Configuration->Application.Data.Voices.Empty();
 
 	RequestAppList();
 }
@@ -206,8 +207,7 @@ void FWitConfigurationUtilities::OnIntentsRequestComplete(const TArray<uint8>& B
 	const FUTF8ToTCHAR DataAsCharacters(reinterpret_cast<const ANSICHAR*>(BinaryResponse.GetData()), BinaryResponse.Num());
 	const FString JsonArrayString = FString(DataAsCharacters.Length(), DataAsCharacters.Get());
 
-	const bool bIsConversionError = !FJsonObjectConverter::JsonArrayStringToUStruct<FWitIntentDefinition>(
-		JsonArrayString, &Configuration->Application.Data.Intents);
+	const bool bIsConversionError = !FJsonObjectConverter::JsonArrayStringToUStruct<FWitIntentDefinition>( JsonArrayString, &Configuration->Application.Data.Intents);
 
 	if (bIsConversionError)
 	{
@@ -264,8 +264,7 @@ void FWitConfigurationUtilities::OnEntitiesRequestComplete(const TArray<uint8>& 
 	const FUTF8ToTCHAR DataAsCharacters(reinterpret_cast<const ANSICHAR*>(BinaryResponse.GetData()), BinaryResponse.Num());
 	const FString JsonArrayString = FString(DataAsCharacters.Length(), DataAsCharacters.Get());
 
-	const bool bIsConversionError = !FJsonObjectConverter::JsonArrayStringToUStruct<FWitEntityDefinition>(
-		JsonArrayString, &Configuration->Application.Data.Entities);
+	const bool bIsConversionError = !FJsonObjectConverter::JsonArrayStringToUStruct<FWitEntityDefinition>( JsonArrayString, &Configuration->Application.Data.Entities);
 
 	if (bIsConversionError)
 	{
@@ -322,8 +321,7 @@ void FWitConfigurationUtilities::OnTraitsRequestComplete(const TArray<uint8>& Bi
 	const FUTF8ToTCHAR DataAsCharacters(reinterpret_cast<const ANSICHAR*>(BinaryResponse.GetData()), BinaryResponse.Num());
 	const FString JsonArrayString = FString(DataAsCharacters.Length(), DataAsCharacters.Get());
 
-	const bool bIsConversionError = !FJsonObjectConverter::JsonArrayStringToUStruct<FWitTraitDefinition>(
-		JsonArrayString, &Configuration->Application.Data.Traits);
+	const bool bIsConversionError = !FJsonObjectConverter::JsonArrayStringToUStruct<FWitTraitDefinition>( JsonArrayString, &Configuration->Application.Data.Traits);
 
 	if (bIsConversionError)
 	{
@@ -333,7 +331,7 @@ void FWitConfigurationUtilities::OnTraitsRequestComplete(const TArray<uint8>& Bi
 
 	UE_LOG(LogWit, Verbose, TEXT("OnTraitsRequestComplete - Received traits: %d"), Configuration->Application.Data.Traits.Num());
 
-	Configuration = nullptr;
+	RequestVoiceList();
 }
 
 /**
@@ -343,6 +341,62 @@ void FWitConfigurationUtilities::OnTraitsRequestError(const FString& ErrorMessag
 {
 	UE_LOG(LogWit, Warning, TEXT("OnTraitsRequestError - request failed with error: %s - %s"), *ErrorMessage, *HumanReadableErrorMessage);
 
+	RequestVoiceList();
+}
+
+/**
+ * Requests the available list of voices for an app
+ */
+void FWitConfigurationUtilities::RequestVoiceList()
+{
+	FWitRequestConfiguration RequestConfiguration{};
+
+	if (!SetupListRequest(RequestConfiguration, EWitRequestEndpoint::GetVoices, false))
+	{
+		return;
+	}
+
+	RequestConfiguration.OnRequestError.AddStatic(&FWitConfigurationUtilities::OnVoicesRequestError);
+	RequestConfiguration.OnRequestComplete.AddStatic(&FWitConfigurationUtilities::OnVoicesRequestComplete);
+
+	UWitRequestSubsystem* RequestSubsystem = GEngine->GetEngineSubsystem<UWitRequestSubsystem>();
+
+	RequestSubsystem->BeginStreamRequest(RequestConfiguration);
+	RequestSubsystem->EndStreamRequest();
+}
+
+/**
+ * Called when a Wit voices request is successfully completed. The response will contain a list of available voices
+ */
+void FWitConfigurationUtilities::OnVoicesRequestComplete(const TArray<uint8>& BinaryResponse, const TSharedPtr<FJsonObject> JsonResponse)
+{
+	UE_LOG(LogWit, Verbose, TEXT("OnVoicesRequestComplete - Final response size: %d"), BinaryResponse.Num());
+
+	FWitVoicesResponse VoicesResponse;
+	const bool bIsConversionError = !FJsonObjectConverter::JsonObjectToUStruct(JsonResponse.ToSharedRef(), &VoicesResponse);
+	
+	if (bIsConversionError)
+	{
+		OnVoicesRequestError(TEXT("Json To UStruct failed"), TEXT("Converting the Json response to a UStruct failed"));
+		return;
+	}
+
+	Configuration->Application.Data.Voices.Append(VoicesResponse.En_US);
+
+	UE_LOG(LogWit, Verbose, TEXT("OnVoicesRequestComplete - Received voices: %d"), Configuration->Application.Data.Voices.Num());
+
+	(void)Configuration->MarkPackageDirty();
+	Configuration = nullptr;
+}
+
+/**
+ * Called when a voices request errors
+ */
+void FWitConfigurationUtilities::OnVoicesRequestError(const FString& ErrorMessage, const FString& HumanReadableErrorMessage)
+{
+	UE_LOG(LogWit, Warning, TEXT("OnVoicesRequestError - request failed with error: %s - %s"), *ErrorMessage, *HumanReadableErrorMessage);
+
+	(void)Configuration->MarkPackageDirty();
 	Configuration = nullptr;
 }
 
