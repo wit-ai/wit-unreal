@@ -59,7 +59,7 @@ void UVoiceIntentWithEntitiesMatcher::OnWitResponse(const bool bIsSuccessful, co
 	// have multiple entities to match
 
 	TArray<FWitEntity> MatchingEntities;
-	int8 MatchingEntitiesNum = 0;
+	int32 MatchingEntitiesNum = 0;
 	TArray<FString> MatchingValues;
 
 	for (const auto& EntityName : RequiredEntityNames)
