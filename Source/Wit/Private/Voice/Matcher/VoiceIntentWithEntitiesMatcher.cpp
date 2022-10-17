@@ -106,7 +106,7 @@ void UVoiceIntentWithEntitiesMatcher::OnWitResponse(const bool bIsSuccessful, co
 	}
 
 	// Call the relevant delegate. We provide two variants just to make it more user friendly and convenient in the
-	// common case of only needing to match a single entity
+	// common case of only needing to match the Intent
 
 	const bool bIsNoEntityMatched = MatchingEntitiesNum == 0;
 	
