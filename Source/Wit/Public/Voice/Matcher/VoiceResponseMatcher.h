@@ -8,6 +8,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Components/ActorComponent.h"
 #include "Wit/Request/WitPartialResponseValidatorBase.h"
 #include "Wit/Request/WitResponse.h"
 #include "VoiceResponseMatcher.generated.h"

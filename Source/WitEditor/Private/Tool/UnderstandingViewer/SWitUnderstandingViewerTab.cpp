@@ -8,11 +8,11 @@
 #pragma once
 
 #include "SWitUnderstandingViewerTab.h"
-
+#include "Misc/EngineVersionComparison.h"
 #include "DetailLayoutBuilder.h"
 #include "Voice/Experience/VoiceExperience.h"
 #include "Widgets/Layout/SScrollBox.h"
-#include "Selection.h"
+#include "Engine/Selection.h"
 #include "Editor.h"
 
 /**
@@ -29,7 +29,11 @@ void SWitUnderstandingViewerTab::Construct(const FArguments& InArgs)
 	Args.bAllowSearch = false;
 	Args.bAllowFavoriteSystem = false;
 	Args.bHideSelectionTip = true;
+#if UE_VERSION_OLDER_THAN(5,0,0)
+	Args.bShowActorLabel = false;
+#else
 	Args.bShowObjectLabel = false;
+#endif
 	Args.NameAreaSettings = FDetailsViewArgs::ObjectsUseNameArea;
 	Args.ColumnWidth = 0.5f;
 
@@ -360,7 +364,9 @@ AVoiceExperience* SWitUnderstandingViewerTab::GetSelectedVoiceExperience()
 		return nullptr;
 	}
 
-	for (FSelectionIterator It = GEditor->GetSelectedActorIterator(); It; ++It)
+	USelection* SelectedActors = GEditor->GetSelectedActors();
+
+	for(FSelectionIterator It(*SelectedActors); It; ++It)
 	{
 		return Cast<AVoiceExperience>(*It);
 	}

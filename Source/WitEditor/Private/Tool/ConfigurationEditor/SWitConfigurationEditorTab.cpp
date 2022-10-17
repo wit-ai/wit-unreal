@@ -8,10 +8,9 @@
 #pragma once
 
 #include "SWitConfigurationEditorTab.h"
-
+#include "Misc/EngineVersionComparison.h"
 #include "DetailLayoutBuilder.h"
 #include "Widgets/Layout/SScrollBox.h"
-#include "Selection.h"
 #include "TTS/Configuration/TtsVoicePresetAsset.h"
 #include "Wit/Utilities/WitConfigurationUtilities.h"
 
@@ -29,7 +28,12 @@ void SWitConfigurationEditorTab::Construct(const FArguments& InArgs)
 	ContentArgs.bAllowSearch = false;
 	ContentArgs.bAllowFavoriteSystem = false;
 	ContentArgs.bHideSelectionTip = true;
+#if UE_VERSION_OLDER_THAN(5,0,0)
+	ContentArgs.bShowActorLabel = true;
+#else
 	ContentArgs.bShowObjectLabel = true;
+#endif
+
 	ContentArgs.NameAreaSettings = FDetailsViewArgs::ObjectsUseNameArea;
 	ContentArgs.ColumnWidth = 0.5f;
 
@@ -44,7 +48,11 @@ void SWitConfigurationEditorTab::Construct(const FArguments& InArgs)
 	Args.bAllowSearch = false;
 	Args.bAllowFavoriteSystem = false;
 	Args.bHideSelectionTip = true;
+#if UE_VERSION_OLDER_THAN(5,0,0)
+	Args.bShowActorLabel = false;
+#else
 	Args.bShowObjectLabel = false;
+#endif
 	Args.NameAreaSettings = FDetailsViewArgs::ObjectsUseNameArea;
 	Args.ColumnWidth = 0.5f;
 

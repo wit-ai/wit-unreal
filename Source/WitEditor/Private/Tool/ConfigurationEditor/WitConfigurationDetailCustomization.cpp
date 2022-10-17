@@ -116,7 +116,7 @@ void FWitConfigurationDetailCustomization::CustomizeDetails(IDetailLayoutBuilder
  */
 FReply FWitConfigurationDetailCustomization::OnRefreshButtonClicked()
 {
-	if (ObjectsToEdit.IsEmpty())
+	if (ObjectsToEdit.Num() == 0)
 	{
 		return FReply::Handled();
 	}
@@ -147,7 +147,7 @@ FReply FWitConfigurationDetailCustomization::OnRefreshButtonClicked()
  */
 bool FWitConfigurationDetailCustomization::IsRefreshButtonEnabled() const
 {
-	if (ObjectsToEdit.IsEmpty())
+	if (ObjectsToEdit.Num() == 0)
 	{
 		return false;
 	}

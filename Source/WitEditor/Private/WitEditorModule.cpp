@@ -8,7 +8,6 @@
 #include "WitEditorModule.h"
 
 #include "LevelEditor.h"
-#include "Wit/Voice/WitVoiceService.h"
 #include "Wit/TTS/WitTtsService.h"
 #include "Customization/WitIntentPropertyCustomization.h"
 #include "Customization/TtsConfigurationDetailCustomization.h"
@@ -17,7 +16,6 @@
 #include "Tool/ConfigurationEditor/WitConfigurationEditorTabTool.h"
 #include "Tool/UnderstandingViewer/WitUnderstandingViewerTabTool.h"
 #include "Wit/TTS/WitTtsExperience.h"
-#include "Wit/Voice/WitVoiceExperience.h"
 
 #define LOCTEXT_NAMESPACE "FWitEditorModule"
 
