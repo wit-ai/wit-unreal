@@ -76,11 +76,17 @@ private:
 	/** Called when received a Wit partial response */
 	void OnPartialResponse(const TArray<uint8>& BinaryResponse, const TSharedPtr<FJsonObject> JsonResponse) const;
 	
+	/** Called when a Wit message(Transcription) request is fully completed to process the response payload */
+	void OnMessageRequestComplete(const TArray<uint8>& BinaryResponse, const TSharedPtr<FJsonObject> JsonResponse);
+	
 	/** Called when a Wit speech request is fully completed to process the response payload */
 	void OnSpeechRequestComplete(const TArray<uint8>& BinaryResponse, const TSharedPtr<FJsonObject> JsonResponse);
 	
-	/** Called when a Wit speech request is fully completed to process the response payload */
-	void OnSpeechRequestComplete(const FWitResponse& Response) const;
+	/** Called when a Wit voice request is fully completed to process the response payload */
+	void OnRequestComplete(const TArray<uint8>& BinaryResponse, const TSharedPtr<FJsonObject> JsonResponse, const bool bIsResponseRestNeeded);
+	
+	/** Called when a Wit voice request is fully completed to process the response payload */
+	void OnRequestComplete(const FWitResponse& Response) const;
 
 	/** Called when a Wit request errors */
 	void OnWitRequestError(const FString& ErrorMessage, const FString& HumanReadableMessage) const;

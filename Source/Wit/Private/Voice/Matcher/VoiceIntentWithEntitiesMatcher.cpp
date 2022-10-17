@@ -59,6 +59,7 @@ void UVoiceIntentWithEntitiesMatcher::OnWitResponse(const bool bIsSuccessful, co
 	// have multiple entities to match
 
 	TArray<FWitEntity> MatchingEntities;
+	int8 MatchingEntitiesNum = 0;
 	TArray<FString> MatchingValues;
 
 	for (const auto& EntityName : RequiredEntityNames)
@@ -75,11 +76,12 @@ void UVoiceIntentWithEntitiesMatcher::OnWitResponse(const bool bIsSuccessful, co
 		else
 		{
 			MatchingEntities.Add(*MatchingEntity);
+			MatchingEntitiesNum++;
 			MatchingValues.Add(MatchingEntity->Value);
 		}
 	}
 
-	const bool bIsAllRequiredEntitiesMatched = MatchingEntities.Num() == RequiredEntityNames.Num();
+	const bool bIsAllRequiredEntitiesMatched = MatchingEntitiesNum == RequiredEntityNames.Num();
 
 	// Try to match all the optional entities. We match in the order specified so that we guarantee the ordering when we
 	// have multiple entities to match
@@ -99,13 +101,14 @@ void UVoiceIntentWithEntitiesMatcher::OnWitResponse(const bool bIsSuccessful, co
 		{
 			MatchingEntities.Add(*MatchingEntity);
 			MatchingValues.Add(MatchingEntity->Value);
+			MatchingEntitiesNum++;
 		}
 	}
 
 	// Call the relevant delegate. We provide two variants just to make it more user friendly and convenient in the
 	// common case of only needing to match a single entity
 
-	const bool bIsNoEntityMatched = MatchingEntities.Num() == 0;
+	const bool bIsNoEntityMatched = MatchingEntitiesNum == 0;
 	
 	if (bIsNoEntityMatched)
 	{
@@ -119,6 +122,9 @@ void UVoiceIntentWithEntitiesMatcher::OnWitResponse(const bool bIsSuccessful, co
 
 		OnEntitiesMatched.Broadcast(bIsAllRequiredEntitiesMatched, MatchingIntent == nullptr ? FWitIntent() : *MatchingIntent, MatchingEntities, MatchingValues, Response.Is_Final);
 
-		AcceptPartialResponse(Response);
+		if (bIsAllRequiredEntitiesMatched)
+		{
+			AcceptPartialResponse(Response);
+		}
 	}
 }
