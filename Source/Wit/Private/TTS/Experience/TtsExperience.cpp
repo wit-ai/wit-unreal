@@ -90,6 +90,20 @@ void ATtsExperience::ConvertTextToSpeechWithSettings(const FTtsConfiguration& Cl
 }
 
 /**
+ * Fetch a list of available voices from Wit
+ */
+void ATtsExperience::FetchAvailableVoices()
+{
+	if (TtsService == nullptr)
+	{
+		return;
+	}
+
+	InitializeService();	
+	TtsService->FetchAvailableVoices();
+}
+
+/**
  * Unload a single clip
  *
  * @param ClipId [in] Id of the clip to unload

@@ -212,6 +212,54 @@ void UWitTtsService::ConvertTextToSpeech(const FString& TextToConvert)
 }
 
 /**
+ * Fetch a list of available voices from Wit
+ */
+void UWitTtsService::FetchAvailableVoices()
+{
+	const bool bHasConfiguration = Configuration != nullptr && !Configuration->Application.ClientAccessToken.IsEmpty();
+	
+	if (!bHasConfiguration)
+	{
+		UE_LOG(LogWit, Warning, TEXT("FetchAvailableVoices: cannot fetch available voices because no configuration found. Please assign a configuration and access token"));
+		return;
+	}
+	
+	UWitRequestSubsystem* RequestSubsystem = GEngine->GetEngineSubsystem<UWitRequestSubsystem>();
+
+	if (RequestSubsystem == nullptr)
+	{
+		UE_LOG(LogWit, Warning, TEXT("FetchAvailableVoices: cannot fetch available voices because request subsystem does not exist"));
+		return;
+	}
+
+	if (RequestSubsystem->IsRequestInProgress())
+	{
+		UE_LOG(LogWit, Warning, TEXT("FetchAvailableVoices: cannot fetch available voicest because a request is already in progress"));
+		return;
+	}
+
+	UE_LOG(LogWit, Display, TEXT("FetchAvailableVoices: fetching available voices"));
+	
+	// Construct the request with the desired configuration. We use the /voices endpoint in Wit.ai. See the Wit.ai documentation for more
+	// specifics of the parameters to this endpoint
+
+	FWitRequestConfiguration RequestConfiguration{};
+
+	FWitRequestBuilder::SetRequestConfigurationWithDefaults(RequestConfiguration, EWitRequestEndpoint::GetVoices, Configuration->Application.ClientAccessToken,
+		Configuration->Application.Advanced.ApiVersion, Configuration->Application.Advanced.URL);
+	FWitRequestBuilder::AddFormatContentType(RequestConfiguration, EWitRequestFormat::Json);
+
+	RequestConfiguration.bShouldUseCustomHttpTimeout = Configuration->Application.Advanced.bIsCustomHttpTimeout;
+	RequestConfiguration.HttpTimeout = Configuration->Application.Advanced.HttpTimeout;
+
+	RequestConfiguration.OnRequestError.AddUObject(this, &UWitTtsService::OnVoicesRequestError);
+	RequestConfiguration.OnRequestComplete.AddUObject(this, &UWitTtsService::OnVoicesRequestComplete);
+
+	RequestSubsystem->BeginStreamRequest(RequestConfiguration);
+	RequestSubsystem->EndStreamRequest();
+}
+
+/**
  * Called when a storage cache request is successfully completed. The binary data will contain the audio wav for the converted text
  *
  * @param BinaryData [in] the binary data
@@ -305,6 +353,40 @@ void UWitTtsService::OnSynthesizeRequestError(const FString& ErrorMessage, const
 		EventHandler->OnSynthesizeResponse.Broadcast(false, nullptr);
 		EventHandler->OnSynthesizeError.Broadcast(ErrorMessage, HumanReadableErrorMessage);
 	}
+}
+
+/**
+ * Called when a Wit voices request is successfully completed. The response will contain a list of available voices
+ *
+ * @param BinaryResponse [in] the final binary response
+ * @param JsonResponse [in] the final Json response
+ */
+void UWitTtsService::OnVoicesRequestComplete(const TArray<uint8>& BinaryResponse, const TSharedPtr<FJsonObject> JsonResponse)
+{
+	if (EventHandler == nullptr)
+	{
+		return;
+	}
+	
+	UE_LOG(LogWit, Verbose, TEXT("OnVoicesRequestComplete - Final response size: %d"), BinaryResponse.Num());
+
+	const bool bIsConversionError = !FJsonObjectConverter::JsonObjectToUStruct(JsonResponse.ToSharedRef(), &EventHandler->VoicesResponse);
+	if (bIsConversionError)
+	{
+		OnVoicesRequestError(TEXT("Json To UStruct failed"), TEXT("Converting the Json response to a UStruct failed"));
+		return;
+	}
+}
+
+/**
+ * Called when a voices request errors
+ *
+ * @param ErrorMessage [in] the error message
+ * @param HumanReadableErrorMessage [in] longer human readable error message
+ */
+void UWitTtsService::OnVoicesRequestError(const FString& ErrorMessage, const FString& HumanReadableErrorMessage) const
+{
+	UE_LOG(LogWit, Warning, TEXT("Wit request failed with error: %s - %s"), *ErrorMessage, *HumanReadableErrorMessage);
 }
 
 /**

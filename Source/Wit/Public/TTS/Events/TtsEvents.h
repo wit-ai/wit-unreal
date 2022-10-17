@@ -28,7 +28,7 @@ public:
 	/**
 	 * The response we receive from Wit requests parsed into UObject structures
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Transient, Category = "Action")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Transient, Category = "TTS")
 	FWitVoicesResponse VoicesResponse{};
 
 	/**
