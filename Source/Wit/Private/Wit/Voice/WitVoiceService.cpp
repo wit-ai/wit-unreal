@@ -606,7 +606,7 @@ void UWitVoiceService::SendTranscription(const FString& Text)
 	RequestConfiguration.HttpTimeout = Configuration->Application.Advanced.HttpTimeout;
 
 	RequestConfiguration.OnRequestError.AddUObject(this, &UWitVoiceService::OnWitRequestError);
-	RequestConfiguration.OnRequestComplete.AddUObject(this, &UWitVoiceService::OnSpeechRequestComplete);
+	RequestConfiguration.OnRequestComplete.AddUObject(this, &UWitVoiceService::OnMessageRequestComplete);
 
 	if (Events != nullptr)
 	{
@@ -653,7 +653,7 @@ void UWitVoiceService::AcceptPartialResponseAndCancelRequest(const FWitResponse&
 	FWitResponse FinalResponse = Response;
 	FinalResponse.Is_Final = true;
 
-	OnSpeechRequestComplete(FinalResponse);
+	OnRequestComplete(FinalResponse);
 }
 
 /**
@@ -709,6 +709,20 @@ void UWitVoiceService::OnPartialResponse(const TArray<uint8>& PartialBinaryRespo
 }
 
 /**
+ * Called when a Wit message(Transcription) request is successfully completed to process the final response payload
+ *
+ * @param BinaryResponse [in] the final binary response
+ * @param JsonResponse [in] the final Json response
+ */
+void UWitVoiceService::OnMessageRequestComplete(const TArray<uint8>& BinaryResponse, const TSharedPtr<FJsonObject> JsonResponse)
+{
+	
+	Events->WitResponse.Reset();
+	Events->WitResponse.Is_Final = true;
+	OnRequestComplete(BinaryResponse, JsonResponse, false);
+}
+
+/**
  * Called when a Wit speech request is successfully completed to process the final response payload
  *
  * @param BinaryResponse [in] the final binary response
@@ -716,12 +730,29 @@ void UWitVoiceService::OnPartialResponse(const TArray<uint8>& PartialBinaryRespo
  */
 void UWitVoiceService::OnSpeechRequestComplete(const TArray<uint8>& BinaryResponse, const TSharedPtr<FJsonObject> JsonResponse)
 {
+	
+	OnRequestComplete(BinaryResponse, JsonResponse, true);
+}
+
+/**
+ * Called when a Wit voice request is successfully completed to process the final response payload
+ *
+ * @param BinaryResponse [in] the final binary response
+ * @param JsonResponse [in] the final Json response
+ * @param bIsResponseRestNeeded [in] whether to reset the Response Object.
+ * 
+ */
+void UWitVoiceService::OnRequestComplete(const TArray<uint8>& BinaryResponse, const TSharedPtr<FJsonObject> JsonResponse, const bool bIsResponseRestNeeded)
+{
 	if (Events == nullptr)
 	{
 		return;		
 	}
+	if (bIsResponseRestNeeded)
+	{
+		Events->WitResponse.Reset();
+	}
 	
-	Events->WitResponse.Reset();
 	
 	const bool bIsConversionError = !FWitHelperUtilities::ConvertJsonToWitResponse(JsonResponse.ToSharedRef(), &Events->WitResponse);
 	if (bIsConversionError)
@@ -730,15 +761,15 @@ void UWitVoiceService::OnSpeechRequestComplete(const TArray<uint8>& BinaryRespon
 		return;
 	}
 	
-	OnSpeechRequestComplete(Events->WitResponse);
+	OnRequestComplete(Events->WitResponse);
 }
 
 /**
- * Called when a Wit speech request is successfully completed to process the final response payload
+ * Called when a Wit voice request is successfully completed to process the final response payload
  *
  * @param Response [in] the final binary response
  */
-void UWitVoiceService::OnSpeechRequestComplete(const FWitResponse& Response) const
+void UWitVoiceService::OnRequestComplete(const FWitResponse& Response) const
 {
 	if (Events == nullptr)
 	{
