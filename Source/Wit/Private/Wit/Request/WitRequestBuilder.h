@@ -147,6 +147,7 @@ private:
 	static const FString EndpointVoices;
 	static const FString EndpointConverse;
 	static const FString EndpointEvent;
+	static const FString EndpointDictation;
 
 	/** Supported wit.ai parameters */
 	static const FString ParameterTextKey;

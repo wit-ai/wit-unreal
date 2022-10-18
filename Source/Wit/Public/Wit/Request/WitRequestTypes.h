@@ -22,7 +22,8 @@ enum class EWitRequestEndpoint : uint8
 	Synthesize,
 	Voices,
 	Converse,
-	Event
+	Event,
+	Dictation
 };
 
 /**
