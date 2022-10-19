@@ -74,11 +74,11 @@ private:
 	void OnPartialTranscription(const FString& PartialTranscription);
 
 	/** The current full text */
-	UPROPERTY(VisibleInstanceOnly)
+	UPROPERTY(VisibleInstanceOnly, Category = "Dictation|Multi")
 	FString Text{};
 	
 	/** The current full text */
-	UPROPERTY(VisibleInstanceOnly)
+	UPROPERTY(VisibleInstanceOnly, Category = "Dictation|Multi")
 	int ActivationCount{};
 	
 	/**
