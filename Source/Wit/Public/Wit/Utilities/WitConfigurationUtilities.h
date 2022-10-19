@@ -57,7 +57,7 @@ private:
 	static void OnTraitsRequestComplete(const TArray<uint8>& BinaryResponse, const TSharedPtr<FJsonObject> JsonResponse);
 	static void OnTraitsRequestError(const FString& ErrorMessage, const FString& HumanReadableErrorMessage);
 
-	/** Called when a Wit vocies request is completed */
+	/** Called when a Wit voices request is completed */
 	static void OnVoicesRequestComplete(const TArray<uint8>& BinaryResponse, const TSharedPtr<FJsonObject> JsonResponse);
 	static void OnVoicesRequestError(const FString& ErrorMessage, const FString& HumanReadableErrorMessage);
 
