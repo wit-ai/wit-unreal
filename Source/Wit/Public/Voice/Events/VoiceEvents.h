@@ -33,7 +33,7 @@ public:
 	 * The response we receive from Wit requests parsed into UObject structures. This response contains
 	 * information about the meaning of the speech or text that was sent
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Transient, Category = "Experience")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Transient, Category = "Voice")
 	FWitResponse WitResponse{};
 
 	/**
