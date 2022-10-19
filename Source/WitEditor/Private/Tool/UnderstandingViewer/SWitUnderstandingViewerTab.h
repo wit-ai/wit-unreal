@@ -27,7 +27,7 @@ class UWitResponseObject final : public UObject
 public:
 
 	/** The underlying response structure */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	UPROPERTY(Transient, EditAnywhere, Category = "Voice Experience")
 	FWitResponse Response{};
 	
 	/** The details widget that will display this response */
@@ -69,6 +69,7 @@ protected:
 	EVisibility GetSelectMessageVisibility() const;
 	EVisibility GetUtteranceMessageVisibility() const;
 	EVisibility GetWaitMessageVisibility() const;
+	EVisibility GetResultVisibility() const;
 
 	/** The current text entered by the user as an utterance */
 	FText UtteranceText{};

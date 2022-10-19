@@ -52,7 +52,7 @@ struct WIT_API FVoiceConfiguration
 	 * The minimum voice volume for keeping the voice input active
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Keep Alive", meta=(ClampMin = 0, ClampMax = 1))
-	float KeepAliveMinimumVolume{0.01f};
+	float KeepAliveMinimumVolume{0.02f};
 
 	/**
 	 * If we don't receive any voice input for this amount of time when we automatically deactivate the voice input 

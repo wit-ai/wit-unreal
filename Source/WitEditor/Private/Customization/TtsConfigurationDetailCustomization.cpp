@@ -33,7 +33,7 @@ TSharedRef<IDetailCustomization> FTtsConfigurationDetailCustomization::MakeInsta
 void FTtsConfigurationDetailCustomization::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
 {
 	DetailBuilder.GetObjectsBeingCustomized(ObjectsToEdit);
-
+	
 	// Add a text entry and button so that we can easily send message requests to the Wit API to see the response. Disabled for now until play sound works
 
 	IDetailCategoryBuilder& ConfigurationCategory = DetailBuilder.EditCategory("TTS", FText::GetEmpty(), ECategoryPriority::Important);
@@ -240,7 +240,7 @@ FReply FTtsConfigurationDetailCustomization::OnCreatePresetButtonClicked()
 
 		// Create a preset asset from all the combinations of voice name + style
 		
-		for (const FWitTtsVoice& AvailableVoice: TtsExperience->EventHandler->VoicesResponse.En_US)
+		for (const FWitVoiceDefinition& AvailableVoice: TtsExperience->EventHandler->VoicesResponse.En_US)
 		{
 			const FString PresetAssetName = AvailableVoice.Name;
 			

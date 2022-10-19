@@ -8,7 +8,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UObject/NoExportTypes.h"
 #include "WitRequestTypes.generated.h"
 
 /**
@@ -20,9 +19,14 @@ enum class EWitRequestEndpoint : uint8
 	Speech,
 	Message,
 	Synthesize,
-	Voices,
+	GetVoices,
 	Converse,
 	Event,
+	GetApps,
+	GetEntities,
+	GetIntents,
+	GetTraits,
+	ClientToken,
 	Dictation
 };
 
@@ -34,7 +38,9 @@ enum class EWitParameter : uint8
 {
 	Text,
 	SessionId,
-	ContextMap
+	ContextMap,
+	Offset,
+	Limit
 };
 
 /**

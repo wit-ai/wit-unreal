@@ -10,11 +10,11 @@
 /**
  * Called on module startup
  */
-void WitTabTool::OnStartupModule()
+void FWitTabTool::OnStartupModule()
 {
 	Initialize();
 		
-	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(TabName, FOnSpawnTab::CreateRaw(this, &WitTabTool::SpawnTab))
+	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(TabName, FOnSpawnTab::CreateRaw(this, &FWitTabTool::SpawnTab))
 		.SetGroup(FWitEditorModule::Get().GetMenuRoot())
 		.SetDisplayName(TabDisplayName)
 		.SetTooltipText(ToolTipText);
@@ -23,7 +23,7 @@ void WitTabTool::OnStartupModule()
 /**
  * Called on module shutdown
  */
-void WitTabTool::OnShutdownModule()
+void FWitTabTool::OnShutdownModule()
 {
 	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(TabName);
 };
@@ -31,7 +31,7 @@ void WitTabTool::OnShutdownModule()
 /**
  * Populate the menu entry 
  */
-void WitTabTool::MakeMenuEntry(FMenuBuilder& MenuBuilder)
+void FWitTabTool::MakeMenuEntry(FMenuBuilder& MenuBuilder)
 {
 	FGlobalTabmanager::Get()->PopulateTabSpawnerMenu(MenuBuilder, TabName);
 };

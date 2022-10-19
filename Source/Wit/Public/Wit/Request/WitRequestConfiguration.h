@@ -35,8 +35,8 @@ struct WIT_API FWitRequestConfiguration
 	/** Optional version modifier string to use in the request */
 	FString Version{};
 
-	/** The server auth token to use in the request. Must be present */
-	FString ServerAuthToken{};
+	/** The auth token to use in the request. Must be present */
+	FString AuthToken{};
 
 	/** The verb (POST/GET) to use in the request */
 	FString Verb{};

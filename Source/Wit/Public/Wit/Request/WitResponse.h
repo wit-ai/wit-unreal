@@ -195,7 +195,7 @@ struct WIT_API FWitResponse
  * UStruct representation of the JSON voice preset object
  */
 USTRUCT(BlueprintType)
-struct WIT_API FWitTtsVoice
+struct WIT_API FWitVoiceDefinition
 {
 	GENERATED_BODY()
 
@@ -217,12 +217,12 @@ struct WIT_API FWitTtsVoice
  * documentation for the meaning of each specific field.
  */
 USTRUCT(BlueprintType)
-struct WIT_API FWitTtsVoicesResponse
+struct WIT_API FWitVoicesResponse
 {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
-	TArray<FWitTtsVoice> En_US{};
+	TArray<FWitVoiceDefinition> En_US{};
 };
 
 /**
@@ -241,5 +241,118 @@ struct WIT_API FWitComposerResponse
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Composer")
 	FWitResponse Response{};
+};
 
+/**
+ * UStruct representation of the JSON entity object used by /intents
+ */
+USTRUCT(BlueprintType)
+struct WIT_API FWitEntityShortDefinition
+{
+	GENERATED_BODY()
+		
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	FString Name{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	int64 Id{0};
+};
+
+/**
+ * UStruct representation of the JSON entity object used by /entities
+ */
+USTRUCT(BlueprintType)
+struct WIT_API FWitEntityDefinition
+{
+	GENERATED_BODY()
+		
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	FString Name{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	int64 Id{0};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	TArray<FString> Lookups{};
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	TArray<FString> Roles{};
+};
+
+/**
+ * UStruct representation of the JSON intent definition object returned by /intents
+ */
+USTRUCT(BlueprintType)
+struct WIT_API FWitIntentDefinition
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	FString Name{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	int64 Id{0};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	TArray<FWitEntityShortDefinition> Entities{};
+};
+
+/**
+ * UStruct representation of the JSON trait value object used by /traits
+ */
+USTRUCT(BlueprintType)
+struct WIT_API FWitTraitValueDefinition
+{
+	GENERATED_BODY()
+		
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	FString Name{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	FString Value{};
+};
+
+/**
+ * UStruct representation of the JSON trait definition object returned by /traits
+ */
+USTRUCT(BlueprintType)
+struct WIT_API FWitTraitDefinition
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	FString Name{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	int64 Id{0};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	TArray<FWitTraitValueDefinition> Values{};
+};
+
+/**
+ * UStruct representation of the JSON app definition object returned by /apps
+ */
+USTRUCT(BlueprintType)
+struct WIT_API FWitAppDefinition
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	FString Name{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	FString Id{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	FString Lang{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	bool Private{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	FString Created_At{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	bool Is_App_For_Token{};
 };

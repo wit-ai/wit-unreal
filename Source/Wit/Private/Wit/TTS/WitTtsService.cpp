@@ -245,7 +245,7 @@ void UWitTtsService::FetchAvailableVoices()
 
 	FWitRequestConfiguration RequestConfiguration{};
 
-	FWitRequestBuilder::SetRequestConfigurationWithDefaults(RequestConfiguration, EWitRequestEndpoint::Voices, Configuration->Application.ClientAccessToken,
+	FWitRequestBuilder::SetRequestConfigurationWithDefaults(RequestConfiguration, EWitRequestEndpoint::GetVoices, Configuration->Application.ClientAccessToken,
 		Configuration->Application.Advanced.ApiVersion, Configuration->Application.Advanced.URL);
 	FWitRequestBuilder::AddFormatContentType(RequestConfiguration, EWitRequestFormat::Json);
 
@@ -376,8 +376,6 @@ void UWitTtsService::OnVoicesRequestComplete(const TArray<uint8>& BinaryResponse
 		OnVoicesRequestError(TEXT("Json To UStruct failed"), TEXT("Converting the Json response to a UStruct failed"));
 		return;
 	}
-
-	EventHandler->OnVoicesResponse.Broadcast(true, EventHandler->VoicesResponse);
 }
 
 /**
@@ -389,14 +387,6 @@ void UWitTtsService::OnVoicesRequestComplete(const TArray<uint8>& BinaryResponse
 void UWitTtsService::OnVoicesRequestError(const FString& ErrorMessage, const FString& HumanReadableErrorMessage) const
 {
 	UE_LOG(LogWit, Warning, TEXT("Wit request failed with error: %s - %s"), *ErrorMessage, *HumanReadableErrorMessage);
-
-	// Calling OnSynthesizeResponse is kept for backwards compatibility if people are already using it but is otherwise replaced by OnWitError
-
-	if (EventHandler != nullptr)
-	{
-		EventHandler->OnVoicesResponse.Broadcast(false, FWitTtsVoicesResponse());
-		EventHandler->OnVoicesError.Broadcast(ErrorMessage, HumanReadableErrorMessage);
-	}
 }
 
 /**
