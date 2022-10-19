@@ -12,7 +12,7 @@
 #include "Wit/Utilities/WitLog.h"
 
 /**
- * Finds the WitVoiceExperience in the scene. This is slow so do not call every frame
+ * Finds the VoiceExperience in the scene. This is slow so do not call every frame
  * 
  * @return pointer to the Voice Experience actor if found otherwise null
  */
@@ -62,7 +62,7 @@ AVoiceExperience* FWitHelperUtilities::FindVoiceExperience(const UWorld* World, 
 }
 
 /**
- * Finds the WitTtsExperience in the scene. This is slow so do not call every frame
+ * Finds the TtsExperience in the scene. This is slow so do not call every frame
  * 
  * @return pointer to the TTS Experience actor if found otherwise null
  */
@@ -109,6 +109,56 @@ ATtsExperience* FWitHelperUtilities::FindTtsExperience(const UWorld* World, cons
 	}
 
 	return TtsExperience;
+}
+
+/**
+ * Finds the DictationExperience in the scene. This is slow so do not call every frame
+ * 
+ * @return pointer to the Dictation Experience actor if found otherwise null
+ */
+ADictationExperience* FWitHelperUtilities::FindDictationExperience(const UWorld* World, const FName& Tag)
+{
+	check(World != nullptr);
+
+	ADictationExperience* DictationExperience = nullptr;
+	const bool bIsValidTag = !Tag.IsNone() && Tag.IsValid();
+
+	if (bIsValidTag)
+	{
+		UE_LOG(LogWit, Verbose, TEXT("FindDictationExperience: Trying to find Dictation Experience with tag %s"), *Tag.ToString());
+		
+		TArray<AActor*> DictationExperiences;
+		
+		UGameplayStatics::GetAllActorsOfClassWithTag(World, ADictationExperience::StaticClass(), Tag, DictationExperiences);
+
+		// If more than 1 match then just use the first
+
+		const bool bIsVoiceExperienceWithMatchingTag = DictationExperiences.Num() > 0;
+		 
+		if (bIsVoiceExperienceWithMatchingTag)
+		{
+			UE_LOG(LogWit, Verbose, TEXT("FindDictationExperience: Found Dictation Experience with tag %s"), *Tag.ToString());
+			
+			DictationExperience = static_cast<ADictationExperience*>(DictationExperiences[0]);
+		}
+	}
+
+	// If we don't find a dictation experience with a matching tag then we try to find the first TTS experience
+	
+	if (DictationExperience == nullptr)
+	{
+		DictationExperience = static_cast<ADictationExperience*>(UGameplayStatics::GetActorOfClass(World, ADictationExperience::StaticClass()));
+	}
+
+	// If we still find nothing then not much we can do
+	
+	if (DictationExperience == nullptr)
+	{
+		UE_LOG(LogWit, Warning, TEXT("FindDictationExperience: No Dictation Experience actor found"));
+		return nullptr;
+	}
+
+	return DictationExperience;
 }
 
 /**

@@ -26,7 +26,8 @@ enum class EWitRequestEndpoint : uint8
 	GetEntities,
 	GetIntents,
 	GetTraits,
-	ClientToken
+	ClientToken,
+	Dictation
 };
 
 /**

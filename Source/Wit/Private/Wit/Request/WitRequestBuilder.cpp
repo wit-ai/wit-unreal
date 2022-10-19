@@ -23,6 +23,7 @@ const FString FWitRequestBuilder::EndpointGetEntities = TEXT("entities");
 const FString FWitRequestBuilder::EndpointGetIntents = TEXT("intents");
 const FString FWitRequestBuilder::EndpointGetTraits = TEXT("traits");
 const FString FWitRequestBuilder::EndpointClientToken = TEXT("apps/{0}/client_tokens");
+const FString FWitRequestBuilder::EndpointDictation = TEXT("dictation");
 
 /** Supported wit.ai parameters */
 const FString FWitRequestBuilder::ParameterTextKey = TEXT("&q=");
@@ -76,12 +77,12 @@ void FWitRequestBuilder::SetRequestConfigurationWithDefaults(FWitRequestConfigur
 	{
 		Configuration.BaseUrl = UrlDefault;
 	}
-	
+
 	Configuration.Version = Version;
 	Configuration.AuthToken = AuthToken;
 	Configuration.Endpoint = GetEndpointString(Endpoint);
 	Configuration.Verb = GetVerbString(Endpoint);
-	Configuration.bShouldUseChunkedTransfer = Endpoint == EWitRequestEndpoint::Speech || Endpoint == EWitRequestEndpoint::Converse;
+	Configuration.bShouldUseChunkedTransfer = Endpoint == EWitRequestEndpoint::Speech || Endpoint == EWitRequestEndpoint::Converse || Endpoint == EWitRequestEndpoint::Dictation;
 }
 
 /**
@@ -93,8 +94,8 @@ void FWitRequestBuilder::SetRequestConfigurationWithDefaults(FWitRequestConfigur
  */
 void FWitRequestBuilder::AddParameter(FWitRequestConfiguration& Configuration, const EWitParameter ParameterKey, const FString& ParameterValue)
 {
-	const FString& ParameterKeyString( GetParameterKeyString(ParameterKey));
-	
+	const FString& ParameterKeyString(GetParameterKeyString(ParameterKey));
+
 	check(!Configuration.Parameters.Contains(ParameterKeyString));
 
 	Configuration.Parameters.Emplace(ParameterKeyString, ParameterValue);
@@ -231,6 +232,10 @@ const FString& FWitRequestBuilder::GetEndpointString(const EWitRequestEndpoint E
 		{
 			return EndpointClientToken;
 		}
+	case EWitRequestEndpoint::Dictation:
+		{
+			return EndpointDictation;
+		}
 	default:
 		{
 			check(0);
@@ -254,6 +259,7 @@ FString FWitRequestBuilder::GetVerbString(const EWitRequestEndpoint Endpoint)
 	case EWitRequestEndpoint::Converse:
 	case EWitRequestEndpoint::Event:
 	case EWitRequestEndpoint::ClientToken:
+	case EWitRequestEndpoint::Dictation:
 		{
 			return TEXT("POST");
 		}
@@ -286,7 +292,7 @@ const FString& FWitRequestBuilder::GetParameterKeyString(const EWitParameter Par
 		}
 	case EWitParameter::ContextMap:
 		{
-			return ParameterContextMap;		
+			return ParameterContextMap;
 		}
 	case EWitParameter::Offset:
 		{
@@ -315,22 +321,22 @@ const FString& FWitRequestBuilder::GetFormatString(const EWitRequestFormat Forma
 	switch (Format)
 	{
 	case EWitRequestFormat::Raw:
-	{
-		return FormatValueRaw;
-	}
+		{
+			return FormatValueRaw;
+		}
 	case EWitRequestFormat::Wav:
-	{
-		return FormatValueWav;
-	}
+		{
+			return FormatValueWav;
+		}
 	case EWitRequestFormat::Json:
-	{
-		return FormatValueJson;		
-	}
+		{
+			return FormatValueJson;
+		}
 	default:
-	{
-		check(0);
-		return FormatValueJson;
-	}
+		{
+			check(0);
+			return FormatValueJson;
+		}
 	}
 }
 
@@ -345,22 +351,22 @@ const FString& FWitRequestBuilder::GetEncodingString(const EWitRequestEncoding E
 	switch (Encoding)
 	{
 	case EWitRequestEncoding::FloatingPoint:
-	{
-		return EncodingValueFloatingPoint;
-	}
+		{
+			return EncodingValueFloatingPoint;
+		}
 	case EWitRequestEncoding::SignedInteger:
-	{
-		return EncodingValueSignedInteger;
-	}
+		{
+			return EncodingValueSignedInteger;
+		}
 	case EWitRequestEncoding::UnsignedInteger:
-	{
-		return EncodingValueUnsignedInteger;
-	}
+		{
+			return EncodingValueUnsignedInteger;
+		}
 	default:
-	{
-		check(0);
-		return EncodingValueSignedInteger;
-	}
+		{
+			check(0);
+			return EncodingValueSignedInteger;
+		}
 	}
 }
 
@@ -375,22 +381,22 @@ const FString& FWitRequestBuilder::GetSampleSizeString(const EWitRequestSampleSi
 	switch (SampleSize)
 	{
 	case EWitRequestSampleSize::Byte:
-	{
-		return SampleSizeValueByte;
-	}
+		{
+			return SampleSizeValueByte;
+		}
 	case EWitRequestSampleSize::Word:
-	{
-		return SampleSizeValueWord;
-	}
+		{
+			return SampleSizeValueWord;
+		}
 	case EWitRequestSampleSize::DoubleWord:
-	{
-		return SampleSizeValueDword;
-	}
+		{
+			return SampleSizeValueDword;
+		}
 	default:
-	{
-		check(0);
-		return SampleSizeValueWord;
-	}
+		{
+			check(0);
+			return SampleSizeValueWord;
+		}
 	}
 }
 
@@ -405,17 +411,17 @@ const FString& FWitRequestBuilder::GetEndianString(const EWitRequestEndian Endia
 	switch (Endian)
 	{
 	case EWitRequestEndian::Little:
-	{
-		return EndianValueLittle;
-	}
+		{
+			return EndianValueLittle;
+		}
 	case EWitRequestEndian::Big:
-	{
-		return EndianValueBig;
-	}
+		{
+			return EndianValueBig;
+		}
 	default:
-	{
-		check(0);
-		return EndianValueLittle;
-	}
+		{
+			check(0);
+			return EndianValueLittle;
+		}
 	}
 }

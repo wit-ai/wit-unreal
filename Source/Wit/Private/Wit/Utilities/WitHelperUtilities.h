@@ -8,6 +8,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Dictation/Experience/DictationExperience.h"
 #include "TTS/Configuration/TtsConfiguration.h"
 #include "TTS/Experience/TtsExperience.h"
 #include "Voice/Experience/VoiceExperience.h"
@@ -27,18 +28,25 @@ class FWitHelperUtilities
 public:
 
 	/**
-	 * Finds the WitVoiceExperience in the scene. This is slow so do not call every frame
+	 * Finds the VoiceExperience in the scene. This is slow so do not call every frame
 	 * 
 	 * @return pointer to the Voice Experience actor if found otherwise null
 	 */
 	static AVoiceExperience* FindVoiceExperience(const UWorld* World, const FName& Tag);
 
 	/**
-	 * Finds the WitTtsExperience in the scene. This is slow so do not call every frame
+	 * Finds the TtsExperience in the scene. This is slow so do not call every frame
 	 * 
 	 * @return pointer to the TTS Experience actor if found otherwise null
 	 */
 	static ATtsExperience* FindTtsExperience(const UWorld* World, const FName& Tag);
+
+	/**
+	 * Finds the DictationExperience in the scene. This is slow so do not call every frame
+	 * 
+	 * @return pointer to the Dictation Experience actor if found otherwise null
+	 */
+	static ADictationExperience* FindDictationExperience(const UWorld* World, const FName& Tag);
 	
 	/** 
 	 * Tries to find an entity in the response with the given name

@@ -160,6 +160,7 @@ private:
 	static const FString EndpointGetIntents;
 	static const FString EndpointGetTraits;
 	static const FString EndpointClientToken;
+	static const FString EndpointDictation;
 
 	/** Supported wit.ai parameters */
 	static const FString ParameterTextKey;
