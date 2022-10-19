@@ -1,5 +1,5 @@
 ﻿/*
-* Copyright (c) Meta Platforms, Inc. and affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the license found in the
  * LICENSE file in the root directory of this source tree.
@@ -97,15 +97,4 @@ private:
 	/* Get the final location to cache a clip taking into account overrides */
 	ETtsStorageCacheLocation GetFinalCacheLocation(const ETtsStorageCacheLocation CacheLocation) const;
 
-	/* Load a clip stored in a UAsset file */
-	bool LoadClipFromAssetFile(const FString& ClipId, TArray<uint8>& ClipData) const;
-
-	/* Load a clip stored in a binary file */
-	static bool LoadClipFromBinaryFile(const FString& CacheFilePath, TArray<uint8>& ClipData);
-
-	/* Save a clip in a UAsset file */
-	bool SaveClipToAssetFile(const FString& ClipId, const TArray<uint8>& ClipData, const FTtsConfiguration& ClipSettings) const;
-
-	/* Save a clip in a binary file */
-	static bool SaveClipToBinaryFile(const FString& CacheFilePath, const TArray<uint8>& ClipData);
 };

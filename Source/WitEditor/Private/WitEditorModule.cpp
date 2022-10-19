@@ -14,6 +14,7 @@
 #include "PropertyEditor/Public/PropertyEditorModule.h"
 #include "Tool/ConfigurationEditor/WitConfigurationDetailCustomization.h"
 #include "Tool/ConfigurationEditor/WitConfigurationEditorTabTool.h"
+#include "Tool/SpeechGenerator/WitSpeechGeneratorTabTool.h"
 #include "Tool/UnderstandingViewer/WitUnderstandingViewerTabTool.h"
 #include "Wit/TTS/WitTtsExperience.h"
 
@@ -86,6 +87,7 @@ void FWitEditorModule::AddModuleListeners()
 {
 	ModuleListeners.Add(MakeShareable(new FWitConfigurationEditorTabTool));
 	ModuleListeners.Add(MakeShareable(new FWitUnderstandingViewerTabTool));
+	ModuleListeners.Add(MakeShareable(new FWitSpeechGeneratorTabTool));
 }
 
 /**

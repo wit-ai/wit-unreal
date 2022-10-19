@@ -332,6 +332,7 @@ void UWitTtsService::OnSynthesizeRequestComplete(const TArray<uint8>& BinaryResp
 
 	if (EventHandler != nullptr)
 	{
+		EventHandler->OnSynthesizeRawResponse.Broadcast(ClipId, BinaryResponse, LastRequestedClipSettings);
 		EventHandler->OnSynthesizeResponse.Broadcast(true, SoundWave);
 	}
 }
