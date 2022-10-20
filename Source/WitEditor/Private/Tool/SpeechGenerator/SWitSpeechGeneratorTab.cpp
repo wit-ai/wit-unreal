@@ -39,9 +39,10 @@ void SWitSpeechGeneratorTab::Construct(const FArguments& InArgs)
 	Args.ColumnWidth = 0.5f;
 
 	DetailsWidget = PropertyModule.CreateDetailView(Args);
-	DetailsWidget->SetVisibility(EVisibility::Hidden);
+	DetailsWidget->SetVisibility(EVisibility::Visible);
 
 	TextCollection = NewObject<UWitTextCollection>();
+	TextCollection->AddToRoot();
 	
 	DetailsWidget->SetObject(TextCollection, true);
 	
