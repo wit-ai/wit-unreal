@@ -11,6 +11,7 @@
 #include "AudioDevice.h"
 #include "Interfaces/IAudioFormat.h"
 #include "Wit/Utilities/WitLog.h"
+#include "Misc/EngineVersionComparison.h"
 
 /**
  * Constructor for the null voice capture
@@ -55,14 +56,14 @@ bool FVoiceCaptureEmulation::Start()
 
 	if (SoundWave != nullptr)
 	{
-		UE_LOG(LogWit, Verbose, TEXT("FVoiceCaptureEmulation: starting with soundwave with duration (%f), element count (%llu), RawPCMDataSize (%lu), bDecompressedFromOgg (%s), ResourceSize (%lu)"),
-			SoundWave->GetDuration(), SoundWave->RawData.GetElementCount(), SoundWave->RawPCMDataSize, SoundWave->bDecompressedFromOgg? TEXT("yes"):TEXT("no") ,SoundWave->ResourceSize);
+		UE_LOG(LogWit, Verbose, TEXT("FVoiceCaptureEmulation: starting with soundwave with duration (%f), element count (%llu), RawPCMDataSize (%lu), bDecompressedFromOgg (%s)"),
+			SoundWave->GetDuration(), SoundWave->RawData.GetElementCount(), SoundWave->RawPCMDataSize, SoundWave->bDecompressedFromOgg? TEXT("yes"):TEXT("no"));
 
         if (SoundWave->RawData.GetElementCount() == 0)
         {
 			bHasPreviewSampleData = false;
 			
-			FAudioDevice * AudioDevice = GEngine ? GEngine->GetMainAudioDeviceRaw() : nullptr;
+			const FAudioDevice * AudioDevice = GEngine ? GEngine->GetMainAudioDeviceRaw() : nullptr;
 
 			if (AudioDevice == nullptr)
 			{
@@ -82,12 +83,18 @@ bool FVoiceCaptureEmulation::Start()
 			SoundWave->InitAudioResource(AudioDevice->GetRuntimeFormat(SoundWave));
 			ICompressedAudioInfo* CompressedAudioInfo = AudioDevice->CreateCompressedAudioInfo(SoundWave);
 			FSoundQualityInfo SoundQualityInfo = { 0 };
+
+#if UE_VERSION_OLDER_THAN(5,0,0)
 			if (CompressedAudioInfo->ReadCompressedInfo(SoundWave->ResourceData, SoundWave->ResourceSize, &SoundQualityInfo))
+#else
+        	if (CompressedAudioInfo->ReadCompressedInfo(SoundWave->GetResourceData(), SoundWave->GetResourceSize(), &SoundQualityInfo))
+#endif
 			{
 				DecompressedRawPCMDataSize = SoundQualityInfo.SampleDataSize;
 				DecompressedRawPCMData.SetNumZeroed(DecompressedRawPCMDataSize);
 				CompressedAudioInfo->ExpandFile(DecompressedRawPCMData.GetData(), &SoundQualityInfo);
 			}
+        	
 			delete CompressedAudioInfo;
         }
 		ProduceSoundDuration = SoundWave->Duration;
