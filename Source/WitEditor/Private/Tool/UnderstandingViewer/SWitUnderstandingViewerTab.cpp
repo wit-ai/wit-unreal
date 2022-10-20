@@ -41,6 +41,8 @@ void SWitUnderstandingViewerTab::Construct(const FArguments& InArgs)
 	DetailsWidget->SetVisibility(EVisibility::Hidden);
 
 	ResponseObject = NewObject<UWitResponseObject>();
+	ResponseObject->AddToRoot();
+	
 	ResponseObject->DetailsWidget = DetailsWidget;
 	
 	DetailsWidget->SetObject(ResponseObject, true);

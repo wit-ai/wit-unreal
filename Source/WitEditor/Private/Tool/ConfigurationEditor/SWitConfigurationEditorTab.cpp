@@ -41,6 +41,8 @@ void SWitConfigurationEditorTab::Construct(const FArguments& InArgs)
 	DetailsContentWidget->SetVisibility(EVisibility::Visible);
 	
 	EditedConfiguration = NewObject<UWitEditedConfiguration>();
+	EditedConfiguration->AddToRoot();
+	
 	EditedConfiguration->DetailsContentWidget = DetailsContentWidget;
 
 	FDetailsViewArgs Args;
