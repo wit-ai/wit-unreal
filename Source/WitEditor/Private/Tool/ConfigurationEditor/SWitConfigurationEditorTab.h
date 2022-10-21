@@ -45,7 +45,7 @@ public:
 };
 
 /**
- * Slate widget to represent the Settings tab. The settings tab is used to create and configure wit app settings
+ * Slate widget to represent the Configuration editor tab. The configuration editor is used to create and configure wit app settings
  */
 class SWitConfigurationEditorTab : public SCompoundWidget
 {
@@ -57,16 +57,12 @@ class SWitConfigurationEditorTab : public SCompoundWidget
 
 protected:
 
-	/** Callback used to determine visibility of the create preset */
-	EVisibility GetCreatePresetVisibility() const;
-
 	/** Callback when the create preset button is clicked */
 	FReply OnCreatePresetButtonClicked();
+	bool IsCreatePresetButtonEnabled() const;
 
 	/** Callback when the new button is clicked */
 	FReply OnNewButtonClicked();
-
-	/** Callback to determine if the new button should be enabled */
 	bool IsNewButtonEnabled() const;
 
 	/** Callback when the server token text is changed */
@@ -84,7 +80,7 @@ protected:
 	/** Details widget that will display the settings object */
 	TSharedPtr<IDetailsView> DetailsContentWidget{};
 
-	/** A UObject wrapper for the settings structure so that we can display it in the details widget */
+	/** The currently selected configuration that is being edited */
 	UWitEditedConfiguration* EditedConfiguration{};
 
 	/** The currently entered token text */

@@ -18,6 +18,9 @@ public:
 	/** Refresh all the associated app data for a configuration */
 	static void RefreshConfiguration(UWitAppConfigurationAsset* ConfigurationToRefresh);
 	
+	/** Is a request currently in progress? */
+	static bool IsRefreshInProgress();
+
 private:
 
 	/** Current configuration we are acting on */

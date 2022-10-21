@@ -147,6 +147,11 @@ FReply FWitConfigurationDetailCustomization::OnRefreshButtonClicked()
  */
 bool FWitConfigurationDetailCustomization::IsRefreshButtonEnabled() const
 {
+	if (FWitConfigurationUtilities::IsRefreshInProgress())
+	{
+		return false;
+	}
+	
 	if (ObjectsToEdit.Num() == 0)
 	{
 		return false;

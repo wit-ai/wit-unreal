@@ -282,6 +282,7 @@ void UWitTtsService::OnStorageCacheRequestComplete(const TArray<uint8>& BinaryDa
 
 	if (EventHandler != nullptr)
 	{
+		EventHandler->OnSynthesizeRawResponse.Broadcast(ClipId, BinaryData, ClipSettings);
 		EventHandler->OnSynthesizeResponse.Broadcast(true, SoundWave);
 	}
 }

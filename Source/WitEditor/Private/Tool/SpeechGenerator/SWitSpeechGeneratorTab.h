@@ -25,51 +25,89 @@ struct FWitTextItem
 {
 	GENERATED_BODY()
 
-	UPROPERTY(Transient, EditAnywhere, Category = "Text Item")
+	/** The text to convert to speech */
+	UPROPERTY(EditAnywhere, Category = "Text Item")
 	FString Text{};
 
-	UPROPERTY(Transient, EditAnywhere, Category = "Text Item")
+	/** The voice preset to use during the conversion */
+	UPROPERTY(EditAnywhere, Category = "Text Item")
 	UTtsVoicePresetAsset* VoicePreset{};
 
-	UPROPERTY(Transient, VisibleAnywhere, Category = "Text Item")
+	/** Read only value that shows the file name the clip is written to */
+	UPROPERTY(VisibleAnywhere, Category = "Text Item")
 	FString ClipId{};
 	
 };
 
 /**
- * Collection of text items that we want to convert to speech
+ * TextCollection of text items that we want to convert to speech
  */
 UCLASS(BlueprintType)
-class UWitTextCollection final : public UObject
+class UWitTextCollectionAsset final : public UDataAsset
 {
 	GENERATED_BODY()
 
 public:
 
-	UPROPERTY(Transient, EditAnywhere, Category = "Text Collection")
+	/** The content folder to output the converted audio files to. This is relative to the base content folder */
+	UPROPERTY(EditAnywhere, Category = "Output Location")
+	FString ContentFolder{};
+
+	/** The text items we want to batch convert */
+	UPROPERTY(EditAnywhere, Category = "Text To Convert")
 	TArray<FWitTextItem> Items{};
 
+};
+
+/**
+ * The currently edited text collection
+ */
+UCLASS(BlueprintType)
+class UWitEditedTextCollection final : public UObject
+{
+	GENERATED_BODY()
+
+public:
+	
+	/** The currently selected text collection we are viewing */
+	UPROPERTY(Transient, EditAnywhere, Category = "Selected")
+	UWitTextCollectionAsset* TextCollection{};
+	
 	/** Callback to receive the converted sound wave files */
 	UFUNCTION()
 	void OnSynthesizeRawResponse(const FString& ClipId, const TArray<uint8>& BinaryData, const FTtsConfiguration& ClipSettings);
 
-	/** The current text entered by the user as an utterance */
-	FText ContentOutputLocation{};
+	/** Callback when an error occurs */
+	UFUNCTION()
+	void OnSynthesizeError(const FString& ErrorMessage, const FString& HumanReadableMessage);
 
 	/** Is a convert in progress? */
 	bool bIsConvertInProgress{false};
 
 	/** Index of current item we are converting */
 	int32 CurrentConvertIndex{0};
-	
+
+	/** The details widget that will display this UObject */
+	TSharedPtr<IDetailsView> DetailsContentWidget{};
+
 	/** Convert a single text item */
 	void ConvertTextItem(FWitTextItem& ItemToConvert);
-	
+
+	/** Find the next valid item to convert */
+	int32 FindNextItemToConvert();
+
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override
+	{
+		if (DetailsContentWidget != nullptr)
+		{
+			DetailsContentWidget->SetObject(TextCollection);
+		}
+	}		
 };
 
 /**
- * Slate widget to represent the Understanding viewer. The Understanding viewer is a simple tool to be able to send
- * requests to Wit.ai and see the results in the editor
+ * Slate widget to represent the Speech generator. The Speech generator is a simple tool to be able to batch convert text to speech
+ * using wit.ai's TTS
  */
 class SWitSpeechGeneratorTab : public SCompoundWidget
 {
@@ -79,28 +117,41 @@ class SWitSpeechGeneratorTab : public SCompoundWidget
 	/** Define the slate layout for the widget */
 	void Construct(const FArguments& InArgs);
 
-	/** Gets the currently selected voice experience or null if there is none */ 
+	/** Gets the currently selected TTS experience or null if there is none */ 
 	static ATtsExperience* GetSelectedTtsExperience();
 
 protected:
 
-	/** Callbacks used by the editable text box of the utterance text to track when the input text changes */
-	void OnOutputLocationTextChanged(const FText& InText);
-	void OnOutputLocationTextCommitted(const FText& InText, ETextCommit::Type);
+	/** Callbacks used by the editable text box of the new collection text to track when the input text changes */
+	void OnNewCollectionTextChanged(const FText& InText);
+	void OnNewCollectionTextCommitted(const FText& InText, ETextCommit::Type);
 
-	/** Callbacks used by the send button */
+	/** Callbacks used by the convert button */
 	FReply OnConvertButtonClicked();
 	bool IsConvertButtonEnabled() const;
+
+	/** Callback when the new button is clicked */
+	FReply OnNewButtonClicked();
+	bool IsNewButtonEnabled() const;
 
 	/** Callbacks used to determine visibility of the tool usage messages */
 	EVisibility GetSelectMessageVisibility() const;
 	EVisibility GetWaitMessageVisibility() const;
 	EVisibility GetResultVisibility() const;
+	
+	/** Create a new text collection asset */
+	UWitTextCollectionAsset* CreateTextCollectionAsset();
 
-	/** Details widget that will display the response that gets returned from Wit.ai */
+	/** The name entered by the user when creating a new text collection */
+	FText NewCollectionText{};
+
+	/** Details widget that will display the settings object */
+	TSharedPtr<IDetailsView> DetailsContentWidget{};
+
+	/** Details widget that will display the text collection selection */
 	TSharedPtr<IDetailsView> DetailsWidget{};
 
-	/** A UObject wrapper for the response structure so that we can display it in the details widget */
-	UWitTextCollection* TextCollection{};
+	/** The currently selected text collection that is being edited */
+	UWitEditedTextCollection* EditedTextCollection{};
 	
 };
