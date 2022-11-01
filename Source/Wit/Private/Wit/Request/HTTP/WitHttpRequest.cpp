@@ -11,7 +11,7 @@
 #include "GenericPlatform/GenericPlatformHttp.h"
 #include "Wit/Utilities/WitLog.h"
 
-const FString FWitHttpRequest::WitSdkVersion = FString("0.0.1");
+const FString FWitHttpRequest::WitSdkVersion = FString("46.0.2");
 
 /**
  * Destructor
@@ -81,6 +81,8 @@ void FWitHttpRequest::Tick(float DeltaSeconds)
 
 /**
  * Get the user agent to use for Wit requests
+ * If Voice SDK installed: voice-sdk-46.0.2,voicesdk-unreal,Windows-10.0.xx.64bit,Unknown,xxx,Unknown,Editor
+ * If Voice SDK is NOT installed:  wit-unreal-46.0.2,wit-unreal,Windows-10.0.xx.64bit,Unknown,xx,Unknown,Editor
  */
 FString FWitHttpRequest::GetUserAgent()
 {
@@ -112,8 +114,18 @@ FString FWitHttpRequest::GetUserAgent()
 	const FString UserEditor = FString("Runtime");
 #endif
 
-	FString UserAgent = FString::Printf(TEXT("wit-unreal-%s,%s,%s,%s,%s,%s"),
+#if WITH_VOICESDK_USERAGENT
+	const FString UserAgentPrefix = FString("voice-sdk");
+	const FString PluginName = FString("voicesdk-unreal");
+#else
+	const FString UserAgentPrefix = FString("wit-unreal");
+	const FString PluginName = FString("wit-unreal");
+#endif
+	
+	FString UserAgent = FString::Printf(TEXT("%s-%s,%s,%s,%s,%s,%s,%s"),
+		*FGenericPlatformHttp::EscapeUserAgentString(UserAgentPrefix),
 		*FGenericPlatformHttp::EscapeUserAgentString(SdkVersion),
+		*FGenericPlatformHttp::EscapeUserAgentString(PluginName),
 		*FGenericPlatformHttp::EscapeUserAgentString(OperatingSystem),
 		*FGenericPlatformHttp::EscapeUserAgentString(DeviceModel),
 		*FGenericPlatformHttp::EscapeUserAgentString(ConfigId),
