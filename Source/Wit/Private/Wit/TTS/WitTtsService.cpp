@@ -346,7 +346,7 @@ void UWitTtsService::OnSynthesizeRequestComplete(const TArray<uint8>& BinaryResp
  */
 void UWitTtsService::OnSynthesizeRequestError(const FString& ErrorMessage, const FString& HumanReadableErrorMessage) const
 {
-	UE_LOG(LogWit, Warning, TEXT("Wit request failed with error: %s - %s"), *ErrorMessage, *HumanReadableErrorMessage);
+	UE_LOG(LogWit, Warning, TEXT("OnSynthesizeRequestError: %s - %s"), *ErrorMessage, *HumanReadableErrorMessage);
 
 	// Calling OnSynthesizeResponse is kept for backwards compatibility if people are already using it but is otherwise replaced by OnWitError
 
@@ -388,7 +388,7 @@ void UWitTtsService::OnVoicesRequestComplete(const TArray<uint8>& BinaryResponse
  */
 void UWitTtsService::OnVoicesRequestError(const FString& ErrorMessage, const FString& HumanReadableErrorMessage) const
 {
-	UE_LOG(LogWit, Warning, TEXT("Wit request failed with error: %s - %s"), *ErrorMessage, *HumanReadableErrorMessage);
+	UE_LOG(LogWit, Warning, TEXT("OnVoicesRequestError: %s - %s"), *ErrorMessage, *HumanReadableErrorMessage);
 }
 
 /**
