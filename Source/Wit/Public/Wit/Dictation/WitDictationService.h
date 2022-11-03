@@ -66,9 +66,6 @@ private:
 	void OnStopVoiceInput();
 
 	UFUNCTION()
-	void OnStopVoiceInputDueToDeactivation();
-
-	UFUNCTION()
 	void OnWitResponse(const bool bIsSuccessful, const FWitResponse& WitResponse);
 
 	UFUNCTION()

@@ -38,7 +38,6 @@ void UWitDictationService::BeginPlay()
 		VoiceExperience->VoiceEvents->OnStopVoiceInput.AddUniqueDynamic(this, &UWitDictationService::OnStopVoiceInput);
 		VoiceExperience->VoiceEvents->OnWitResponse.AddUniqueDynamic(this, &UWitDictationService::OnWitResponse);
 		VoiceExperience->VoiceEvents->OnWitError.AddUniqueDynamic(this, &UWitDictationService::OnWitError);
-		VoiceExperience->VoiceEvents->OnStopVoiceInputDueToDeactivation.AddUniqueDynamic(this, &UWitDictationService::OnStopVoiceInputDueToDeactivation);
 	}
 
 	Super::BeginPlay();
@@ -60,7 +59,6 @@ void UWitDictationService::BeginDestroy()
 		VoiceExperience->VoiceEvents->OnStopVoiceInput.RemoveDynamic(this, &UWitDictationService::OnStopVoiceInput);
 		VoiceExperience->VoiceEvents->OnWitResponse.RemoveDynamic(this, &UWitDictationService::OnWitResponse);
 		VoiceExperience->VoiceEvents->OnWitError.RemoveDynamic(this, &UWitDictationService::OnWitError);
-		VoiceExperience->VoiceEvents->OnStopVoiceInputDueToDeactivation.RemoveDynamic(this, &UWitDictationService::OnStopVoiceInputDueToDeactivation);
 	}
 	
 	Super::BeginDestroy();
@@ -148,6 +146,8 @@ bool UWitDictationService::ActivateDictationImmediately()
  */
 bool UWitDictationService::DeactivateDictation()
 {
+	bWasManuallyDeactivated = true;
+	
 	if (VoiceExperience != nullptr)
 	{
 		return VoiceExperience->DeactivateVoiceInput();	
@@ -247,14 +247,6 @@ void UWitDictationService::OnStopVoiceInput()
 	{
 		Events->OnStopDictation.Broadcast();
 	}
-}
-
-/**
- * Callback to catch and pass on the stop voice input event
- */
-void UWitDictationService::OnStopVoiceInputDueToDeactivation()
-{
-	bWasManuallyDeactivated = true;
 }
 
 /**
