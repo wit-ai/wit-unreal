@@ -38,6 +38,7 @@ void UWitDictationService::BeginPlay()
 		VoiceExperience->VoiceEvents->OnStopVoiceInput.AddUniqueDynamic(this, &UWitDictationService::OnStopVoiceInput);
 		VoiceExperience->VoiceEvents->OnWitResponse.AddUniqueDynamic(this, &UWitDictationService::OnWitResponse);
 		VoiceExperience->VoiceEvents->OnWitError.AddUniqueDynamic(this, &UWitDictationService::OnWitError);
+		VoiceExperience->VoiceEvents->OnStopVoiceInputDueToDeactivation.AddUniqueDynamic(this, &UWitDictationService::OnStopVoiceInputDueToDeactivation);
 	}
 
 	Super::BeginPlay();
