@@ -27,6 +27,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Settings")
 	FName DictationExperienceTag{};
 
+	/** Whether we use the max activations */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
+	bool bShouldUseLimit{true};
+	
 	/** The maximum number of activations before we stop adding more. This limits the max string length and requires a clear after */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
 	int MaxActivations{5};

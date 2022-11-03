@@ -17,6 +17,7 @@
 UWitDictationService::UWitDictationService()
 	: Super()
 {
+	PrimaryComponentTick.bCanEverTick = true;
 }
 
 /**
@@ -58,9 +59,34 @@ void UWitDictationService::BeginDestroy()
 		VoiceExperience->VoiceEvents->OnStopVoiceInput.RemoveDynamic(this, &UWitDictationService::OnStopVoiceInput);
 		VoiceExperience->VoiceEvents->OnWitResponse.RemoveDynamic(this, &UWitDictationService::OnWitResponse);
 		VoiceExperience->VoiceEvents->OnWitError.RemoveDynamic(this, &UWitDictationService::OnWitError);
+		VoiceExperience->VoiceEvents->OnStopVoiceInputDueToDeactivation.RemoveDynamic(this, &UWitDictationService::OnStopVoiceInputDueToDeactivation);
 	}
 	
 	Super::BeginDestroy();
+}
+
+/**
+ * Updates the component every frame
+ *
+ * @param DeltaTime [in] the time in seconds that has pass since the last frame
+ * @param TickType [in] the kind of tick this is, for example, are we paused, or 'simulating' in the editor
+ * @param ThisTickFunction [in] internal tick function struct that caused this to run
+ */
+void UWitDictationService::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	if (Configuration == nullptr)
+	{
+		return;
+	}
+	
+	LastActivateTime += DeltaTime;
+
+	if (LastActivateTime > Configuration->MaximumRecordingTime)
+	{
+		LastActivateTime = Configuration->MaximumRecordingTime;
+	}
 }
 
 /**
@@ -70,6 +96,9 @@ void UWitDictationService::BeginDestroy()
  */
 bool UWitDictationService::ActivateDictation()
 {
+	LastActivateTime = 0.0f;
+	bWasManuallyDeactivated = false;
+	
 	if (VoiceExperience != nullptr)
 	{
 		return VoiceExperience->ActivateVoiceInput();	
@@ -85,6 +114,9 @@ bool UWitDictationService::ActivateDictation()
  */
 bool UWitDictationService::ActivateDictationWithRequestOptions(const FString& RequestOptions) 
 {
+	LastActivateTime = 0.0f;
+	bWasManuallyDeactivated = false;
+	
 	if (VoiceExperience != nullptr)
 	{
 		return VoiceExperience->ActivateVoiceInputWithRequestOptions(RequestOptions);	
@@ -217,6 +249,14 @@ void UWitDictationService::OnStopVoiceInput()
 }
 
 /**
+ * Callback to catch and pass on the stop voice input event
+ */
+void UWitDictationService::OnStopVoiceInputDueToDeactivation()
+{
+	bWasManuallyDeactivated = true;
+}
+
+/**
  * Callback to catch and pass on the wit response event
  */
 void UWitDictationService::OnWitResponse(const bool bIsSuccessful, const FWitResponse& WitResponse)
@@ -224,6 +264,21 @@ void UWitDictationService::OnWitResponse(const bool bIsSuccessful, const FWitRes
 	if (Events != nullptr)
 	{
 		Events->OnWitResponse.Broadcast(bIsSuccessful, WitResponse);
+	}
+
+	if (Configuration == nullptr)
+	{
+		return;
+	}
+	
+	const bool bShouldAutoActivateInput = VoiceExperience != nullptr && Configuration->bShouldAutoActivateInput && !bWasManuallyDeactivated;
+	const bool bIsTooLongSinceFirstActivated = LastActivateTime >= Configuration->MaximumRecordingTime;
+	
+	if (bShouldAutoActivateInput && !bIsTooLongSinceFirstActivated)
+	{
+		UE_LOG(LogWit, Verbose, TEXT("OnWitResponse: reactivating voice input after %.2f seconds"), LastActivateTime);
+		
+		VoiceExperience->ActivateVoiceInput();
 	}
 }
 

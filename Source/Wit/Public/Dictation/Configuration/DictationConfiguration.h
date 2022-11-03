@@ -20,5 +20,13 @@ struct WIT_API FDictationConfiguration
 	/** The tag of the voice experience to use for dictation activation */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Dictation|Configuration")
 	FName VoiceExperienceTag{};
+
+	/** Whether we should auto-activate voice input again on completion */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Dictation|Configuration")
+	bool bShouldAutoActivateInput{true};
 	
+	/** Maximum duration in seconds that we should continue dictation */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Dictation|Configuration", meta=(ClampMin = 60))
+	float MaximumRecordingTime{300.0f};
+
 };

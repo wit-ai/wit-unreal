@@ -91,7 +91,7 @@ void UDictationMultiTranscription::DoUpdateTranscription(const FString& PartialT
 {
 	const bool bIsMaxActivationsReached = ActivationCount >= MaxActivations;
 
-	if (bIsMaxActivationsReached)
+	if (bIsMaxActivationsReached && bShouldUseLimit)
 	{
 		return;
 	}
