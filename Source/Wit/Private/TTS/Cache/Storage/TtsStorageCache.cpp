@@ -1,5 +1,5 @@
 ﻿/*
-* Copyright (c) Meta Platforms, Inc. and affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the license found in the
  * LICENSE file in the root directory of this source tree.
@@ -8,6 +8,7 @@
 #include "TTS/Cache/Storage/TtsStorageCache.h"
 #include "TTS/Cache/Storage/Asset/TtsStorageCacheAsset.h"
 #include "HAL/PlatformFilemanager.h"
+#include "Wit/Utilities/WitHelperUtilities.h"
 #include "Wit/Utilities/WitLog.h"
 
 /**
@@ -111,7 +112,7 @@ bool UTtsStorageCache::AddClip(const FString& ClipId, const TArray<uint8>& ClipD
 		// We can only save clips to the content folder when we are running in editor
 
 #if WITH_EDITOR
-		return SaveClipToAssetFile(ClipId, ClipData, ClipSettings);
+		return FWitHelperUtilities::SaveClipToAssetFile(CacheDirectory, ClipId, ClipData, ClipSettings);
 #else
 		return false;
 #endif
@@ -119,71 +120,7 @@ bool UTtsStorageCache::AddClip(const FString& ClipId, const TArray<uint8>& ClipD
 
 	CacheFilePath.Append(ClipId);
 	
-	return SaveClipToBinaryFile(CacheFilePath, ClipData);
-}
-
-/*
- * Save a clip in a UAsset file
- */
-bool UTtsStorageCache::SaveClipToAssetFile(const FString& ClipId, const TArray<uint8>& ClipData, const FTtsConfiguration& ClipSettings) const
-{
-	const FString PackagePath = FString::Printf(TEXT("/Game/%s/%s"), *CacheDirectory, *ClipId);
-	
-	UPackage* CachePackage = CreatePackage(*PackagePath);
-
-	if (CachePackage == nullptr)
-	{
-		UE_LOG(LogWit, Warning, TEXT("UTTSStorageCache::SaveClipToAssetFile: failed to create package file for (%s)"), *ClipId);
-		return false;
-	}
-	
-	UTtsStorageCacheAsset* CacheAsset = NewObject<UTtsStorageCacheAsset>(CachePackage, UTtsStorageCacheAsset::StaticClass(), *ClipId, RF_Public | RF_Standalone);
-
-	if (CacheAsset == nullptr)
-	{
-		UE_LOG(LogWit, Warning, TEXT("UTTSStorageCache::SaveClipToAssetFile: failed to create asset file for (%s)"), *ClipId);
-		return false;
-	}
-
-	CacheAsset->ClipSettings = ClipSettings;
-	
-	CacheAsset->ClipData.AddUninitialized(ClipData.Num());
-	FMemory::Memcpy(CacheAsset->ClipData.GetData(), ClipData.GetData(), ClipData.Num());
-			
-	(void)CacheAsset->MarkPackageDirty();
-
-	return true;
-}
-
-/*
- * Save a clip in a binary file
- */
-bool UTtsStorageCache::SaveClipToBinaryFile(const FString& CacheFilePath, const TArray<uint8>& ClipData)
-{
-	IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
-	
-	if (FileManager.FileExists(*CacheFilePath))
-	{
-		UE_LOG(LogWit, Verbose, TEXT("UTTSStorageCache::SaveClipToBinaryFile: file already exists so no need to add to cache"));
-		return false;
-	}
-
-	const TUniquePtr<IFileHandle> FileHandle(FileManager.OpenWrite(*CacheFilePath));
-		
-	if (FileHandle == nullptr)
-	{
-		UE_LOG(LogWit, Warning, TEXT("UTTSStorageCache::SaveClipToBinaryFile: failed to open file for writing (%s)"), *CacheFilePath);
-		return false;;
-	}
-
-	const bool bDidWriteSuccessfully = FileHandle->Write(ClipData.GetData(), ClipData.Num());
-	if (!bDidWriteSuccessfully)
-	{
-		UE_LOG(LogWit, Warning, TEXT("UTTSStorageCache::SaveClipToBinaryFile: failed to write contents to file (%s)"), *CacheFilePath);
-		return false;
-	}
-	
-	return true;
+	return FWitHelperUtilities::SaveClipToBinaryFile(CacheFilePath, ClipData);
 }
 
 /**
@@ -211,70 +148,13 @@ bool UTtsStorageCache::RequestClip(const FString& ClipId, const ETtsStorageCache
 	const bool bShouldLoadFromAsset = GetFinalCacheLocation(CacheLocation) == ETtsStorageCacheLocation::Content;
 	if (bShouldLoadFromAsset)
 	{
-		return LoadClipFromAssetFile(ClipId, ClipData);
+		return FWitHelperUtilities::LoadClipFromAssetFile(CacheDirectory, ClipId, ClipData);
 	}
 	
 	CacheFilePath.Append(ClipId);
 		
-	return LoadClipFromBinaryFile(CacheFilePath, ClipData);
+	return FWitHelperUtilities::LoadClipFromBinaryFile(CacheFilePath, ClipData);
 };
-
-/*
- * Load a clip from a UAsset file
- */
-bool UTtsStorageCache::LoadClipFromAssetFile(const FString& ClipId, TArray<uint8>& ClipData) const
-{
-	const FString PackagePath = FString::Printf(TEXT("/Game/%s/%s"), *CacheDirectory, *ClipId);
-	UTtsStorageCacheAsset* CacheAsset = LoadObject<UTtsStorageCacheAsset>(nullptr, *PackagePath);
-
-	if (CacheAsset == nullptr)
-	{
-		UE_LOG(LogWit, Verbose, TEXT("UTTSStorageCache::LoadClipFromAssetFile: clip does exist in cache or cannot be loaded (%s)"), *PackagePath);
-		return false;
-	}
-
-	ClipData.AddUninitialized(CacheAsset->ClipData.Num());
-	FMemory::Memcpy(ClipData.GetData(), CacheAsset->ClipData.GetData(), CacheAsset->ClipData.Num());
-		
-	UE_LOG(LogWit, Verbose, TEXT("UTTSStorageCache::LoadClipFromAssetFile: read clip data of size (%d)"), ClipData.Num());
-
-	return true;
-}
-
-/*
- * Load a clip from a binary file
- */
-bool UTtsStorageCache::LoadClipFromBinaryFile(const FString& CacheFilePath, TArray<uint8>& ClipData)
-{
-	IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
-				
-	if (!FileManager.FileExists(*CacheFilePath))
-	{
-		UE_LOG(LogWit, Verbose, TEXT("UTTSStorageCache::LoadClipFromBinaryFile: clip does exist in cache"));
-		return false;
-	}
-
-	const TUniquePtr<IFileHandle> FileHandle(FileManager.OpenRead(*CacheFilePath));
-			
-	if (FileHandle == nullptr)
-	{
-		UE_LOG(LogWit, Warning, TEXT("UTTSStorageCache::LoadClipFromBinaryFile: failed to open file for reading (%s)"), *CacheFilePath);
-		return false;
-	}
-			
-	ClipData.AddUninitialized(FileHandle->Size());
-	const bool bDidReadSuccessfully = FileHandle->Read(ClipData.GetData(),ClipData.Num());
-	
-	if (!bDidReadSuccessfully)
-	{
-		UE_LOG(LogWit, Warning, TEXT("UTTSStorageCache::LoadClipFromBinaryFile: failed to read contents of file (%s)"), *CacheFilePath);		
-		return false;
-	}
-
-	UE_LOG(LogWit, Verbose, TEXT("UTTSStorageCache::LoadClipFromBinaryFile: read clip data of size (%d)"), ClipData.Num());
-
-	return true;
-}
 
 /*
  * Get the final location to cache a clip taking into account overrides

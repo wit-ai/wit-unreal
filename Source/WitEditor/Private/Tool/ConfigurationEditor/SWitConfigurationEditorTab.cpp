@@ -176,6 +176,19 @@ void SWitConfigurationEditorTab::Construct(const FArguments& InArgs)
 							DetailsWidget.ToSharedRef()
 						]
 					]
+
+					+ SVerticalBox::Slot().Padding(0, 0).AutoHeight()
+					[
+						SNew(SHorizontalBox)
+						
+						+ SHorizontalBox::Slot().HAlign(HAlign_Right).Padding(10,5,10,2)
+						[
+							SNew(SButton)
+							.Text(FText::FromString(TEXT("Create Voice Presets")))
+							.IsEnabled(this, &SWitConfigurationEditorTab::IsCreatePresetButtonEnabled)
+							.OnClicked(this, &SWitConfigurationEditorTab::OnCreatePresetButtonClicked)
+						]
+					]
 					
 					+ SVerticalBox::Slot().Padding(0, 0)
 					[
@@ -184,19 +197,6 @@ void SWitConfigurationEditorTab::Construct(const FArguments& InArgs)
 						+ SOverlay::Slot()
 						[
 							DetailsContentWidget.ToSharedRef()
-						]
-					]
-
-					+ SVerticalBox::Slot().Padding(0, 0).AutoHeight()
-					[
-						SNew(SHorizontalBox)
-						.Visibility(this, &SWitConfigurationEditorTab::GetCreatePresetVisibility)
-			
-						+ SHorizontalBox::Slot().HAlign(HAlign_Right).Padding(10,5,10,2)
-						[
-							SNew(SButton)
-							.Text(FText::FromString(TEXT("Create Voice Presets")))
-							.OnClicked(this, &SWitConfigurationEditorTab::OnCreatePresetButtonClicked)
 						]
 					]
 				]
@@ -249,20 +249,20 @@ FReply SWitConfigurationEditorTab::OnCreatePresetButtonClicked()
 }
 
 /**
- * Whether we should show the create present button
+ * Determines if the create preset button should be enabled or not
  * 
- * @return true if we should show otherwise false
+ * @return true if enabled otherwise false
  */
-EVisibility SWitConfigurationEditorTab::GetCreatePresetVisibility() const
+bool SWitConfigurationEditorTab::IsCreatePresetButtonEnabled() const
 {
-	const bool bHasSelectedObject = DetailsContentWidget->GetSelectedObjects().Num() > 0;
-
-	if (!bHasSelectedObject)
+	if (FWitConfigurationUtilities::IsRefreshInProgress())
 	{
-		return EVisibility::Hidden;
+		return false;
 	}
 
-	return DetailsContentWidget->GetVisibility();
+	const bool bIsValidVoiceData = EditedConfiguration != nullptr && EditedConfiguration->Configuration != nullptr && EditedConfiguration->Configuration->Application.Data.Voices.Num() > 0;
+
+	return bIsValidVoiceData;
 }
 
 /**

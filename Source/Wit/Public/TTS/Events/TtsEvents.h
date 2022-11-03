@@ -10,10 +10,12 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Wit/Request/WitResponse.h"
+#include "TTS/Configuration/TtsConfiguration.h"
 #include "TtsEvents.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSynthesizeResponseDelegate, const bool, bIsSuccessful, USoundWave*, SoundWave);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSynthesizeErrorDelegate, const FString&, ErrorMessage, const FString&, HumanReadableMessage);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnSynthesizeRawResponseDelegate, const FString&, ClipId, const TArray<uint8>&, BinaryData, const FTtsConfiguration&, ClipSettings);
 
 /**
  * Container for all TTS events
@@ -31,6 +33,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Transient, Category = "TTS")
 	FWitVoicesResponse VoicesResponse{};
 
+	/**
+	 * Callback to call when a synthesize request has been fully processed. The callback receives the raw response data
+	 */
+	UPROPERTY(BlueprintAssignable)
+	FOnSynthesizeRawResponseDelegate OnSynthesizeRawResponse{};
+	
 	/**
 	 * Callback to call when a synthesize request has been fully processed. The callback receives a USoundWave containing the received wav
 	 */

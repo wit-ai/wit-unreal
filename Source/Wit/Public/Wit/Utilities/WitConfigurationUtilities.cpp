@@ -454,3 +454,11 @@ bool FWitConfigurationUtilities::SetupListRequest(FWitRequestConfiguration& Requ
 
 	return true;
 }
+
+/**
+ * Is a refresh in progress
+ */
+bool FWitConfigurationUtilities::IsRefreshInProgress()
+{
+	return Configuration != nullptr;
+}

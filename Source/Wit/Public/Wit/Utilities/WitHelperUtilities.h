@@ -23,7 +23,7 @@ class FJsonObject;
 /**
  * A helper class that contains useful API utilities
  */
-class FWitHelperUtilities
+class WIT_API FWitHelperUtilities
 {
 public:
 
@@ -85,6 +85,18 @@ public:
 	 */
 	static USoundWave* CreateSoundWaveFromRawData(const uint8* RawData, const int32 RawDataSize);
 	
+	/* Load a clip stored in a UAsset file */
+	static bool LoadClipFromAssetFile(const FString& ClipDirectory, const FString& ClipId, TArray<uint8>& ClipData);
+
+	/* Load a clip stored in a binary file */
+	static bool LoadClipFromBinaryFile(const FString& CacheFilePath, TArray<uint8>& ClipData);
+
+	/* Save a clip in a UAsset file */
+	static bool SaveClipToAssetFile(const FString& ClipDirectory, const FString& ClipId, const TArray<uint8>& ClipData, const FTtsConfiguration& ClipSettings);
+
+	/* Save a clip in a binary file */
+	static bool SaveClipToBinaryFile(const FString& CacheFilePath, const TArray<uint8>& ClipData);
+
 	/**
 	 * Check whether the JsonResponse is Wit Response or not
 	 * 

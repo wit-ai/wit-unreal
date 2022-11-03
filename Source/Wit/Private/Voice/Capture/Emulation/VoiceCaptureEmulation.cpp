@@ -63,7 +63,7 @@ bool FVoiceCaptureEmulation::Start()
         {
 			bHasPreviewSampleData = false;
 			
-			FAudioDevice * AudioDevice = GEngine ? GEngine->GetMainAudioDeviceRaw() : nullptr;
+			FAudioDevice* AudioDevice = GEngine ? GEngine->GetMainAudioDeviceRaw() : nullptr;
 
 			if (AudioDevice == nullptr)
 			{
