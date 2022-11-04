@@ -9,13 +9,13 @@
 
 #include "LevelEditor.h"
 #include "Wit/TTS/WitTtsService.h"
-#include "Customization/WitIntentPropertyCustomization.h"
 #include "Customization/TtsConfigurationDetailCustomization.h"
 #include "PropertyEditor/Public/PropertyEditorModule.h"
 #include "Tool/ConfigurationEditor/WitConfigurationDetailCustomization.h"
 #include "Tool/ConfigurationEditor/WitConfigurationEditorTabTool.h"
 #include "Tool/SpeechGenerator/WitSpeechGeneratorTabTool.h"
 #include "Tool/UnderstandingViewer/WitUnderstandingViewerTabTool.h"
+#include "Tool/UnderstandingViewer/WitUnderstandingPropertyCustomization.h"
 #include "Wit/TTS/WitTtsExperience.h"
 
 #define LOCTEXT_NAMESPACE "FWitEditorModule"
@@ -33,7 +33,7 @@ void FWitEditorModule::StartupModule()
 
 	FPropertyEditorModule& PropertyEditorModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
 
-	PropertyEditorModule.RegisterCustomPropertyTypeLayout( FWitIntent::StaticStruct()->GetFName(), FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FWitIntentPropertyCustomization::MakeInstance) );
+	PropertyEditorModule.RegisterCustomPropertyTypeLayout( FWitIntent::StaticStruct()->GetFName(), FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FWitUnderstandingPropertyCustomization::MakeInstance) );
 	PropertyEditorModule.RegisterCustomClassLayout( ATtsExperience::StaticClass()->GetFName(), FOnGetDetailCustomizationInstance::CreateStatic(&FTtsConfigurationDetailCustomization::MakeInstance) );
 	PropertyEditorModule.RegisterCustomClassLayout( UWitAppConfigurationAsset::StaticClass()->GetFName(), FOnGetDetailCustomizationInstance::CreateStatic(&FWitConfigurationDetailCustomization::MakeInstance) );
 
