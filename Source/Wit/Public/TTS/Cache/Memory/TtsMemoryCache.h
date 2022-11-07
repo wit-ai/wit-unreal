@@ -105,6 +105,12 @@ public:
 	 */
 	UPROPERTY(BlueprintAssignable)
 	FOnClipRemovedDelegate OnClipRemoved{};
+
+	/**
+	 * Gets number of clips in cache
+	 */
+	UFUNCTION(BlueprintCallable, Category="TTS")
+	int32 GetCacheClipNum() const;
 	
 private:
 
