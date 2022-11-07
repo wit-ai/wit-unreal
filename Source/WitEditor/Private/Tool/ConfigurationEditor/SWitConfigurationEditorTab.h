@@ -25,7 +25,7 @@ class UWitEditedConfiguration final : public UObject
 
 public:
 
-	/** The underlying response structure */
+	/** The configuration currently being edited */
 	UPROPERTY(Transient, EditAnywhere, Category = "Selected")
 	UWitAppConfigurationAsset* Configuration{};
 	

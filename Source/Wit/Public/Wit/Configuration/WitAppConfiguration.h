@@ -56,11 +56,11 @@ struct WIT_API FWitAppDataConfiguration
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Intents")
 	TArray<FWitIntentDefinition> Intents;
 	
-	/** List of intents available in the app */
+	/** List of entities available in the app */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Entities")
 	TArray<FWitEntityDefinition> Entities;
 
-	/** List of intents available in the app */
+	/** List of traits available in the app */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Traits")
 	TArray<FWitTraitDefinition> Traits;
 

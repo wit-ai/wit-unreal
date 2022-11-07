@@ -14,6 +14,8 @@
 #include "TTS/Configuration/TtsVoicePresetAsset.h"
 #include "Wit/Utilities/WitConfigurationUtilities.h"
 
+#define LOCTEXT_NAMESPACE "FWitEditorModule"
+
 /**
  * Construct the panel for the settings
  *
@@ -77,6 +79,7 @@ void SWitConfigurationEditorTab::Construct(const FArguments& InArgs)
 				SNew(STextBlock)
 				.Font(FCoreStyle::GetDefaultFontStyle("Bold", 9))
 				.ColorAndOpacity( FLinearColor( 0.5f, 0.5f, 0.5f, 1.0f ) )
+				
 				.Text(FText::FromString(TEXT("Create new configuration")))
 			]
 			
@@ -97,7 +100,8 @@ void SWitConfigurationEditorTab::Construct(const FArguments& InArgs)
 						[
 							SNew(STextBlock)
 							.Font(IDetailLayoutBuilder::GetDetailFont())
-							.Text(FText::FromString(TEXT("Asset Name")))
+							.ToolTipText(LOCTEXT("AssetNameTooltip", "File name for the new configuration asset. This can contain a path relative to the root content folder."))
+							.Text(LOCTEXT("AssetNameTitle", "Asset Name"))
 						]
 
 						+ SHorizontalBox::Slot().FillWidth(0.9f).Padding(0, 1, 10, 1)
@@ -116,7 +120,8 @@ void SWitConfigurationEditorTab::Construct(const FArguments& InArgs)
 						[
 							SNew(STextBlock)
 							.Font(IDetailLayoutBuilder::GetDetailFont())
-							.Text(FText::FromString(TEXT("Server Access Token")))
+							.ToolTipText(LOCTEXT("ServerAccessTokenTooltip", "The server access token for your app. You can find this on the Wit.ai website."))
+							.Text(LOCTEXT("ServerAccessTokenTitle", "Server Access Token"))
 						]
 
 						+ SHorizontalBox::Slot().FillWidth(0.9f).Padding(0, 1, 10, 1)
@@ -135,7 +140,8 @@ void SWitConfigurationEditorTab::Construct(const FArguments& InArgs)
 						+ SHorizontalBox::Slot().HAlign(HAlign_Right).Padding(10,5,10,2)
 						[
 							SNew(SButton)
-							.Text(FText::FromString(TEXT("Create")))
+							.ToolTipText(LOCTEXT("CreateTooltip", "Create a new configuration with the given server token."))
+							.Text(LOCTEXT("CreateButton", "Create"))
 							.IsEnabled(this, &SWitConfigurationEditorTab::IsNewButtonEnabled)
 							.OnClicked(this, &SWitConfigurationEditorTab::OnNewButtonClicked)
 						]
@@ -153,7 +159,7 @@ void SWitConfigurationEditorTab::Construct(const FArguments& InArgs)
 				SNew(STextBlock)
 				.Font(FCoreStyle::GetDefaultFontStyle("Bold", 9))
 				.ColorAndOpacity( FLinearColor( 0.5f, 0.5f, 0.5f, 1.0f ) )
-				.Text(FText::FromString(TEXT("Edit existing configuration")))
+				.Text(LOCTEXT("EditConfigurationTitle", "Edit existing configuration"))
 			]
 			
 			// Edit an existing configuration
@@ -184,7 +190,8 @@ void SWitConfigurationEditorTab::Construct(const FArguments& InArgs)
 						+ SHorizontalBox::Slot().HAlign(HAlign_Right).Padding(10,5,10,2)
 						[
 							SNew(SButton)
-							.Text(FText::FromString(TEXT("Create Voice Presets")))
+							.ToolTipText(LOCTEXT("CreatePresentsTooltip", "Create preset assets for all the available voices. These will be written to the plugin Content/Presets folder."))
+							.Text(LOCTEXT("CreatePresetsButton", "Create Voice Presets"))
 							.IsEnabled(this, &SWitConfigurationEditorTab::IsCreatePresetButtonEnabled)
 							.OnClicked(this, &SWitConfigurationEditorTab::OnCreatePresetButtonClicked)
 						]
@@ -327,6 +334,7 @@ UWitAppConfigurationAsset* SWitConfigurationEditorTab::CreateConfigurationAsset(
 	const FString PackagePath = FString::Printf(TEXT("/Game/%s"), *NewConfigurationText.ToString());
 	
 	UPackage* Package = CreatePackage(*PackagePath);
+	const FString PackageName = FPaths::GetBaseFilename(PackagePath);
 
 	if (Package == nullptr)
 	{
@@ -334,7 +342,7 @@ UWitAppConfigurationAsset* SWitConfigurationEditorTab::CreateConfigurationAsset(
 		return nullptr;
 	}
 	
-	UWitAppConfigurationAsset* Asset = NewObject<UWitAppConfigurationAsset>(Package, UWitAppConfigurationAsset::StaticClass(), *NewConfigurationText.ToString(), RF_Public | RF_Standalone);
+	UWitAppConfigurationAsset* Asset = NewObject<UWitAppConfigurationAsset>(Package, UWitAppConfigurationAsset::StaticClass(), *PackageName, RF_Public | RF_Standalone);
 
 	if (Asset == nullptr)
 	{

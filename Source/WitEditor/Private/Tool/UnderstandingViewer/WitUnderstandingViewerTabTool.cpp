@@ -10,7 +10,7 @@
 #include "SWitUnderstandingViewerTab.h"
 #include "Tool/Tab/WitTabTool.h"
 
-#define LOCTEXT_NAMESPACE "WitUnderstandingViewerTabTool"
+#define LOCTEXT_NAMESPACE "FWitUnderstandingViewerTabTool"
 
 /**
  * Called on module startup

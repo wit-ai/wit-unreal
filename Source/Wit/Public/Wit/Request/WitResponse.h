@@ -19,12 +19,15 @@ struct WIT_API FWitIntent
 {
 	GENERATED_BODY()
 
+	/** The name of the intent */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	FString Name{};
-	
+
+	/** The unique id of the intent */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	int64 Id{0};
-	
+
+	/** How confident Wit.ai is that the intent is a match */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	float Confidence{0.0f};
 };
@@ -337,22 +340,28 @@ USTRUCT(BlueprintType)
 struct WIT_API FWitAppDefinition
 {
 	GENERATED_BODY()
-	
+
+	/** The name of the app as defined in Wit.ai */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	FString Name{};
 
+	/** The app's unique id */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	FString Id{};
 
+	/** The language the app is defined in */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	FString Lang{};
 
+	/** Unused */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	bool Private{};
 
+	/** The timestamp when the app was created */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	FString Created_At{};
 
+	/** If this is the app associated with the token that was supplied */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	bool Is_App_For_Token{};
 };
