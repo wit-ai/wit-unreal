@@ -51,7 +51,7 @@ public:
 
 	/** The content folder to output the converted audio files to. This is relative to the base content folder */
 	UPROPERTY(EditAnywhere, Category = "Output Location")
-	FString ContentFolder{};
+	FString ContentFolder{TEXT("Wit/Cache")};
 
 	/** The text items we want to batch convert */
 	UPROPERTY(EditAnywhere, Category = "Text To Convert")

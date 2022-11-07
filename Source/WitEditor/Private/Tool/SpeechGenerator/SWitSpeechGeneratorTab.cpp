@@ -16,6 +16,8 @@
 #include "TTS/Cache/Storage/TtsStorageCache.h"
 #include "Wit/Utilities/WitHelperUtilities.h"
 
+#define LOCTEXT_NAMESPACE "SWitSpeechGeneratorTab"
+
 /**
  * Construct the panel for the speech generator
  *
@@ -79,7 +81,7 @@ void SWitSpeechGeneratorTab::Construct(const FArguments& InArgs)
 				SNew(STextBlock)
 				.Font(FCoreStyle::GetDefaultFontStyle("Bold", 9))
 				.ColorAndOpacity( FLinearColor( 0.5f, 0.5f, 0.5f, 1.0f ) )
-				.Text(FText::FromString(TEXT("Create new text collection")))
+				.Text(LOCTEXT("CreateNewTextCollection", "Create new text collection"))
 			]
 			
 			+ SVerticalBox::Slot().AutoHeight()
@@ -99,7 +101,8 @@ void SWitSpeechGeneratorTab::Construct(const FArguments& InArgs)
 						[
 							SNew(STextBlock)
 							.Font(IDetailLayoutBuilder::GetDetailFont())
-							.Text(FText::FromString(TEXT("Asset Name")))
+							.ToolTipText(LOCTEXT("AssetNameTooltip", "File name for the new text collection asset. This can contain a path relative to the root content folder."))
+							.Text(LOCTEXT("AssetName", "Collection Name"))
 						]
 
 						+ SHorizontalBox::Slot().FillWidth(0.9f).Padding(0, 1, 10, 1)
@@ -118,7 +121,8 @@ void SWitSpeechGeneratorTab::Construct(const FArguments& InArgs)
 						+ SHorizontalBox::Slot().HAlign(HAlign_Right).Padding(10,5,10,2)
 						[
 							SNew(SButton)
-							.Text(FText::FromString(TEXT("Create")))
+							.ToolTipText(LOCTEXT("CreateTooltip", "Create a new empty text collection."))
+							.Text(LOCTEXT("CreateButton", "Create"))
 							.IsEnabled(this, &SWitSpeechGeneratorTab::IsNewButtonEnabled)
 							.OnClicked(this, &SWitSpeechGeneratorTab::OnNewButtonClicked)
 						]
@@ -140,14 +144,14 @@ void SWitSpeechGeneratorTab::Construct(const FArguments& InArgs)
 				+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Fill).Padding(12.f)
 				[
 					SNew(STextBlock)
-					.Text(FText::FromString(TEXT("Select a TTS Experience actor to begin.")))
+					.Text(LOCTEXT("SpeechGeneratorUsage1", "Select a TTS Experience actor to begin."))
 					.Visibility(this, &SWitSpeechGeneratorTab::GetSelectMessageVisibility)
 				]
 			
 				+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Fill).Padding(12.f)
 				[
 					SNew(STextBlock)
-					.Text(FText::FromString(TEXT("Waiting for conversion to finish...")))
+					.Text(LOCTEXT("SpeechGeneratorUsage2", "Waiting for conversion to finish..."))
 					.Visibility(this, &SWitSpeechGeneratorTab::GetWaitMessageVisibility)
 				]
 
@@ -161,7 +165,7 @@ void SWitSpeechGeneratorTab::Construct(const FArguments& InArgs)
 						SNew(STextBlock)
 						.Font(FCoreStyle::GetDefaultFontStyle("Bold", 9))
 						.ColorAndOpacity( FLinearColor( 0.5f, 0.5f, 0.5f, 1.0f ) )
-						.Text(FText::FromString(TEXT("Edit existing text collection")))
+						.Text(LOCTEXT("EditTextCollection", "Edit existing text collection"))
 					]
 
 					+ SVerticalBox::Slot().AutoHeight()
@@ -190,7 +194,8 @@ void SWitSpeechGeneratorTab::Construct(const FArguments& InArgs)
 								+ SHorizontalBox::Slot().HAlign(HAlign_Right).Padding(10,5,10,2)
 								[
 									SNew(SButton)
-									.Text(FText::FromString(TEXT("Convert All")))
+									.ToolTipText(LOCTEXT("GenerateAllButtonTooltip", "Generates all the sound assets from text."))
+									.Text(LOCTEXT("GenerateAllButton", "Generate All"))
 									.IsEnabled(this, &SWitSpeechGeneratorTab::IsConvertButtonEnabled)
 									.OnClicked(this, &SWitSpeechGeneratorTab::OnConvertButtonClicked)
 								]
@@ -509,6 +514,7 @@ UWitTextCollectionAsset* SWitSpeechGeneratorTab::CreateTextCollectionAsset()
 	const FString PackagePath = FString::Printf(TEXT("/Game/%s"), *AssetNameText);
 	
 	UPackage* Package = CreatePackage(*PackagePath);
+	const FString PackageName = FPaths::GetBaseFilename(PackagePath);
 
 	if (Package == nullptr)
 	{
@@ -516,7 +522,7 @@ UWitTextCollectionAsset* SWitSpeechGeneratorTab::CreateTextCollectionAsset()
 		return nullptr;
 	}
 	
-	UWitTextCollectionAsset* Asset = NewObject<UWitTextCollectionAsset>(Package, UWitTextCollectionAsset::StaticClass(), *AssetNameText, RF_Public | RF_Standalone);
+	UWitTextCollectionAsset* Asset = NewObject<UWitTextCollectionAsset>(Package, UWitTextCollectionAsset::StaticClass(), *PackageName, RF_Public | RF_Standalone);
 
 	if (Asset == nullptr)
 	{

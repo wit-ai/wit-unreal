@@ -101,7 +101,7 @@ void SWitConfigurationEditorTab::Construct(const FArguments& InArgs)
 							SNew(STextBlock)
 							.Font(IDetailLayoutBuilder::GetDetailFont())
 							.ToolTipText(LOCTEXT("AssetNameTooltip", "File name for the new configuration asset. This can contain a path relative to the root content folder."))
-							.Text(LOCTEXT("AssetNameTitle", "Asset Name"))
+							.Text(LOCTEXT("AssetNameTitle", "Configuration Name"))
 						]
 
 						+ SHorizontalBox::Slot().FillWidth(0.9f).Padding(0, 1, 10, 1)
