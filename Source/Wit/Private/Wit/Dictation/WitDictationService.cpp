@@ -17,6 +17,7 @@
 UWitDictationService::UWitDictationService()
 	: Super()
 {
+	PrimaryComponentTick.bCanEverTick = true;
 }
 
 /**
@@ -64,12 +65,39 @@ void UWitDictationService::BeginDestroy()
 }
 
 /**
+ * Updates the component every frame
+ *
+ * @param DeltaTime [in] the time in seconds that has pass since the last frame
+ * @param TickType [in] the kind of tick this is, for example, are we paused, or 'simulating' in the editor
+ * @param ThisTickFunction [in] internal tick function struct that caused this to run
+ */
+void UWitDictationService::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	if (Configuration == nullptr)
+	{
+		return;
+	}
+	
+	LastActivateTime += DeltaTime;
+
+	if (LastActivateTime > Configuration->MaximumRecordingTime)
+	{
+		LastActivateTime = Configuration->MaximumRecordingTime;
+	}
+}
+
+/**
  * Starts receiving dictation from the microphone and begins streaming it to Wit.ai for interpretation
  *
  * @return true if the activation was successful
  */
 bool UWitDictationService::ActivateDictation()
 {
+	LastActivateTime = 0.0f;
+	bWasManuallyDeactivated = false;
+	
 	if (VoiceExperience != nullptr)
 	{
 		return VoiceExperience->ActivateVoiceInput();	
@@ -85,6 +113,9 @@ bool UWitDictationService::ActivateDictation()
  */
 bool UWitDictationService::ActivateDictationWithRequestOptions(const FString& RequestOptions) 
 {
+	LastActivateTime = 0.0f;
+	bWasManuallyDeactivated = false;
+	
 	if (VoiceExperience != nullptr)
 	{
 		return VoiceExperience->ActivateVoiceInputWithRequestOptions(RequestOptions);	
@@ -115,6 +146,8 @@ bool UWitDictationService::ActivateDictationImmediately()
  */
 bool UWitDictationService::DeactivateDictation()
 {
+	bWasManuallyDeactivated = true;
+	
 	if (VoiceExperience != nullptr)
 	{
 		return VoiceExperience->DeactivateVoiceInput();	
@@ -224,6 +257,21 @@ void UWitDictationService::OnWitResponse(const bool bIsSuccessful, const FWitRes
 	if (Events != nullptr)
 	{
 		Events->OnWitResponse.Broadcast(bIsSuccessful, WitResponse);
+	}
+
+	if (Configuration == nullptr)
+	{
+		return;
+	}
+	
+	const bool bShouldAutoActivateInput = VoiceExperience != nullptr && Configuration->bShouldAutoActivateInput && !bWasManuallyDeactivated;
+	const bool bIsTooLongSinceFirstActivated = LastActivateTime >= Configuration->MaximumRecordingTime;
+	
+	if (bShouldAutoActivateInput && !bIsTooLongSinceFirstActivated)
+	{
+		UE_LOG(LogWit, Verbose, TEXT("OnWitResponse: reactivating voice input after %.2f seconds"), LastActivateTime);
+		
+		VoiceExperience->ActivateVoiceInput();
 	}
 }
 

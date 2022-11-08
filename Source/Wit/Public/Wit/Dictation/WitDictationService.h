@@ -28,7 +28,9 @@ public:
 	 * Default constructor
 	 */
 	UWitDictationService();
-	
+
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
 	/**
 	 * IDictationService overrides
 	 */
@@ -75,4 +77,10 @@ private:
 	UPROPERTY(Transient)
 	AVoiceExperience* VoiceExperience{};
 
+	/** Used to track how long since we activated voice input when capturing */
+	float LastActivateTime{0.0f};
+
+	/** Did a manual deactivation occur? */
+	bool bWasManuallyDeactivated{false};
+	
 };
