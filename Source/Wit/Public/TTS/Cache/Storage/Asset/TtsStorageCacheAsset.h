@@ -22,11 +22,11 @@ class WIT_API UTtsStorageCacheAsset : public UDataAsset
 
 public:
 
-	/* The settings that were used to generate the clip */
+	/** The settings that were used to generate the clip */
 	UPROPERTY(VisibleAnywhere, Category="TTS")
 	FTtsConfiguration ClipSettings;
 	
-	/* The data of the clip */
+	/** The data of the clip */
 	UPROPERTY(VisibleAnywhere, Category="TTS")
 	TArray<uint8> ClipData; 
 };

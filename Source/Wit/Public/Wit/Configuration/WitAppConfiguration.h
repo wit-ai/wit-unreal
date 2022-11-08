@@ -18,7 +18,7 @@ struct WIT_API FWitAppAdvancedConfiguration
 {
 	GENERATED_BODY()
 
-	/** Whether to use platform integration or not */	
+	/** Should we use platform integration? */	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Platform Integration")
 	bool bIsPlatformIntegrationEnabled{false};
 
@@ -34,21 +34,21 @@ struct WIT_API FWitAppAdvancedConfiguration
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Request Overrides")
 	bool bIsCustomHttpTimeout{false};
 
-	/** Custom request timeout in seconds */
+	/** Custom request timeout in seconds. This is only used if bIsCustomHttpTimeout is set to true */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Request Overrides", meta=(ClampMin = 1, ClampMax = 180))
 	float HttpTimeout{180.0f};
 	
 };
 
 /**
- * Wit app data configuration
+ * Wit application data configuration. This contains all the data such as entities and intents that have been defined for the application
  */
 USTRUCT(BlueprintType)
 struct WIT_API FWitAppDataConfiguration
 {
 	GENERATED_BODY()
 		
-	/** Wit application data */
+	/** Basic application data */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Application")
 	FWitAppDefinition Application;
 

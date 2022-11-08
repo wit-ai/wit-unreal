@@ -20,9 +20,11 @@ struct WIT_API FComposerSpeaker
 {
 	GENERATED_BODY()
 
+	/** The speaker's name */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Composer")
 	FString SpeakerName{};
 
+	/** The associated speaker actor to use */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Composer")
 	AWitTtsSpeaker* Speaker{};
 	

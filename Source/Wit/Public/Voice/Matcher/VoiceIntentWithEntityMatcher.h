@@ -46,7 +46,7 @@ public:
 	FString IntentName{};
 
 	/**
-	 * Whether the intent is required or not
+	 * Is the intent required to match?
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Intent")
 	bool bIsIntentRequired{true};

@@ -21,19 +21,19 @@ struct WIT_API FComposerConfiguration
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Composer|Configuration")
 	FName VoiceExperienceTag{};
 	
-	/** Whether the composer service will be used for voice activation */
+	/** Should we redirect the voice service inputs and outputs to composer? */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Composer|Configuration")
 	bool bShouldRouteVoiceServiceToComposer{true};
 	
-	/** Whether this service should automatically handle input activation */
+	/** Should input be auto-activated when it is required? */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Composer|Configuration")
 	bool bShouldAutoActivateInput{true};
 
-	/** Whether this service should automatically end the session graph completion */
+	/** Should the session be automatically ended when the composer graph ends? */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Composer|Configuration")
 	bool bShouldAutoEndSession{false};
 
-	/** Whether this service should automatically clear the context map on graph completion */
+	/** Should the context map be automatically cleared when the composer graph ends? */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Composer|Configuration")
 	bool bShouldAutoClearContextMap{false};
 

@@ -35,7 +35,7 @@ public:
 	FName TtsExperienceTag{};
 
 	/**
-	 * The audio source to play sounds
+	 * The audio source used to play sounds
 	 */
 	UPROPERTY(VisibleAnywhere, Category="TTS")
 	UAudioComponent* AudioComponent{};

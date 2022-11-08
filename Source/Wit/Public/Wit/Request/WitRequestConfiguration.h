@@ -44,7 +44,7 @@ struct WIT_API FWitRequestConfiguration
 	/** The endpoint to use in the request */
 	FString Endpoint{};
 
-	/** The expect to use in the request */
+	/** The accept to use in the request */
 	FString Accept{};
 
 	/** Optional set of URL parameters to use in the request */
@@ -65,9 +65,9 @@ struct WIT_API FWitRequestConfiguration
 	/** Tracks whether we should use the HTTP 1 chunked transfer protocol in the request */
 	bool bShouldUseChunkedTransfer{false};
 
-	/** Custom timeout */
+	/** Should we use a custom timeout duration? */
 	bool bShouldUseCustomHttpTimeout{false};
 
-	/** Custom timeout duration */
+	/** Custom timeout duration. This is only used if bShouldUseCustomHttpTimeout is true */
 	float HttpTimeout{180.0f};
 };

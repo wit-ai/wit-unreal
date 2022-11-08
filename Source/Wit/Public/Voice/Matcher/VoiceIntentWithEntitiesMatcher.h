@@ -45,7 +45,7 @@ public:
 	FString IntentName{};
 
 	/**
-	 * Whether the intent is required or not
+	 * Is the intent required to match?
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Intent")
 	bool bIsIntentRequired{true};
@@ -57,13 +57,13 @@ public:
 	float IntentConfidenceThreshold{0.5f};
 
 	/**
-	 * The names of the required entities to match 
+	 * The names of the entities that must be matched
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Entities")
 	TArray<FString> RequiredEntityNames{};
 
 	/**
-	 * The names of the optional entities to match 
+	 * The names of the entities that are optional matches
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Entities")
 	TArray<FString> OptionalEntityNames{};

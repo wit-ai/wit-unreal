@@ -12,28 +12,27 @@
 #include "WitResponse.generated.h"
 
 /**
- * UStruct representation of the JSON intent object used by Wit.ai.
+ * Representation of the JSON intent object used by Wit.ai. See the Wit.ai
+ * documentation for the meaning of each specific field.
  */
 USTRUCT(BlueprintType)
 struct WIT_API FWitIntent
 {
 	GENERATED_BODY()
 
-	/** The name of the intent */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	FString Name{};
-
-	/** The unique id of the intent */
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	int64 Id{0};
-
-	/** How confident Wit.ai is that the intent is a match */
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	float Confidence{0.0f};
 };
 
 /**
- * UStruct representation of the JSON entity interval object used by Wit.ai.
+ * Representation of the JSON entity interval object used by Wit.ai. See the Wit.ai
+ * documentation for the meaning of each specific field.
  */
 USTRUCT(BlueprintType)
 struct WIT_API FWitEntityInterval
@@ -54,7 +53,8 @@ struct WIT_API FWitEntityInterval
 };
 
 /**
- * UStruct representation of the JSON entity normalized object used by Wit.ai.
+ * Representation of the JSON entity normalized object used by Wit.ai. See the Wit.ai
+ * documentation for the meaning of each specific field.
  */
 USTRUCT(BlueprintType)
 struct WIT_API FWitEntityNormalized
@@ -69,7 +69,8 @@ struct WIT_API FWitEntityNormalized
 };
 
 /**
- * UStruct representation of the JSON entity value object used by Wit.ai.
+ * Representation of the JSON entity value object used by Wit.ai. See the Wit.ai
+ * documentation for the meaning of each specific field.
  */
 USTRUCT(BlueprintType)
 struct WIT_API FWitEntityValue
@@ -93,7 +94,8 @@ struct WIT_API FWitEntityValue
 };
 
 /**
- * UStruct representation of the JSON entity object used by Wit.ai.
+ * Representation of the JSON entity object used by Wit.ai. See the Wit.ai
+ * documentation for the meaning of each specific field.
  */
 USTRUCT(BlueprintType)
 struct WIT_API FWitEntity
@@ -147,7 +149,8 @@ struct WIT_API FWitEntity
 };
 
 /**
- * UStruct representation of the JSON trait object used by Wit.ai.
+ * Representation of the JSON trait object used by Wit.ai. See the Wit.ai
+ * documentation for the meaning of each specific field.
  */
 USTRUCT(BlueprintType)
 struct WIT_API FWitTrait
@@ -165,7 +168,7 @@ struct WIT_API FWitTrait
 };
 
 /**
- * UStruct representation of the full JSON object used by Wit.ai responses. See the Wit.ai
+ * Representation of the full JSON object used by Wit.ai responses. See the Wit.ai
  * documentation for the meaning of each specific field.
  */
 USTRUCT(BlueprintType)
@@ -195,7 +198,8 @@ struct WIT_API FWitResponse
 };
 
 /**
- * UStruct representation of the JSON voice preset object
+ * Representation of the JSON voice preset object. See the Wit.ai
+ * documentation for the meaning of each specific field.
  */
 USTRUCT(BlueprintType)
 struct WIT_API FWitVoiceDefinition
@@ -216,7 +220,7 @@ struct WIT_API FWitVoiceDefinition
 };
 
 /**
- * UStruct representation of the full JSON object used by Wit.ai /voices response. See the Wit.ai
+ * Representation of the full JSON object used by Wit.ai /voices response. See the Wit.ai
  * documentation for the meaning of each specific field.
  */
 USTRUCT(BlueprintType)
@@ -229,112 +233,129 @@ struct WIT_API FWitVoicesResponse
 };
 
 /**
- * UStruct representation of the full JSON object used by Wit.ai composer
+ * Representation of the full JSON object returned by Wit.ai composer
  */
 USTRUCT(BlueprintType)
 struct WIT_API FWitComposerResponse
 {
 	GENERATED_BODY()
-	
+
+	/** Is input expected to follow? */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Composer")
 	bool Expects_Input{false};
 
+	/** String identifier of the action to perform */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Composer")
 	FString Action{};
 
+	/** The full speech response */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Composer")
 	FWitResponse Response{};
 };
 
 /**
- * UStruct representation of the JSON entity object used by /intents
+ * Representation of the JSON entity object used by /intents endpoint
  */
 USTRUCT(BlueprintType)
 struct WIT_API FWitEntityShortDefinition
 {
 	GENERATED_BODY()
-		
+
+	/** The name of the entity as defined in Wit.ai */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	FString Name{};
 
+	/** The entity's unique id */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	int64 Id{0};
 };
 
 /**
- * UStruct representation of the JSON entity object used by /entities
+ * Representation of the JSON entity object used by Wit.ai /entities endpoint 
  */
 USTRUCT(BlueprintType)
 struct WIT_API FWitEntityDefinition
 {
 	GENERATED_BODY()
-		
+
+	/** The name of the entity as defined in Wit.ai */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	FString Name{};
 
+	/** The entity's unique id */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	int64 Id{0};
 
+	/** The lookups associated with this entity */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	TArray<FString> Lookups{};
-	
+
+	/** The roles associated with this entity */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	TArray<FString> Roles{};
 };
 
 /**
- * UStruct representation of the JSON intent definition object returned by /intents
+ * Representation of the JSON intent definition object returned by Wit.ai /intents endpoint
  */
 USTRUCT(BlueprintType)
 struct WIT_API FWitIntentDefinition
 {
 	GENERATED_BODY()
-	
+
+	/** The name of the intent as defined in Wit.ai */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	FString Name{};
 
+	/** The intent's unique id */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	int64 Id{0};
 
+	/** The entities associated with this intent */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	TArray<FWitEntityShortDefinition> Entities{};
 };
 
 /**
- * UStruct representation of the JSON trait value object used by /traits
+ * Representation of the JSON trait value object used by Wit.ai /traits endpoint
  */
 USTRUCT(BlueprintType)
 struct WIT_API FWitTraitValueDefinition
 {
 	GENERATED_BODY()
-		
+
+	/** The name of the trait value as defined in Wit.ai */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	FString Name{};
 
+	/** The value of the trait */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	FString Value{};
 };
 
 /**
- * UStruct representation of the JSON trait definition object returned by /traits
+ * Representation of the JSON trait definition object returned by Wit.ai /traits endpoint
  */
 USTRUCT(BlueprintType)
 struct WIT_API FWitTraitDefinition
 {
 	GENERATED_BODY()
-	
+
+	/** The name of the trait as defined in Wit.ai */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	FString Name{};
 
+	/** The trait's unique id */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	int64 Id{0};
 
+	/** The values associated with the trait */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	TArray<FWitTraitValueDefinition> Values{};
 };
 
 /**
- * UStruct representation of the JSON app definition object returned by /apps
+ * Representation of the JSON app definition object returned by Wit.ai /apps endpoint
  */
 USTRUCT(BlueprintType)
 struct WIT_API FWitAppDefinition
