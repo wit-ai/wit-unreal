@@ -26,7 +26,7 @@ class UWitResponseObject final : public UObject
 
 public:
 
-	/** The underlying response structure */
+	/** The response received from Wit.ai */
 	UPROPERTY(Transient, EditAnywhere, Category = "Voice Experience")
 	FWitResponse Response{};
 	

@@ -15,6 +15,8 @@
 #include "Engine/Selection.h"
 #include "Editor.h"
 
+#define LOCTEXT_NAMESPACE "SWitUnderstandingViewerTab"
+
 /**
  * Construct the panel for the understanding viewer
  *
@@ -62,7 +64,7 @@ void SWitUnderstandingViewerTab::Construct(const FArguments& InArgs)
 				SNew(STextBlock)
 				.Font(FCoreStyle::GetDefaultFontStyle("Bold", 9))
 				.ColorAndOpacity( FLinearColor( 0.5f, 0.5f, 0.5f, 1.0f ) )
-				.Text(FText::FromString(TEXT("Send message")))
+				.Text(LOCTEXT("SendMessageTitle", "Send message"))
 			]
 			
 			+ SVerticalBox::Slot().AutoHeight()
@@ -82,7 +84,8 @@ void SWitUnderstandingViewerTab::Construct(const FArguments& InArgs)
 						[
 							SNew(STextBlock)
 							.Font(IDetailLayoutBuilder::GetDetailFont())
-							.Text(FText::FromString(TEXT("Utterance")))
+							.ToolTipText(LOCTEXT("UtteranceTooltip", "The message to send to Wit.ai for intepretation"))
+							.Text(LOCTEXT("UtteranceButton", "Utterance"))
 						]
 
 						+ SHorizontalBox::Slot().FillWidth(0.9f).Padding(0, 1, 10, 1)
@@ -102,7 +105,8 @@ void SWitUnderstandingViewerTab::Construct(const FArguments& InArgs)
 						+ SHorizontalBox::Slot().HAlign(HAlign_Right).Padding(10,5,10,2)
 						[
 							SNew(SButton)
-							.Text(FText::FromString(TEXT("Send")))
+							.ToolTipText(LOCTEXT("SendTooltip", "Send the message to Wit.ai for interpretation"))
+							.Text(LOCTEXT("SendButton", "Send"))
 							.IsEnabled(this, &SWitUnderstandingViewerTab::IsSendButtonEnabled)
 							.OnClicked(this, &SWitUnderstandingViewerTab::OnSendButtonClicked)
 						]
@@ -124,21 +128,21 @@ void SWitUnderstandingViewerTab::Construct(const FArguments& InArgs)
 				+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Fill).Padding(12.f)
 				[
 					SNew(STextBlock)
-					.Text(FText::FromString(TEXT("Select a Voice Experience actor to begin.")))
+					.Text(LOCTEXT("UnderstandingViewerUsage1", "Select a Voice Experience actor to begin."))
 					.Visibility(this, &SWitUnderstandingViewerTab::GetSelectMessageVisibility)
 				]
 
 				+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Fill).Padding(12.f)
 				[
 					SNew(STextBlock)
-					.Text(FText::FromString(TEXT("Enter an utterance and hit 'Send' to see what your app will return.")))
+					.Text(LOCTEXT("UnderstandingViewerUsage2", "Enter an utterance and hit 'Send' to see what your app will return."))
 					.Visibility(this, &SWitUnderstandingViewerTab::GetUtteranceMessageVisibility)
 				]
 
 				+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Fill).Padding(12.f)
 				[
 					SNew(STextBlock)
-					.Text(FText::FromString(TEXT("Waiting for response...")))
+					.Text(LOCTEXT("UnderstandingViewerUsage3", "Waiting for response..."))
 					.Visibility(this, &SWitUnderstandingViewerTab::GetWaitMessageVisibility)
 				]
 
@@ -152,7 +156,7 @@ void SWitUnderstandingViewerTab::Construct(const FArguments& InArgs)
 						SNew(STextBlock)
 						.Font(FCoreStyle::GetDefaultFontStyle("Bold", 9))
 						.ColorAndOpacity( FLinearColor( 0.5f, 0.5f, 0.5f, 1.0f ) )
-						.Text(FText::FromString(TEXT("Result")))
+						.Text(LOCTEXT("ResultTitle", "Result"))
 					]
 
 					+ SVerticalBox::Slot().AutoHeight()

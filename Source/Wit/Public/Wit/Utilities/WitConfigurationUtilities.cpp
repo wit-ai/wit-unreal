@@ -29,6 +29,8 @@ void FWitConfigurationUtilities::RefreshConfiguration(UWitAppConfigurationAsset*
 
 	// Clear out data
 
+	UE_LOG(LogWit, Verbose, TEXT("RefreshConfiguration - Starting refresh"));
+	
 	Configuration->Application.Data.Application.Id = 0;
 	Configuration->Application.Data.Application.Name = FString();
 	Configuration->Application.Data.Application.Lang = FString();
@@ -53,6 +55,7 @@ void FWitConfigurationUtilities::RequestAppList()
 
 	if (!SetupListRequest(RequestConfiguration, EWitRequestEndpoint::GetApps, true))
 	{
+		Configuration = nullptr;
 		return;
 	}
 
@@ -85,7 +88,7 @@ void FWitConfigurationUtilities::OnAppsRequestComplete(const TArray<uint8>& Bina
 
 	if (bIsConversionError)
 	{
-		OnIntentsRequestError(TEXT("Json To UStruct failed"), TEXT("Converting the Json response to a UStruct failed"));
+		OnAppsRequestError(TEXT("Json To UStruct failed"), TEXT("Converting the Json response to a UStruct failed"));
 		return;
 	}
 
@@ -93,16 +96,25 @@ void FWitConfigurationUtilities::OnAppsRequestComplete(const TArray<uint8>& Bina
 
 	// Now we have all the available apps we look for the one marked as matching our server token
 
+	bool bIsAppFound = false;
+	
 	for (const auto& Application : Applications)
 	{
-		if (!Application.Is_App_For_Token)
+		if (Application.Is_App_For_Token)
 		{
-			continue;
+			Configuration->Application.Data.Application = Application;
+
+			RequestClientToken(Application.Id);
+
+			bIsAppFound = true;
+			
+			break;
 		}
+	}
 
-		Configuration->Application.Data.Application = Application;
-
-		RequestClientToken(Application.Id);
+	if (!bIsAppFound)
+	{
+		Configuration = nullptr;
 	}
 }
 
@@ -113,7 +125,9 @@ void FWitConfigurationUtilities::OnAppsRequestError(const FString& ErrorMessage,
 {
 	UE_LOG(LogWit, Warning, TEXT("OnAppsRequestError - request failed with error: %s - %s"), *ErrorMessage, *HumanReadableErrorMessage);
 
-	RequestIntentList();
+	// If the app request fails there is no point continuing as we won't have an app id to use
+	
+	Configuration = nullptr;
 }
 
 /**
@@ -125,6 +139,7 @@ void FWitConfigurationUtilities::RequestClientToken(const FString& AppId)
 
 	if (!SetupListRequest(RequestConfiguration, EWitRequestEndpoint::ClientToken, true))
 	{
+		Configuration = nullptr;
 		return;
 	}
 
@@ -170,7 +185,9 @@ void FWitConfigurationUtilities::OnClientTokenRequestError(const FString& ErrorM
 {
 	UE_LOG(LogWit, Warning, TEXT("OnClientTokenRequestError - request failed with error: %s - %s"), *ErrorMessage, *HumanReadableErrorMessage);
 
-	RequestIntentList();
+	// If the client token request fails there is no point continuing as we won't have a client token to use
+	
+	Configuration = nullptr;
 }
 
 /**
@@ -182,6 +199,7 @@ void FWitConfigurationUtilities::RequestIntentList()
 
 	if (!SetupListRequest(RequestConfiguration, EWitRequestEndpoint::GetIntents, false))
 	{
+		Configuration = nullptr;
 		return;
 	}
 
@@ -239,6 +257,7 @@ void FWitConfigurationUtilities::RequestEntityList()
 
 	if (!SetupListRequest(RequestConfiguration, EWitRequestEndpoint::GetEntities, true))
 	{
+		Configuration = nullptr;
 		return;
 	}
 
@@ -268,7 +287,7 @@ void FWitConfigurationUtilities::OnEntitiesRequestComplete(const TArray<uint8>& 
 
 	if (bIsConversionError)
 	{
-		OnIntentsRequestError(TEXT("Json To UStruct failed"), TEXT("Converting the Json response to a UStruct failed"));
+		OnEntitiesRequestError(TEXT("Json To UStruct failed"), TEXT("Converting the Json response to a UStruct failed"));
 		return;
 	}
 
@@ -296,6 +315,7 @@ void FWitConfigurationUtilities::RequestTraitList()
 
 	if (!SetupListRequest(RequestConfiguration, EWitRequestEndpoint::GetTraits, true))
 	{
+		Configuration = nullptr;
 		return;
 	}
 
@@ -325,7 +345,7 @@ void FWitConfigurationUtilities::OnTraitsRequestComplete(const TArray<uint8>& Bi
 
 	if (bIsConversionError)
 	{
-		OnIntentsRequestError(TEXT("Json To UStruct failed"), TEXT("Converting the Json response to a UStruct failed"));
+		OnTraitsRequestError(TEXT("Json To UStruct failed"), TEXT("Converting the Json response to a UStruct failed"));
 		return;
 	}
 
@@ -353,6 +373,7 @@ void FWitConfigurationUtilities::RequestVoiceList()
 
 	if (!SetupListRequest(RequestConfiguration, EWitRequestEndpoint::GetVoices, false))
 	{
+		Configuration = nullptr;
 		return;
 	}
 

@@ -17,7 +17,7 @@
 #include "Wit/Configuration/WitAppConfigurationAsset.h"
 #include "Wit/Utilities/WitConfigurationUtilities.h"
 
-#define LOCTEXT_NAMESPACE "FWitEditorModule"
+#define LOCTEXT_NAMESPACE "FWitConfigurationDetailCustomization"
 
 /**
  * Convenience function to create an instance of the customization
@@ -69,7 +69,7 @@ void FWitConfigurationDetailCustomization::CustomizeDetails(IDetailLayoutBuilder
 		[
 			SNew(SHorizontalBox)
 
-			+ SHorizontalBox::Slot().AutoWidth()
+			+ SHorizontalBox::Slot()
 			[
 				ValueWidget.ToSharedRef()
 			]
@@ -77,7 +77,7 @@ void FWitConfigurationDetailCustomization::CustomizeDetails(IDetailLayoutBuilder
 			+ SHorizontalBox::Slot().AutoWidth().Padding(6,0)
 			[
 				SNew(SButton)
-				.Text(FText::FromString(TEXT("Refresh")))
+				.Text(LOCTEXT("RefreshButton","Refresh"))
 				.IsEnabled(this, &FWitConfigurationDetailCustomization::IsRefreshButtonEnabled)
 				.OnClicked(this, &FWitConfigurationDetailCustomization::OnRefreshButtonClicked)
 			]
@@ -118,21 +118,21 @@ FReply FWitConfigurationDetailCustomization::OnRefreshButtonClicked()
 {
 	if (ObjectsToEdit.Num() == 0)
 	{
-		return FReply::Handled();
+		return FReply::Unhandled();
 	}
 	
 	const TWeakObjectPtr<UObject> Object = ObjectsToEdit[0];
 	
 	if (!Object.IsValid())
 	{
-		return FReply::Handled();
+		return FReply::Unhandled();
 	}
 
 	UWitAppConfigurationAsset* AppConfiguration = Cast<UWitAppConfigurationAsset>(Object.Get());
 		
 	if (AppConfiguration == nullptr)
 	{
-		return FReply::Handled();
+		return FReply::Unhandled();
 	}
 	
 	FWitConfigurationUtilities::RefreshConfiguration(AppConfiguration);
