@@ -11,7 +11,7 @@
 #include "SlateBasics.h"
 #include "DetailWidgetRow.h"
 #include "PropertyHandle.h"
-#include "Selection.h"
+#include "Engine/Selection.h"
 #include "Voice/Matcher/VoiceIntentMatcher.h"
 #include "Voice/Matcher/VoiceIntentWithEntityMatcher.h"
 #include "Kismet2/ComponentEditorUtils.h"
