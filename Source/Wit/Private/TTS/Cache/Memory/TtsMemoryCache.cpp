@@ -100,7 +100,7 @@ void UTtsMemoryCache::RemoveAllClips()
  *
  * @return number of clips in cache
  */	
-int32 UTtsMemoryCache::GetCacheClipNum() const
+int32 UTtsMemoryCache::GetUsedCacheClipCapacity() const
 {
 	return Clips.Num();
 }

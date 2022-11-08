@@ -110,7 +110,13 @@ public:
 	 * Gets number of clips in cache
 	 */
 	UFUNCTION(BlueprintCallable, Category="TTS")
-	int32 GetCacheClipNum() const;
+	int32 GetUsedCacheClipCapacity() const;
+	
+	/**
+	 * Gets the amount of memory currently being used by the cache
+	 */
+	UFUNCTION(BlueprintCallable, Category="TTS")
+	int32 GetUsedCacheSizeInKilobytes() const;
 	
 private:
 
@@ -118,11 +124,6 @@ private:
 	 * Has the cache reached it's capacity?
 	 */
 	bool IsFull() const;
-
-	/**
-	 * Gets the amount of memory currently being used by the cache
-	 */
-	int32 GetUsedCacheSizeInKilobytes() const;
 
 	/**
 	 * Removes a clip a the given array index
