@@ -31,15 +31,15 @@ struct WIT_API FTtsConfiguration
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="TTS")
 	FString Text{};
 	
-	/** The voice name that will be used */
+	/** The voice name that should be used */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="TTS")
 	FString Voice{TEXT("Charlie")};
 
-	/** The voice style that will be used */
+	/** The voice style that should be used */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="TTS")
 	FString Style{};
 
-	/** How fast the voice will be spoke with 50 being slow, 200 fast. Default is 100 */
+	/** How fast the voice will be spoken with 50 being slow, 200 fast. Default is 100 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(ClampMin = 50, ClampMax = 200), Category="TTS")
 	int32 Speed{100};
 
@@ -51,7 +51,7 @@ struct WIT_API FTtsConfiguration
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(ClampMin = 0, ClampMax = 100), Category="TTS")
 	int32 Gain{50};
 
-	/** The storage cache location */
+	/** If set to default this uses the globally specified cache location. Any other value acts as an override */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="TTS")
 	ETtsStorageCacheLocation StorageCacheLocation{ETtsStorageCacheLocation::Default};
 };

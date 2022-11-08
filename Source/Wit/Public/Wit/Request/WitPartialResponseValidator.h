@@ -27,7 +27,9 @@ class WIT_API IWitPartialResponseValidator
 	GENERATED_BODY()
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
+	
 public:
+	
 	UFUNCTION(BlueprintnativeEvent, BlueprintCallable, Category="Validator")
 	bool ValidatePartialResponse (const FWitResponse& Response);
 };

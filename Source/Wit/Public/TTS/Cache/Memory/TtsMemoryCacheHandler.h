@@ -26,7 +26,7 @@ class WIT_API UTtsMemoryCacheHandler : public UActorComponent, public ITtsMemory
 public:
 	
 	/**
-	 * ITTSMemoryCacheHandler default implementation
+	 * ITtsMemoryCacheHandler default implementation
 	 */	
 	virtual bool AddClip(const FString& ClipId, USoundWave* SoundWave, const FTtsConfiguration& ClipSettings) override { return false; }
 	virtual bool RemoveClip(const FString& ClipId) override { return false; }

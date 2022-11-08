@@ -23,7 +23,7 @@ class WIT_API UWitAppConfigurationAsset : public UDataAsset
 
 public:
 	
-	/** The general configuration */
+	/** The general application configuration */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Configuration")
 	FWitAppConfiguration Application;
 	

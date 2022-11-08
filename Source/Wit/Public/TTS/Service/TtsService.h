@@ -83,7 +83,7 @@ protected:
 	UTtsMemoryCacheHandler* MemoryCacheHandler{};
 
 	/**
-	 * Storage cache to store converted voice clips as raw data
+	 * Storage cache to store converted voice clips as raw data on disk
 	 */
 	UPROPERTY(Transient)
 	UTtsStorageCacheHandler* StorageCacheHandler{};

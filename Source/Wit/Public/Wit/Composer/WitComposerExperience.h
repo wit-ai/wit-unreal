@@ -30,7 +30,7 @@ public:
 	AWitComposerExperience();
 
 	/**
-	 * The configuration that will be used by the voice service
+	 * The configuration that will be used by composer
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Composer|Configuration")
 	FComposerConfiguration Configuration{};

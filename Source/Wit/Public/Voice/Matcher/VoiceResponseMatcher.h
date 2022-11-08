@@ -41,7 +41,7 @@ public:
 	bool bIsAlsoUsedForPartialResponse{false};
 
 	/** 
-	 * Whether to auto accept once the intent and confidence score are matched
+	 * Should we auto accept once the intent and confidence score are matched?
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PartialResponse")
 	bool bAutoAcceptPartialResponseOncePastMatcherCriteria{false};
