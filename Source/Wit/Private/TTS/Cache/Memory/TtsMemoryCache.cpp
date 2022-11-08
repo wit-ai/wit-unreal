@@ -96,6 +96,16 @@ void UTtsMemoryCache::RemoveAllClips()
 }
 
 /**
+ * Gets number of clips in cache
+ *
+ * @return number of clips in cache
+ */	
+int32 UTtsMemoryCache::GetUsedCacheClipCapacity() const
+{
+	return Clips.Num();
+}
+
+/**
  * Get a clip given its id
  *
  * @param ClipId [in] the clip id
