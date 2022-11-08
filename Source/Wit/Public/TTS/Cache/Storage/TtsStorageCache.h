@@ -71,6 +71,7 @@ public:
 	 *
 	 * @return true if the clip was removed
 	 */
+	UFUNCTION(BlueprintCallable, Category = "TTS")
 	virtual bool RemoveClip(const FString& ClipId, const ETtsStorageCacheLocation CacheLocation) override;
 
 	/**
@@ -78,7 +79,8 @@ public:
 	 *
 	 * @param CacheLocation [in] the cache location where the clip will be
 	 */	
-	virtual void RemoveAllClips(const ETtsStorageCacheLocation CacheLocation) override;
+	UFUNCTION(BlueprintCallable, Category = "TTS")
+		virtual void RemoveAllClips(const ETtsStorageCacheLocation CacheLocation) override;
 	
 	/**
 	 * Cache directory relative to the base cache path
