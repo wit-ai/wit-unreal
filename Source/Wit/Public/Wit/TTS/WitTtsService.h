@@ -58,7 +58,7 @@ protected:
 private:
 
 	/** Maximum length of text that can be passed to Wit.ai */
-	static constexpr int MaximumTextLengthInRequest{140};
+	static constexpr int MaximumTextLengthInRequest{280};
 
 #if WITH_EDITORONLY_DATA
 	
