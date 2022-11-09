@@ -7,6 +7,7 @@
 
 #include "Wit/Utilities/WitHelperUtilities.h"
 #include "JsonObjectConverter.h"
+#include "AssetRegistry/AssetRegistryModule.h"
 #include "Kismet/GameplayStatics.h"
 #include "Serialization/BufferArchive.h"
 #include "TTS/Cache/Storage/Asset/TtsStorageCacheAsset.h"
@@ -349,6 +350,12 @@ bool FWitHelperUtilities::SaveClipToAssetFile(const FString& ClipDirectory, cons
 	FMemory::Memcpy(CacheAsset->ClipData.GetData(), ClipData.GetData(), ClipData.Num());
 			
 	(void)CacheAsset->MarkPackageDirty();
+	CachePackage->MarkPackageDirty();
+	
+	FAssetRegistryModule::AssetCreated(CacheAsset);
+	const FString PackageFileName = FPackageName::LongPackageNameToFilename(PackagePath, FPackageName::GetAssetPackageExtension());
+	UPackage::SavePackage(CachePackage, CacheAsset, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone, *PackageFileName, GError, nullptr, true, true, SAVE_NoError);
+	
 
 	return true;
 }
