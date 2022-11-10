@@ -168,13 +168,9 @@ void UWitTtsService::ConvertTextToSpeechWithSettings(const FTtsConfiguration& Cl
 		
 	if (bIsTextTooLong)
 	{
-		UE_LOG(LogWit, Warning, TEXT("ConvertTextToSpeechWithSettings: text is too long - truncating to %d characters"), MaximumTextLengthInRequest);
-		RequestBody->SetStringField("q",ClipSettings.Text.Left(MaximumTextLengthInRequest));
+		UE_LOG(LogWit, Warning, TEXT("ConvertTextToSpeechWithSettings: text is too long, the limit is %d characters"), MaximumTextLengthInRequest);
 	}
-	else
-	{
-		RequestBody->SetStringField("q",ClipSettings.Text);
-	}
+	RequestBody->SetStringField("q",ClipSettings.Text);
 	
 	RequestBody->SetNumberField("speed",ClipSettings.Speed);
 	RequestBody->SetNumberField("pitch",ClipSettings.Pitch);
