@@ -61,6 +61,7 @@ public:
 	 *
 	 * @return true if the clip is available in the cache
 	 */
+	UFUNCTION(BlueprintCallable, Category = "TTS")
 	virtual bool RequestClip(const FString& ClipId, const ETtsStorageCacheLocation CacheLocation, TArray<uint8>& ClipData) const override;
 
 	/**
@@ -71,6 +72,7 @@ public:
 	 *
 	 * @return true if the clip was removed
 	 */
+	UFUNCTION(BlueprintCallable, Category = "TTS")
 	virtual bool RemoveClip(const FString& ClipId, const ETtsStorageCacheLocation CacheLocation) override;
 
 	/**
@@ -78,6 +80,7 @@ public:
 	 *
 	 * @param CacheLocation [in] the cache location where the clip will be
 	 */	
+	UFUNCTION(BlueprintCallable, Category = "TTS")
 	virtual void RemoveAllClips(const ETtsStorageCacheLocation CacheLocation) override;
 	
 	/**
