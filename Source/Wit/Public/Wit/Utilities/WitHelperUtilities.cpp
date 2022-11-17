@@ -510,6 +510,14 @@ void FWitHelperUtilities::ConvertJsonToAllEntities(FWitResponse* WitResponse, co
 	for (const auto& Entities : WitResponse->Entities)
 	{
 		const FString Key = *Entities.Key;
+
+		FWitEntities* WitEntities = WitResponse->AllEntities.Find(Key);
+		if (WitEntities == nullptr)
+		{
+			WitResponse->AllEntities.Add(Key, FWitEntities());
+			WitEntities = WitResponse->AllEntities.Find(Key);
+		}
+		
 		const TArray< TSharedPtr<FJsonValue> >* GroupOfEntitiesJsonObject;
 		const bool bIsKeyExist = EntitiesJsonObject->Get()->TryGetArrayField(Key, GroupOfEntitiesJsonObject);
 		UE_LOG(LogWit, Verbose, TEXT("Does key(%s) exist: %s"), *Key, bIsKeyExist?TEXT("YES"):TEXT("NO"));
@@ -527,10 +535,8 @@ void FWitHelperUtilities::ConvertJsonToAllEntities(FWitResponse* WitResponse, co
 			{
 				continue;
 			}
-			FWitEntities WitEntities{};
-			WitEntities.Name = Key;
-			WitEntities.Entities.Add(WitEntity);
-			WitResponse->AllEntities.Add(Key, WitEntities);
+			WitEntities->Name = Key;
+			WitEntities->Entities.Add(WitEntity);
 		}
 	}
 }

@@ -67,8 +67,6 @@ void UVoiceIntentWithAllEntitiesMatcher::OnWitResponse(const bool bIsSuccessful,
 		FWitEntities WitEntities{};
 		WitEntities.Name = EntityName;
 		TArray<FString> Values{};
-		MatchingEntities.Add(WitEntities);
-		MatchingValues.Add(Values);
 		
 		FWitEntities FoundMatchingEntities{};
 		
@@ -84,12 +82,14 @@ void UVoiceIntentWithAllEntitiesMatcher::OnWitResponse(const bool bIsSuccessful,
 		else
 		{
 			WitEntities.Entities.Append(FoundMatchingEntities.Entities);
-			MatchingEntitiesNum = MatchingEntitiesNum + FoundMatchingEntities.Entities.Num();
+			MatchingEntitiesNum++;
 			for (const auto& MatchingEntity : FoundMatchingEntities.Entities)
 			{
 				Values.Add(MatchingEntity.Value);
 			}
 		}
+		MatchingEntities.Add(WitEntities);
+		MatchingValues.Add(Values);
 	}
 
 	const bool bIsAllRequiredEntitiesMatched = MatchingEntitiesNum == RequiredEntityNames.Num();
@@ -102,8 +102,6 @@ void UVoiceIntentWithAllEntitiesMatcher::OnWitResponse(const bool bIsSuccessful,
 		FWitEntities WitEntities{};
 		WitEntities.Name = EntityName;
 		TArray<FString> Values{};
-		MatchingEntities.Add(WitEntities);
-		MatchingValues.Add(Values);
 		
 		FWitEntities FoundMatchingEntities{};
 		
@@ -119,12 +117,15 @@ void UVoiceIntentWithAllEntitiesMatcher::OnWitResponse(const bool bIsSuccessful,
 		else
 		{
 			WitEntities.Entities.Append(FoundMatchingEntities.Entities);
-			MatchingEntitiesNum = MatchingEntitiesNum + FoundMatchingEntities.Entities.Num();
+			MatchingEntitiesNum++;
 			for (const auto& MatchingEntity : FoundMatchingEntities.Entities)
 			{
 				Values.Add(MatchingEntity.Value);
 			}
 		}
+		
+		MatchingEntities.Add(WitEntities);
+		MatchingValues.Add(Values);
 	}
 
 	// Call the relevant delegate. We provide two variants just to make it more user friendly and convenient in the
