@@ -11,8 +11,7 @@
 #include "Wit/Request/WitResponse.h"
 #include "UObject/NoExportTypes.h"
 #include "Voice/Matcher/VoiceIntentMatcher.h"
-#include "VoiceIntentWithEntitiesMatcher.h"
-#include "VoiceIntentWithAllEntitiesMatcher.h"
+#include "Voice/Matcher/VoiceIntentWithEntitiesMatcher.h"
 #include "VoiceIntentWithAllEntitiesMatcher.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnEntitiesMatchedWithAllEntitiesDelegate, bool, bIsSuccessful, FWitIntent, Intent, TArray<FWitEntities>, AllEntities, bool, bIsFinal); //TArray<TArray<FString>> Values cannot put here, Unreal doesn't support Nested Containers, so they have moved to each FWitEntities
