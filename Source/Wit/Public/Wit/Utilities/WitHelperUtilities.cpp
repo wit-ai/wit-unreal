@@ -202,24 +202,23 @@ const FWitEntity* FWitHelperUtilities::FindMatchingEntity(const FWitResponse& Re
  * @param Response [in] the response to check
  * @param EntityName [in] the entity name to look for
  * @param ConfidenceThreshold [in] the threshold to exceed for it to be considered a match
- * @return pointer to the matching entities if found otherwise empty
+ * @param MatchingEntities [out] matching entities
+ * @return true if found any, otherwise false.
  */
-const FWitEntities FWitHelperUtilities::FindMatchingEntities(const FWitResponse& Response, const FString& EntityName, const float ConfidenceThreshold)//TODO change the return value to bool and input a & for return.
+bool FWitHelperUtilities::FindMatchingEntities(const FWitResponse& Response, const FString& EntityName, const float ConfidenceThreshold, FWitEntities& MatchingEntities)
 {
 	const bool bIsNoEntity = Response.AllEntities.Num() == 0;
 	
-	FWitEntities MatchingEntities{};
-	
 	if (bIsNoEntity)
 	{
-		return MatchingEntities;
+		return false;
 	}
 
 	const FWitEntities* Entities = Response.AllEntities.Find(EntityName);
 
 	if (Entities == nullptr)
 	{
-		return MatchingEntities;
+		return false;
 	}
 	
 	for (auto& MatchingEntity : Entities->Entities)
@@ -232,9 +231,9 @@ const FWitEntities FWitHelperUtilities::FindMatchingEntities(const FWitResponse&
 
 	if (MatchingEntities.Entities.Num() ==0)
 	{
-		return MatchingEntities;
+		return false;
 	}
-	return MatchingEntities;
+	return true;
 }
 
 /**

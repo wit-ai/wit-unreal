@@ -64,9 +64,10 @@ public:
 	 * @param Response [in] the response to check
 	 * @param EntityName [in] the entity name to look for
 	 * @param ConfidenceThreshold [in] the threshold to exceed for it to be considered a match
-	 * @return pointer to the matching entities if found otherwise empty
+	 * @param MatchingEntities [out] matching entities
+ 	 * @return true if found any, otherwise false.
 	 */
-	static const FWitEntities FindMatchingEntities(const FWitResponse& Response, const FString& EntityName, const float ConfidenceThreshold);
+	static bool FindMatchingEntities(const FWitResponse& Response, const FString& EntityName, const float ConfidenceThreshold, FWitEntities& MatchingEntities);
 
 	/**
 	 * Tries to find an intent in the response with the given name

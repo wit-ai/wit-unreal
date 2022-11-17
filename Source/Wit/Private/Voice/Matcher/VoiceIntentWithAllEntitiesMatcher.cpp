@@ -70,9 +70,11 @@ void UVoiceIntentWithAllEntitiesMatcher::OnWitResponse(const bool bIsSuccessful,
 		MatchingEntities.Add(WitEntities);
 		MatchingValues.Add(Values);
 		
-		const FWitEntities FoundMatchingEntities = FWitHelperUtilities::FindMatchingEntities(Response, EntityName, EntityConfidenceThreshold);
+		FWitEntities FoundMatchingEntities{};
+		
+		const bool bIsFound = FWitHelperUtilities::FindMatchingEntities(Response, EntityName, EntityConfidenceThreshold ,FoundMatchingEntities);
 
-		if (FoundMatchingEntities.Entities.Num() == 0)
+		if (!bIsFound)
 		{
 			// Add empty entries to make sure the array size is consistent with the inputs
 			
@@ -103,9 +105,11 @@ void UVoiceIntentWithAllEntitiesMatcher::OnWitResponse(const bool bIsSuccessful,
 		MatchingEntities.Add(WitEntities);
 		MatchingValues.Add(Values);
 		
-		const FWitEntities FoundMatchingEntities = FWitHelperUtilities::FindMatchingEntities(Response, EntityName, EntityConfidenceThreshold);
+		FWitEntities FoundMatchingEntities{};
+		
+		const bool bIsFound = FWitHelperUtilities::FindMatchingEntities(Response, EntityName, EntityConfidenceThreshold ,FoundMatchingEntities);
 
-		if (FoundMatchingEntities.Entities.Num() == 0)
+		if (!bIsFound)
 		{
 			// Add empty entries to make sure the array size is consistent with the inputs
 			
