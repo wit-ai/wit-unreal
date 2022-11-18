@@ -66,10 +66,8 @@ void UVoiceIntentWithEntitiesForFullResultMatcher::OnWitResponse(const bool bIsS
 	{
 		FWitEntities WitEntities{};
 		WitEntities.Name = EntityName;
-		TArray<FString> Values{};
 		
 		FWitEntities FoundMatchingEntities{};
-		
 		const bool bIsFound = FWitHelperUtilities::FindMatchingEntities(Response, EntityName, EntityConfidenceThreshold ,FoundMatchingEntities);
 
 		if (!bIsFound)
@@ -77,19 +75,13 @@ void UVoiceIntentWithEntitiesForFullResultMatcher::OnWitResponse(const bool bIsS
 			// Add empty entries to make sure the array size is consistent with the inputs
 			
 			WitEntities.Entities.Add(FWitEntity());
-			Values.Add(FString());
 		}
 		else
 		{
 			WitEntities.Entities.Append(FoundMatchingEntities.Entities);
 			MatchingEntitiesNum++;
-			for (const auto& MatchingEntity : FoundMatchingEntities.Entities)
-			{
-				Values.Add(MatchingEntity.Value);
-			}
 		}
 		MatchingEntities.Add(WitEntities);
-		MatchingValues.Add(Values);
 	}
 
 	const bool bIsAllRequiredEntitiesMatched = MatchingEntitiesNum == RequiredEntityNames.Num();
@@ -101,10 +93,8 @@ void UVoiceIntentWithEntitiesForFullResultMatcher::OnWitResponse(const bool bIsS
 	{
 		FWitEntities WitEntities{};
 		WitEntities.Name = EntityName;
-		TArray<FString> Values{};
 		
 		FWitEntities FoundMatchingEntities{};
-		
 		const bool bIsFound = FWitHelperUtilities::FindMatchingEntities(Response, EntityName, EntityConfidenceThreshold ,FoundMatchingEntities);
 
 		if (!bIsFound)
@@ -112,20 +102,14 @@ void UVoiceIntentWithEntitiesForFullResultMatcher::OnWitResponse(const bool bIsS
 			// Add empty entries to make sure the array size is consistent with the inputs
 			
 			WitEntities.Entities.Add(FWitEntity());
-			Values.Add(FString());
 		}
 		else
 		{
 			WitEntities.Entities.Append(FoundMatchingEntities.Entities);
 			MatchingEntitiesNum++;
-			for (const auto& MatchingEntity : FoundMatchingEntities.Entities)
-			{
-				Values.Add(MatchingEntity.Value);
-			}
 		}
 		
 		MatchingEntities.Add(WitEntities);
-		MatchingValues.Add(Values);
 	}
 
 	// Call the relevant delegate. We provide two variants just to make it more user friendly and convenient in the
