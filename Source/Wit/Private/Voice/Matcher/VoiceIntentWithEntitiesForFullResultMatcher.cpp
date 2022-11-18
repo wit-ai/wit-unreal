@@ -5,14 +5,14 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "Voice/Matcher/VoiceIntentWithAllEntitiesMatcher.h"
+#include "Voice/Matcher/VoiceIntentWithEntitiesForFullResultMatcher.h"
 #include "Wit/Utilities/WitHelperUtilities.h"
 #include "Wit/Utilities/WitLog.h"
 
 /**
  * Default constructor
  */
-UVoiceIntentWithAllEntitiesMatcher::UVoiceIntentWithAllEntitiesMatcher()
+UVoiceIntentWithEntitiesForFullResultMatcher::UVoiceIntentWithEntitiesForFullResultMatcher()
 	: Super()
 {
 	// Deliberately empty
@@ -23,7 +23,7 @@ UVoiceIntentWithAllEntitiesMatcher::UVoiceIntentWithAllEntitiesMatcher()
  * 
  * @param IntentName [in] name of the intent to match against
  */
-UVoiceIntentWithAllEntitiesMatcher::UVoiceIntentWithAllEntitiesMatcher(const FString& IntentName)
+UVoiceIntentWithEntitiesForFullResultMatcher::UVoiceIntentWithEntitiesForFullResultMatcher(const FString& IntentName)
 	: Super(), IntentName(IntentName)
 {
 	// Deliberately empty
@@ -36,7 +36,7 @@ UVoiceIntentWithAllEntitiesMatcher::UVoiceIntentWithAllEntitiesMatcher(const FSt
  * @param bIsSuccessful [in] true if the response was successful
  * @param Response [in] the full response as a UStruct
  */
-void UVoiceIntentWithAllEntitiesMatcher::OnWitResponse(const bool bIsSuccessful, const FWitResponse& Response)
+void UVoiceIntentWithEntitiesForFullResultMatcher::OnWitResponse(const bool bIsSuccessful, const FWitResponse& Response)
 {
 	if (!bIsSuccessful)
 	{
@@ -50,7 +50,7 @@ void UVoiceIntentWithAllEntitiesMatcher::OnWitResponse(const bool bIsSuccessful,
 
 	if (bIsIntentRequired && !bHasMatchingIntent)
 	{
-		UE_LOG(LogWit, Verbose, TEXT("UVoiceIntentWithAllEntitiesMatcher: intent does not match with (%s)"), *IntentName);
+		UE_LOG(LogWit, Verbose, TEXT("UVoiceIntentWithEntitiesForFullResultMatcher: intent does not match with (%s)"), *IntentName);
 		return;
 	}
 
@@ -135,15 +135,15 @@ void UVoiceIntentWithAllEntitiesMatcher::OnWitResponse(const bool bIsSuccessful,
 	
 	if (bIsNoEntityMatched)
 	{
-		UE_LOG(LogWit, Verbose, TEXT("UVoiceIntentWithAllEntitiesMatcher: no entity successfully matched"));
+		UE_LOG(LogWit, Verbose, TEXT("UVoiceIntentWithEntitiesForFullResultMatcher: no entity successfully matched"));
 
 		OnIntentMatched.Broadcast(MatchingIntent == nullptr ? FWitIntent() : *MatchingIntent, Response.Is_Final);
 	}
 	else
 	{
-		UE_LOG(LogWit, Verbose, TEXT("UVoiceIntentWithAllEntitiesMatcher: multiple entities successfully matched"));
+		UE_LOG(LogWit, Verbose, TEXT("UVoiceIntentWithEntitiesForFullResultMatcher: multiple entities successfully matched"));
 
-		OnEntityMatchedWithAllEntity.Broadcast(bIsAllRequiredEntitiesMatched, MatchingIntent == nullptr ? FWitIntent() : *MatchingIntent, MatchingEntities, Response.Is_Final);
+		OnEntitiesMatchedForFullResult.Broadcast(bIsAllRequiredEntitiesMatched, MatchingIntent == nullptr ? FWitIntent() : *MatchingIntent, MatchingEntities, Response.Is_Final);
 
 		if (bIsAllRequiredEntitiesMatched)
 		{
