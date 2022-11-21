@@ -54,6 +54,8 @@ public class Wit : ModuleRules
 				"JsonUtilities",				
 				"Voice",
 				"HTTP",
+				"nghttp2",
+				"zlib",
 			}
 			);
 

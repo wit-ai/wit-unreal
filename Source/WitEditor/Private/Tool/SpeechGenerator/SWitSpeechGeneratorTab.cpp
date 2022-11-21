@@ -13,6 +13,7 @@
 #include "Widgets/Layout/SScrollBox.h"
 #include "Engine/Selection.h"
 #include "Editor.h"
+#include "EditorStyleSet.h"
 #include "TTS/Cache/Storage/TtsStorageCache.h"
 #include "Wit/Utilities/WitHelperUtilities.h"
 

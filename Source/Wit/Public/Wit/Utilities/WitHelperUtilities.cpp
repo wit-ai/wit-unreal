@@ -298,11 +298,9 @@ USoundWave* FWitHelperUtilities::CreateSoundWaveFromRawData(const uint8* RawData
 
 	// This is the preview data for in-editor
 	
-	SoundWave->RawData.Lock(LOCK_READ_WRITE);
-	void* LockedData = SoundWave->RawData.Realloc(RawDataSize);
-	FMemory::Memcpy(LockedData, RawData, RawDataSize);
-	SoundWave->RawData.Unlock();
-
+	const FSharedBuffer SharedBuffer = FSharedBuffer::Clone(RawData, RawDataSize);
+	SoundWave->RawData.UpdatePayload(SharedBuffer);
+	
 	// This is the PCM data for packaged builds
 	
 	SoundWave->RawPCMDataSize = WaveInfo.SampleDataSize;
