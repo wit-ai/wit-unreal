@@ -30,7 +30,7 @@ public class Wit : ModuleRules
 		PrivateDefinitions.Add("WITH_CURL=" + (bPlatformSupportsLibCurl ? "1" : "0"));
 		PrivateDefinitions.Add("WITH_SSL=1");
 		PrivateDefinitions.Add("WITH_VOICESDK_USERAGENT=0");
-
+		
 		PublicIncludePaths.AddRange(
 			new string[]
 			{
@@ -54,8 +54,10 @@ public class Wit : ModuleRules
 				"JsonUtilities",				
 				"Voice",
 				"HTTP",
+#if UE_5_1_OR_LATER
 				"nghttp2",
 				"zlib",
+#endif				
 			}
 			);
 

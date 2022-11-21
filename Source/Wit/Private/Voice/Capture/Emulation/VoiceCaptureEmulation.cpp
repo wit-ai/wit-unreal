@@ -56,10 +56,18 @@ bool FVoiceCaptureEmulation::Start()
 
 	if (SoundWave != nullptr)
 	{
+		int64 SoundWaveElementSize = 0;
+		
+#if UE_VERSION_OLDER_THAN(5,1,0)
+		SoundWaveElementSize = SoundWave->RawData.GetElementCount();
+#else
+		SoundWaveElementSize = SoundWave->GetResourceSize();
+#endif
+		
 		UE_LOG(LogWit, Verbose, TEXT("FVoiceCaptureEmulation: starting with soundwave with duration (%f), element count (%llu), RawPCMDataSize (%lu), bDecompressedFromOgg (%s)"),
-			SoundWave->GetDuration(), SoundWave->GetResourceSize(), SoundWave->RawPCMDataSize, SoundWave->bDecompressedFromOgg? TEXT("yes"):TEXT("no"));
+			SoundWave->GetDuration(), SoundWaveElementSize, SoundWave->RawPCMDataSize, SoundWave->bDecompressedFromOgg? TEXT("yes"):TEXT("no"));
 
-        if (SoundWave->GetResourceSize() == 0)
+        if (SoundWaveElementSize == 0)
         {
 			bHasPreviewSampleData = false;
 			
