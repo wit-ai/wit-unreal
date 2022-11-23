@@ -167,6 +167,20 @@ struct WIT_API FWitTrait
 	float Confidence{0.0f};	
 };
 
+
+USTRUCT(BlueprintType)
+struct WIT_API FWitEntities
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	FString Name{};
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	TArray<FWitEntity> Entities;
+
+};
+
 /**
  * Representation of the full JSON object used by Wit.ai responses. See the Wit.ai
  * documentation for the meaning of each specific field.
@@ -182,8 +196,19 @@ struct WIT_API FWitResponse
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	TArray<FWitIntent> Intents{};
 
+	/**
+	 * Technically, each key can have multi Entities.
+	 * But to simplify this, and also because Unreal does not support Nested structure,
+	 * The value - FWitEntity only contains the very first Entity.
+	 * This works for most of cases.
+	 *
+	 * If you are looking for all entities, then please check AllEntities. 
+	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	TMap<FString, FWitEntity> Entities{};
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
+	TMap<FString, FWitEntities> AllEntities{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice Experience")
 	TMap<FString, FWitTrait> Traits{};

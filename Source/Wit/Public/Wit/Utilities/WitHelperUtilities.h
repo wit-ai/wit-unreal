@@ -57,6 +57,17 @@ public:
 	 * @return pointer to the matching entity if found otherwise null
 	 */
 	static const FWitEntity* FindMatchingEntity(const FWitResponse& Response, const FString& EntityName, const float ConfidenceThreshold);
+	
+	/** 
+	 * Tries to find entities in the response with the given name
+	 * 
+	 * @param Response [in] the response to check
+	 * @param EntityName [in] the entity name to look for
+	 * @param ConfidenceThreshold [in] the threshold to exceed for it to be considered a match
+	 * @param MatchingEntities [out] matching entities
+ 	 * @return true if found any, otherwise false.
+	 */
+	static bool FindMatchingEntities(const FWitResponse& Response, const FString& EntityName, const float ConfidenceThreshold, FWitEntities& MatchingEntities);
 
 	/**
 	 * Tries to find an intent in the response with the given name
@@ -113,6 +124,15 @@ public:
 	 * @return Whether the converting is done successfully
 	 */
 	static bool ConvertJsonToWitResponse (const TSharedPtr<FJsonObject> JsonResponse, FWitResponse* WitResponse);
+
+	/**
+	 * Convert Json object to WitEntities
+	 * 
+	 * @param WitResponse [in] the FWitResponse used to return.
+	 * @param EntitiesJsonObject [in] the Json Response
+	 * @return Whether the converting is done successfully
+	 */
+	static void ConvertJsonToAllEntities(FWitResponse* WitResponse, const TSharedPtr<FJsonObject>* EntitiesJsonObject);
 
 	/**
 	 * Accept the given Partial Response and cancel the current request.

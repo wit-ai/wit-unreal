@@ -195,6 +195,47 @@ const FWitEntity* FWitHelperUtilities::FindMatchingEntity(const FWitResponse& Re
 	return MatchingEntity;
 }
 
+	
+/** 
+ * Tries to find entities in the response with the given name
+ * 
+ * @param Response [in] the response to check
+ * @param EntityName [in] the entity name to look for
+ * @param ConfidenceThreshold [in] the threshold to exceed for it to be considered a match
+ * @param MatchingEntities [out] matching entities
+ * @return true if found any, otherwise false.
+ */
+bool FWitHelperUtilities::FindMatchingEntities(const FWitResponse& Response, const FString& EntityName, const float ConfidenceThreshold, FWitEntities& MatchingEntities)
+{
+	const bool bIsNoEntity = Response.AllEntities.Num() == 0;
+	
+	if (bIsNoEntity)
+	{
+		return false;
+	}
+
+	const FWitEntities* Entities = Response.AllEntities.Find(EntityName);
+
+	if (Entities == nullptr)
+	{
+		return false;
+	}
+	
+	for (auto& MatchingEntity : Entities->Entities)
+	{
+		if (MatchingEntity.Confidence > ConfidenceThreshold)
+		{
+			MatchingEntities.Entities.Add(MatchingEntity);
+		}
+	}
+
+	if (MatchingEntities.Entities.Num() ==0)
+	{
+		return false;
+	}
+	return true;
+}
+
 /**
  * Tries to find an intent in the response with the given name
  * 
@@ -464,8 +505,47 @@ bool FWitHelperUtilities::IsWitResponse(const TSharedPtr<FJsonObject> JsonRespon
 	return JsonResponse->TryGetArrayField("intents", OutArray);
 }
 
+void FWitHelperUtilities::ConvertJsonToAllEntities(FWitResponse* WitResponse, const TSharedPtr<FJsonObject>* EntitiesJsonObject)
+{
+	for (const auto& Entities : WitResponse->Entities)
+	{
+		const FString Key = *Entities.Key;
+
+		FWitEntities* WitEntities = WitResponse->AllEntities.Find(Key);
+		if (WitEntities == nullptr)
+		{
+			WitResponse->AllEntities.Add(Key, FWitEntities());
+			WitEntities = WitResponse->AllEntities.Find(Key);
+		}
+		
+		const TArray< TSharedPtr<FJsonValue> >* GroupOfEntitiesJsonObject;
+		const bool bIsKeyExist = EntitiesJsonObject->Get()->TryGetArrayField(Key, GroupOfEntitiesJsonObject);
+		UE_LOG(LogWit, Verbose, TEXT("Does key(%s) exist: %s"), *Key, bIsKeyExist?TEXT("YES"):TEXT("NO"));
+		if (!bIsKeyExist)
+		{
+			continue;
+		}
+
+		for (auto& EntityJsonValue : *GroupOfEntitiesJsonObject)
+		{
+			const TSharedPtr<FJsonObject> EntityJsonObject = EntityJsonValue->AsObject();
+			FWitEntity WitEntity{};
+			const bool bIsEntityConversionError = !FJsonObjectConverter::JsonObjectToUStruct(EntityJsonObject.ToSharedRef(), &WitEntity);
+			if (bIsEntityConversionError)
+			{
+				continue;
+			}
+			WitEntities->Name = Key;
+			WitEntities->Entities.Add(WitEntity);
+		}
+	}
+}
+
 bool FWitHelperUtilities::ConvertJsonToWitResponse(const TSharedPtr<FJsonObject> JsonResponse, FWitResponse* WitResponse)
 {
+	const TSharedPtr<FJsonObject>* AllEntitiesJsonObject;
+	JsonResponse->TryGetObjectField("entities", AllEntitiesJsonObject);
+	
 	const bool bIsConversionError = !FJsonObjectConverter::JsonObjectToUStruct(JsonResponse.ToSharedRef(), WitResponse);
 	if (bIsConversionError)
 	{
@@ -476,7 +556,7 @@ bool FWitHelperUtilities::ConvertJsonToWitResponse(const TSharedPtr<FJsonObject>
 	{
 		UE_LOG(LogWit, Verbose, TEXT("UStruct - Intent: id (%lld) name (%s) confidence (%f)"), Intent.Id, *Intent.Name, Intent.Confidence);
 	}
-
+	
 	for (const auto& Entity : WitResponse->Entities)
 	{
 		UE_LOG(LogWit, Verbose, TEXT("UStruct - Entity (%s): id (%lld) name (%s) value (%s) confidence (%f) unit (%s) start (%d) end (%d)"), *Entity.Key,
@@ -484,6 +564,24 @@ bool FWitHelperUtilities::ConvertJsonToWitResponse(const TSharedPtr<FJsonObject>
 
 		UE_LOG(LogWit, Verbose, TEXT("UStruct - Entity (%s): normalized value (%s) normalized unit (%s)"), *Entity.Key, *Entity.Value.Normalized.Value,
 			   *Entity.Value.Normalized.Unit);
+	}
+	
+	ConvertJsonToAllEntities(WitResponse, AllEntitiesJsonObject);
+
+	if (WitResponse->AllEntities.Num() > 0)
+	{
+		UE_LOG(LogWit, Verbose, TEXT("All Entities: "));
+	}
+	for (const auto& Entities : WitResponse->AllEntities)
+	{
+		for (const auto& Entity :Entities.Value.Entities)
+		{
+			UE_LOG(LogWit, Verbose, TEXT("UStruct - Entity (%s): id (%lld) name (%s) value (%s) confidence (%f) unit (%s) start (%d) end (%d)"), *Entities.Key,
+				   Entity.Id, *Entity.Name, *Entity.Value, Entity.Confidence, *Entity.Unit, Entity.Start, Entity.End);
+
+			UE_LOG(LogWit, Verbose, TEXT("UStruct - Entity (%s): normalized value (%s) normalized unit (%s)"), *Entities.Key, *Entity.Normalized.Value,
+				   *Entity.Normalized.Unit);
+		}
 	}
 
 	for (const auto& Trait : WitResponse->Traits)

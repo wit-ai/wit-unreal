@@ -15,6 +15,7 @@ void FWitResponse::Reset()
 	Text.Empty(0);
 	Intents.Empty(0);
 	Entities.Empty(0);
+	AllEntities.Empty(0);
 	Traits.Empty(0);
 	Is_Final = false;
 }
