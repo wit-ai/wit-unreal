@@ -10,6 +10,7 @@
 #include "SWitConfigurationEditorTab.h"
 #include "Misc/EngineVersionComparison.h"
 #include "DetailLayoutBuilder.h"
+#include "EditorStyleSet.h"
 #include "Widgets/Layout/SScrollBox.h"
 #include "TTS/Configuration/TtsVoicePresetAsset.h"
 #include "Wit/Utilities/WitConfigurationUtilities.h"

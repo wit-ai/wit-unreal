@@ -12,6 +12,7 @@
 #include "Serialization/BufferArchive.h"
 #include "TTS/Cache/Storage/Asset/TtsStorageCacheAsset.h"
 #include "Wit/Utilities/WitLog.h"
+#include "Misc/EngineVersionComparison.h"
 
 /**
  * Finds the VoiceExperience in the scene. This is slow so do not call every frame
@@ -338,12 +339,17 @@ USoundWave* FWitHelperUtilities::CreateSoundWaveFromRawData(const uint8* RawData
 	SoundWave->SoundGroup = SOUNDGROUP_Default;
 
 	// This is the preview data for in-editor
-	
+
+#if UE_VERSION_OLDER_THAN(5,1,0)
 	SoundWave->RawData.Lock(LOCK_READ_WRITE);
 	void* LockedData = SoundWave->RawData.Realloc(RawDataSize);
 	FMemory::Memcpy(LockedData, RawData, RawDataSize);
 	SoundWave->RawData.Unlock();
-
+#else
+	const FSharedBuffer SharedBuffer = FSharedBuffer::Clone(RawData, RawDataSize);
+	SoundWave->RawData.UpdatePayload(SharedBuffer);	
+#endif
+	
 	// This is the PCM data for packaged builds
 	
 	SoundWave->RawPCMDataSize = WaveInfo.SampleDataSize;

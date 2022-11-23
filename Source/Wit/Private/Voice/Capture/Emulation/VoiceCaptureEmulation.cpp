@@ -56,10 +56,18 @@ bool FVoiceCaptureEmulation::Start()
 
 	if (SoundWave != nullptr)
 	{
+		int64 SoundWaveElementSize = 0;
+		
+#if UE_VERSION_OLDER_THAN(5,1,0)
+		SoundWaveElementSize = SoundWave->RawData.GetElementCount();
+#else
+		SoundWaveElementSize = SoundWave->RawData.GetPayloadSize();
+#endif
+		
 		UE_LOG(LogWit, Verbose, TEXT("FVoiceCaptureEmulation: starting with soundwave with duration (%f), element count (%llu), RawPCMDataSize (%lu), bDecompressedFromOgg (%s)"),
-			SoundWave->GetDuration(), SoundWave->RawData.GetElementCount(), SoundWave->RawPCMDataSize, SoundWave->bDecompressedFromOgg? TEXT("yes"):TEXT("no"));
+			SoundWave->GetDuration(), SoundWaveElementSize, SoundWave->RawPCMDataSize, SoundWave->bDecompressedFromOgg? TEXT("yes"):TEXT("no"));
 
-        if (SoundWave->RawData.GetElementCount() == 0)
+        if (SoundWaveElementSize == 0)
         {
 			bHasPreviewSampleData = false;
 			
@@ -247,7 +255,11 @@ bool FVoiceCaptureEmulation::Tick(float DeltaTime)
 	
 	if (SoundWave != nullptr)
 	{
+#if UE_VERSION_OLDER_THAN(5,1,0)
 		uint64 ElementCount = SoundWave->RawData.GetElementCount();
+#else
+		uint64 ElementCount = SoundWave->RawData.GetPayloadSize();
+#endif
 		
 		if (!bHasPreviewSampleData)
 		{
@@ -282,9 +294,14 @@ bool FVoiceCaptureEmulation::Tick(float DeltaTime)
 			UncompressedAudioBuffer.AddUninitialized(DataSizeToCopy);
 			if (bHasPreviewSampleData)
 			{
+#if UE_VERSION_OLDER_THAN(5,1,0)
 				const uint8* SoundData = static_cast<const uint8*>(SoundWave->RawData.LockReadOnly());
 				FMemory::Memcpy(UncompressedAudioBuffer.GetData(), &SoundData[LastDataIndex], DataSizeToCopy);
 				SoundWave->RawData.Unlock();
+#else
+				const uint8* SoundData = static_cast<const uint8*>(SoundWave->RawData.GetPayload().Get().GetData());
+				FMemory::Memcpy(UncompressedAudioBuffer.GetData(), &SoundData[LastDataIndex], DataSizeToCopy);
+#endif
 			}
 			else
 			{
