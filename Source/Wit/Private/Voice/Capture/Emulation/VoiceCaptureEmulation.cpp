@@ -60,7 +60,7 @@ bool FVoiceCaptureEmulation::Start()
 		
 #if UE_VERSION_OLDER_THAN(5,1,0)
 		SoundWaveElementSize = SoundWave->RawData.GetElementCount();
-#else
+#elif WITH_EDITORONLY_DATA
 		SoundWaveElementSize = SoundWave->RawData.GetPayloadSize();
 #endif
 		
@@ -257,8 +257,10 @@ bool FVoiceCaptureEmulation::Tick(float DeltaTime)
 	{
 #if UE_VERSION_OLDER_THAN(5,1,0)
 		uint64 ElementCount = SoundWave->RawData.GetElementCount();
-#else
+#elif WITH_EDITORONLY_DATA
 		uint64 ElementCount = SoundWave->RawData.GetPayloadSize();
+#else
+		uint64 ElementCount = SoundWave->RawPCMDataSize;
 #endif
 		
 		if (!bHasPreviewSampleData)
@@ -292,13 +294,13 @@ bool FVoiceCaptureEmulation::Tick(float DeltaTime)
 		if (bIsAnyDataToCopy)
 		{
 			UncompressedAudioBuffer.AddUninitialized(DataSizeToCopy);
-			if (bHasPreviewSampleData)
+			if (bHasPreviewSampleData)// on editor
 			{
 #if UE_VERSION_OLDER_THAN(5,1,0)
 				const uint8* SoundData = static_cast<const uint8*>(SoundWave->RawData.LockReadOnly());
 				FMemory::Memcpy(UncompressedAudioBuffer.GetData(), &SoundData[LastDataIndex], DataSizeToCopy);
 				SoundWave->RawData.Unlock();
-#else
+#elif WITH_EDITORONLY_DATA
 				const uint8* SoundData = static_cast<const uint8*>(SoundWave->RawData.GetPayload().Get().GetData());
 				FMemory::Memcpy(UncompressedAudioBuffer.GetData(), &SoundData[LastDataIndex], DataSizeToCopy);
 #endif

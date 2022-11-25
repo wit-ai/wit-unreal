@@ -8,6 +8,7 @@
 #include "WitModule.h"
 #include "Curl/CurlHttpManager.h"
 #include "Misc/EngineVersionComparison.h"
+#include "Modules/ModuleManager.h"
 #include "Wit/Utilities/WitLog.h"
 
 #define LOCTEXT_NAMESPACE "FWitModule"

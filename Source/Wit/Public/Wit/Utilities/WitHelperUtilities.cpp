@@ -13,6 +13,7 @@
 #include "TTS/Cache/Storage/Asset/TtsStorageCacheAsset.h"
 #include "Wit/Utilities/WitLog.h"
 #include "Misc/EngineVersionComparison.h"
+#include "HAL/PlatformFileManager.h"
 
 /**
  * Finds the VoiceExperience in the scene. This is slow so do not call every frame
@@ -345,7 +346,7 @@ USoundWave* FWitHelperUtilities::CreateSoundWaveFromRawData(const uint8* RawData
 	void* LockedData = SoundWave->RawData.Realloc(RawDataSize);
 	FMemory::Memcpy(LockedData, RawData, RawDataSize);
 	SoundWave->RawData.Unlock();
-#else
+#elif WITH_EDITORONLY_DATA
 	const FSharedBuffer SharedBuffer = FSharedBuffer::Clone(RawData, RawDataSize);
 	SoundWave->RawData.UpdatePayload(SharedBuffer);	
 #endif

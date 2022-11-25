@@ -12,6 +12,7 @@
 #include "Serialization/BufferArchive.h"
 #include "Wit/Request/WitRequestConfiguration.h"
 #include "Subsystems/EngineSubsystem.h"
+#include "Serialization/MemoryReader.h"
 #include "WitRequestSubsystem.generated.h"
 
 class FJsonObject;
