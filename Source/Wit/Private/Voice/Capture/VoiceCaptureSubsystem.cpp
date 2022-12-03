@@ -8,6 +8,7 @@
 #include "Voice/Capture/VoiceCaptureSubsystem.h"
 #include "VoiceModule.h"
 #include "Emulation/VoiceCaptureEmulation.h"
+#include "Emulation/VoiceCaptureEmulationByTTS.h"
 #include "Wit/Utilities/WitConversionUtilities.h"
 #include "Wit/Utilities/WitLog.h"
 #if PLATFORM_ANDROID
@@ -74,7 +75,12 @@ void UVoiceCaptureSubsystem::Startup()
 
 	if (CallbackProxy)
 	{
+		
+#if UE_VERSION_OLDER_THAN(5,1,0)
 		CallbackProxy->OnPermissionsGrantedDelegate.BindLambda([this](const TArray<FString>& Permissions, const TArray<bool>& GrantResults)
+#else
+		CallbackProxy->OnPermissionsGrantedDelegate.AddLambda([this](const TArray<FString>& Permissions, const TArray<bool>& GrantResults)
+#endif
 		{
 			bool bIsPermissionGranted = (GrantResults.Num() > 0 && GrantResults[0]);
 
@@ -117,7 +123,7 @@ bool UVoiceCaptureSubsystem::CreateVoiceCapture()
 
 	// Force failure if we want to use emulation
 	
-	if (EmulationCaptureMode == EVoiceCaptureEmulationMode::Always)
+	if (EmulationCaptureMode == EVoiceCaptureEmulationMode::AlwaysUseSoundWave || EmulationCaptureMode == EVoiceCaptureEmulationMode::AlwaysUseTTS)
 	{
 		return false;
 	}
@@ -181,10 +187,19 @@ bool UVoiceCaptureSubsystem::CreateVoiceCapture()
  */
 void UVoiceCaptureSubsystem::CreateEmulationVoiceCapture()
 {
-	const TSharedPtr<FVoiceCaptureEmulation> EmulationVoiceCapture = MakeShared<FVoiceCaptureEmulation>();
-
-	EmulationVoiceCapture->SetSoundWave(EmulationCaptureSoundWave);
-			
+	TSharedPtr<IVoiceCapture> EmulationVoiceCapture ;
+	if (EmulationCaptureMode == EVoiceCaptureEmulationMode::AlwaysUseSoundWave)
+	{
+		const TSharedPtr<FVoiceCaptureEmulation> VoiceCaptureEmulation = MakeShared<FVoiceCaptureEmulation>();
+		VoiceCaptureEmulation->SetSoundWave(EmulationCaptureSoundWave);
+		EmulationVoiceCapture = VoiceCaptureEmulation;
+	}
+	else
+	{
+		const TSharedPtr<FVoiceCaptureEmulationByTts> VoiceCaptureEmulationByTts = MakeShared<FVoiceCaptureEmulationByTts>();
+		VoiceCaptureEmulationByTts->SetTtsExperienceTag(TtsExperienceTag);
+		EmulationVoiceCapture = VoiceCaptureEmulationByTts;
+	}
 	MaxBufferSize = EmulationVoiceCapture->GetBufferSize();
 	VoiceBuffer.Reserve(MaxBufferSize);
 
@@ -406,10 +421,11 @@ const TArray<uint8>& UVoiceCaptureSubsystem::GetVoiceBuffer() const
 /**
  * Enable use of the null capture
  */
-void UVoiceCaptureSubsystem::EnableEmulation(EVoiceCaptureEmulationMode EmulationModeToUse, USoundWave* SoundWaveToUse)
+void UVoiceCaptureSubsystem::EnableEmulation(EVoiceCaptureEmulationMode EmulationModeToUse, USoundWave* SoundWaveToUse, const FName& TtsExperienceTagToUse)
 {
 	EmulationCaptureMode = EmulationModeToUse;
 	EmulationCaptureSoundWave = SoundWaveToUse;
+	TtsExperienceTag = TtsExperienceTagToUse;
 }
 
 /**

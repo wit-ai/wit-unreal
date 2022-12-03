@@ -198,7 +198,7 @@ void UWitVoiceService::SetConfiguration(UWitAppConfigurationAsset* Configuration
 
 	if (bShouldEnableEmulation)
 	{
-		VoiceCaptureSubsystem->EnableEmulation(Configuration->Voice.EmulationCaptureMode, Configuration->Voice.EmulationCaptureSoundWave);
+		VoiceCaptureSubsystem->EnableEmulation(Configuration->Voice.EmulationCaptureMode, Configuration->Voice.EmulationCaptureSoundWave, Configuration->Voice.TtsExperienceTag);
 	}
 }
 

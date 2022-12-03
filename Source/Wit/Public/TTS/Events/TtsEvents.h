@@ -16,6 +16,7 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSynthesizeResponseDelegate, const bool, bIsSuccessful, USoundWave*, SoundWave);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSynthesizeErrorDelegate, const FString&, ErrorMessage, const FString&, HumanReadableMessage);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnSynthesizeRawResponseDelegate, const FString&, ClipId, const TArray<uint8>&, BinaryData, const FTtsConfiguration&, ClipSettings);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnSynthesizeRawResponseMulticastDelegate, const TArray<uint8>&);
 
 /**
  * Container for all TTS events
@@ -38,6 +39,12 @@ public:
 	 */
 	UPROPERTY(BlueprintAssignable)
 	FOnSynthesizeRawResponseDelegate OnSynthesizeRawResponse{};
+	
+	/**
+	 * Callback to call when a synthesize request has been fully processed. The callback receives the raw response data
+	 * This is MulticastDelegate, designed for Raw C++ class
+	 */
+	FOnSynthesizeRawResponseMulticastDelegate OnSynthesizeRawResponseMulticast{};
 	
 	/**
 	 * Callback to call when a synthesize request has been fully processed. The callback receives a USoundWave containing the received wav
