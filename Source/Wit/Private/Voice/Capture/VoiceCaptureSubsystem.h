@@ -95,7 +95,7 @@ public:
 	 * Enable the use of the null capture
 	 */
 	UFUNCTION()
-	void EnableEmulation(EVoiceCaptureEmulationMode EmulationModeToUse, USoundWave* SoundWaveToUse);
+	void EnableEmulation(EVoiceCaptureEmulationMode EmulationModeToUse, USoundWave* SoundWaveToUse, const FName& Tag);
 
 	/**
 	 * Get read access to the latest voice data
@@ -155,4 +155,8 @@ private:
 	/** Sound wave to use with the null capture */
 	UPROPERTY()
 	USoundWave* EmulationCaptureSoundWave{};
+	
+	/** Set Tag for TTS speaker which is used to create sound wave from TTS to use with the null capture */
+	UPROPERTY()
+	FName TtsExperienceTag{};
 };

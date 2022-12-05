@@ -18,8 +18,9 @@ UENUM()
 enum class EVoiceCaptureEmulationMode : uint8
 {
 	None,
-	Always,
-	OnMicFail
+	AlwaysUseSoundWave, //TODO disable this for UE5
+	AlwaysUseTTS
+	// OnMicFail
 };
 
 /**
@@ -86,5 +87,9 @@ struct WIT_API FVoiceConfiguration
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
 	USoundWave* EmulationCaptureSoundWave{};
-
+	/**
+	 * If set then the TtsExperience's response will be used for null voice capture
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Debug")
+	FName TtsExperienceTag{};
 };
