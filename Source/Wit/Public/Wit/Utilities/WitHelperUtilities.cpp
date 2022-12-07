@@ -14,6 +14,7 @@
 #include "Wit/Utilities/WitLog.h"
 #include "Misc/EngineVersionComparison.h"
 #include "HAL/PlatformFileManager.h"
+#include "UObject/SavePackage.h"
 
 /**
  * Finds the VoiceExperience in the scene. This is slow so do not call every frame
@@ -402,9 +403,14 @@ bool FWitHelperUtilities::SaveClipToAssetFile(const FString& ClipDirectory, cons
 	
 	FAssetRegistryModule::AssetCreated(CacheAsset);
 	const FString PackageFileName = FPackageName::LongPackageNameToFilename(PackagePath, FPackageName::GetAssetPackageExtension());
-	UPackage::SavePackage(CachePackage, CacheAsset, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone, *PackageFileName, GError, nullptr, true, true, SAVE_NoError);
-	
 
+#if UE_VERSION_OLDER_THAN(5,1,0)
+	UPackage::SavePackage(CachePackage, CacheAsset, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone, *PackageFileName, GError, nullptr, true, true, SAVE_NoError);
+#else
+	const FSavePackageArgs SaveArgs = { nullptr, nullptr, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone, SAVE_NoError, true, nullptr, true, FDateTime::Now(), GError};
+	UPackage::SavePackage(CachePackage, CacheAsset, *PackageFileName, SaveArgs);
+#endif
+	
 	return true;
 }
 

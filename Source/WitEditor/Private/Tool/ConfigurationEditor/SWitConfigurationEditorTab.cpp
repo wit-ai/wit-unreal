@@ -11,6 +11,7 @@
 #include "Misc/EngineVersionComparison.h"
 #include "DetailLayoutBuilder.h"
 #include "EditorStyleSet.h"
+#include "Tool/Utilities/WitEditorHelperUtilities.h"
 #include "Widgets/Layout/SScrollBox.h"
 #include "TTS/Configuration/TtsVoicePresetAsset.h"
 #include "Wit/Utilities/WitConfigurationUtilities.h"
@@ -88,7 +89,7 @@ void SWitConfigurationEditorTab::Construct(const FArguments& InArgs)
 			[
 				SNew(SBorder)
 				.Padding(5)
-				.BorderImage( FEditorStyle::GetBrush("ToolPanel.GroupBorder") )
+				.BorderImage( WitEditorHelperUtilities::GetBrush("ToolPanel.GroupBorder") )
 				.Content()
 				[
 					SNew(SVerticalBox)
@@ -169,7 +170,7 @@ void SWitConfigurationEditorTab::Construct(const FArguments& InArgs)
 			[
 				SNew(SBorder)
 				.Padding(5)
-				.BorderImage( FEditorStyle::GetBrush("ToolPanel.GroupBorder") )
+				.BorderImage( WitEditorHelperUtilities::GetBrush("ToolPanel.GroupBorder") )
 				.Content()
 				[
 					SNew(SVerticalBox)

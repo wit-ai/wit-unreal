@@ -11,6 +11,7 @@
 #include "Emulation/VoiceCaptureEmulationByTTS.h"
 #include "Wit/Utilities/WitConversionUtilities.h"
 #include "Wit/Utilities/WitLog.h"
+#include "Misc/EngineVersionComparison.h"
 #if PLATFORM_ANDROID
 #include "AndroidPermissionFunctionLibrary.h"
 #include "AndroidPermissionCallbackProxy.h"
