@@ -25,9 +25,9 @@
 void SWitUnderstandingViewerTab::Construct(const FArguments& InArgs)
 {
 	FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
-	
+
 	FDetailsViewArgs Args;
-	
+
 	Args.bAllowSearch = false;
 	Args.bAllowFavoriteSystem = false;
 	Args.bHideSelectionTip = true;
@@ -44,21 +44,21 @@ void SWitUnderstandingViewerTab::Construct(const FArguments& InArgs)
 
 	ResponseObject = NewObject<UWitResponseObject>();
 	ResponseObject->AddToRoot();
-	
+
 	ResponseObject->DetailsWidget = DetailsWidget;
-	
+
 	DetailsWidget->SetObject(ResponseObject, true);
-	
+
 	ChildSlot
 	[
 		SNew(SScrollBox)
-		 
+
 		+ SScrollBox::Slot().VAlign(VAlign_Top).Padding(10)
 		[
 			SNew(SVerticalBox)
 
 			// Section to contain the text input and send button
-			
+
 			+ SVerticalBox::Slot().AutoHeight().Padding(5)
 			[
 				SNew(STextBlock)
@@ -66,7 +66,7 @@ void SWitUnderstandingViewerTab::Construct(const FArguments& InArgs)
 				.ColorAndOpacity( FLinearColor( 0.5f, 0.5f, 0.5f, 1.0f ) )
 				.Text(LOCTEXT("SendMessageTitle", "Send message"))
 			]
-			
+
 			+ SVerticalBox::Slot().AutoHeight()
 			[
 				SNew(SBorder)
@@ -79,7 +79,7 @@ void SWitUnderstandingViewerTab::Construct(const FArguments& InArgs)
 					+ SVerticalBox::Slot().Padding(0, 0).AutoHeight()
 					[
 						SNew(SHorizontalBox)
-						
+
 						+ SHorizontalBox::Slot().VAlign(VAlign_Center).FillWidth(0.1f).Padding(10, 0)
 						[
 							SNew(STextBlock)
@@ -101,7 +101,7 @@ void SWitUnderstandingViewerTab::Construct(const FArguments& InArgs)
 					+ SVerticalBox::Slot().Padding(0, 0).AutoHeight()
 					[
 						SNew(SHorizontalBox)
-			
+
 						+ SHorizontalBox::Slot().HAlign(HAlign_Right).Padding(10,5,10,2)
 						[
 							SNew(SButton)
@@ -112,15 +112,15 @@ void SWitUnderstandingViewerTab::Construct(const FArguments& InArgs)
 						]
 					]
 				]
-			]	
+			]
 
 			+ SVerticalBox::Slot().Padding(0,10)
 			[
 				SNew(SBox)
 			]
-			
+
 			// Section to contain both the usage messaging and the actual response from Wit.ai
-			
+
 			+ SVerticalBox::Slot().AutoHeight()
 			[
 				SNew(SOverlay)
@@ -150,7 +150,7 @@ void SWitUnderstandingViewerTab::Construct(const FArguments& InArgs)
 				[
 					SNew(SVerticalBox)
 					.Visibility(this, &SWitUnderstandingViewerTab::GetResultVisibility)
-										
+
 					+ SVerticalBox::Slot().AutoHeight().Padding(5)
 					[
 						SNew(STextBlock)
@@ -169,7 +169,7 @@ void SWitUnderstandingViewerTab::Construct(const FArguments& InArgs)
 							DetailsWidget.ToSharedRef()
 						]
 					]
-				]	
+				]
 			]
 		]
 	];
@@ -177,7 +177,7 @@ void SWitUnderstandingViewerTab::Construct(const FArguments& InArgs)
 
 /**
  * Whether we should show the selection usage message
- * 
+ *
  * @return true if we should show otherwise false
  */
 EVisibility SWitUnderstandingViewerTab::GetSelectMessageVisibility() const
@@ -188,18 +188,18 @@ EVisibility SWitUnderstandingViewerTab::GetSelectMessageVisibility() const
 	}
 
 	const AVoiceExperience* VoiceExperience = GetSelectedVoiceExperience();
-	
+
 	if (VoiceExperience == nullptr)
 	{
-		return EVisibility::Visible;	
+		return EVisibility::Visible;
 	}
-	
+
 	return EVisibility::Hidden;
 }
 
 /**
  * Whether we should show the utterance usage message
- * 
+ *
  * @return true if we should show otherwise false
  */
 EVisibility SWitUnderstandingViewerTab::GetUtteranceMessageVisibility() const
@@ -208,47 +208,47 @@ EVisibility SWitUnderstandingViewerTab::GetUtteranceMessageVisibility() const
 	{
 		return EVisibility::Hidden;
 	}
-	
+
 	if (DetailsWidget->GetVisibility() == EVisibility::Visible)
 	{
 		return EVisibility::Hidden;
 	}
 
 	const AVoiceExperience* VoiceExperience = GetSelectedVoiceExperience();
-	
+
 	if (VoiceExperience == nullptr)
 	{
-		return EVisibility::Hidden;	
+		return EVisibility::Hidden;
 	}
-	
+
 	return EVisibility::Visible;
 }
 
 /**
  * Whether we should show the waiting usage message
- * 
+ *
  * @return true if we should show otherwise false
  */
 EVisibility SWitUnderstandingViewerTab::GetWaitMessageVisibility() const
 {
 	const AVoiceExperience* VoiceExperience = GetSelectedVoiceExperience();
-	
+
 	if (VoiceExperience == nullptr)
 	{
-		return EVisibility::Hidden;	
+		return EVisibility::Hidden;
 	}
 
 	if (VoiceExperience->IsRequestInProgress())
 	{
 		return EVisibility::Visible;
 	}
-	
+
 	return EVisibility::Hidden;
 }
 
 /**
  * Whether we should show the result
- * 
+ *
  * @return true if we should show otherwise false
  */
 EVisibility SWitUnderstandingViewerTab::GetResultVisibility() const
@@ -273,18 +273,18 @@ EVisibility SWitUnderstandingViewerTab::GetResultVisibility() const
 
 /**
  * Callback when the send button is clicked. This sends the utterance off to Wit.ai for processing
- * 
+ *
  * @return whether the reply was handled or not
  */
 FReply SWitUnderstandingViewerTab::OnSendButtonClicked()
 {
 	const AVoiceExperience* VoiceExperience = GetSelectedVoiceExperience();
-	
+
 	if (VoiceExperience == nullptr || VoiceExperience->VoiceService == nullptr || VoiceExperience->VoiceEvents == nullptr)
 	{
 		return FReply::Handled();
 	}
-		
+
 	if (VoiceExperience->IsRequestInProgress())
 	{
 		return FReply::Handled();
@@ -292,14 +292,14 @@ FReply SWitUnderstandingViewerTab::OnSendButtonClicked()
 
 	ResponseObject->Response.Reset();
 	DetailsWidget->SetVisibility(EVisibility::Hidden);
-	
+
 	UVoiceService* VoiceService = VoiceExperience->VoiceService;
 
 	VoiceService->SetEvents(VoiceExperience->VoiceEvents);
 	VoiceService->SetConfiguration(VoiceExperience->Configuration);
-	
+
 	VoiceExperience->VoiceEvents->OnWitResponse.AddUniqueDynamic(ResponseObject, &UWitResponseObject::OnWitResponse);
-	
+
 	VoiceService->SendTranscription(UtteranceText.ToString());
 
 	return FReply::Handled();
@@ -307,7 +307,7 @@ FReply SWitUnderstandingViewerTab::OnSendButtonClicked()
 
 /**
  * Determines if the send button should be enabled or not
- * 
+ *
  * @return true if enabled otherwise false
  */
 bool SWitUnderstandingViewerTab::IsSendButtonEnabled() const
@@ -319,8 +319,8 @@ bool SWitUnderstandingViewerTab::IsSendButtonEnabled() const
 
 /**
  * Callback when the utterance text box loses focus ("return" not able to trigger this )
- * 
- * @param InText [in] the text that was entered 
+ *
+ * @param InText [in] the text that was entered
  */
 void SWitUnderstandingViewerTab::OnUtteranceTextCommitted(const FText& InText, ETextCommit::Type)
 {
@@ -358,13 +358,13 @@ FReply SWitUnderstandingViewerTab::OnUtteranceKeyDown(const FGeometry&, const FK
 
 /**
  * Gets the selected WitVoiceExperience in the scene (if any)
- * 
+ *
  * @return pointer to the Voice Experience actor if selected otherwise null
  */
 AVoiceExperience* SWitUnderstandingViewerTab::GetSelectedVoiceExperience()
 {
 	const bool bIsSingleSelectedActor = GEditor->GetSelectedActorCount() == 1;
-	
+
 	if (!bIsSingleSelectedActor)
 	{
 		return nullptr;
@@ -383,7 +383,7 @@ AVoiceExperience* SWitUnderstandingViewerTab::GetSelectedVoiceExperience()
 /**
  * Callback that is called when a Wit.ai response is received. Checks to see if the response matches what
  * we are looking for
- * 
+ *
  * @param bIsSuccessful [in] true if the response was successful
  * @param WitResponse [in] the full response as a UStruct
  */
@@ -397,3 +397,6 @@ void UWitResponseObject::OnWitResponse(const bool bIsSuccessful, const FWitRespo
 	Response = WitResponse;
 	DetailsWidget->SetVisibility(EVisibility::Visible);
 }
+
+
+#undef LOCTEXT_NAMESPACE

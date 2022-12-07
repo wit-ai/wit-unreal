@@ -357,3 +357,5 @@ UWitAppConfigurationAsset* SWitConfigurationEditorTab::CreateConfigurationAsset(
 
 	return Asset;
 }
+
+#undef LOCTEXT_NAMESPACE
