@@ -18,7 +18,7 @@
 #include "Voice/Experience/VoiceExperience.h"
 #include "Voice/Matcher/VoiceIntentWithEntitiesMatcher.h"
 
-#define LOCTEXT_NAMESPACE "FWitEditorModule"
+#define LOCTEXT_NAMESPACE "FWitUnderstandingPropertyCustomization"
 
 /**
  * Convenience function to create an instance of the customization

@@ -11,6 +11,7 @@
 #include "Emulation/VoiceCaptureEmulationByTTS.h"
 #include "Wit/Utilities/WitConversionUtilities.h"
 #include "Wit/Utilities/WitLog.h"
+#include "Misc/EngineVersionComparison.h"
 #if PLATFORM_ANDROID
 #include "AndroidPermissionFunctionLibrary.h"
 #include "AndroidPermissionCallbackProxy.h"
@@ -76,7 +77,7 @@ void UVoiceCaptureSubsystem::Startup()
 	if (CallbackProxy)
 	{
 		
-#if UE_VERSION_OLDER_THAN(5,1,0)
+#if UE_VERSION_OLDER_THAN(5,0,0)
 		CallbackProxy->OnPermissionsGrantedDelegate.BindLambda([this](const TArray<FString>& Permissions, const TArray<bool>& GrantResults)
 #else
 		CallbackProxy->OnPermissionsGrantedDelegate.AddLambda([this](const TArray<FString>& Permissions, const TArray<bool>& GrantResults)

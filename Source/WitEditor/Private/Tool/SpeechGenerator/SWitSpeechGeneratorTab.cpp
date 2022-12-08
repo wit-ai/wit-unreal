@@ -14,6 +14,7 @@
 #include "Engine/Selection.h"
 #include "Editor.h"
 #include "EditorStyleSet.h"
+#include "Tool/Utilities/WitEditorHelperUtilities.h"
 #include "TTS/Cache/Storage/TtsStorageCache.h"
 #include "Wit/Utilities/WitHelperUtilities.h"
 
@@ -89,7 +90,7 @@ void SWitSpeechGeneratorTab::Construct(const FArguments& InArgs)
 			[
 				SNew(SBorder)
 				.Padding(5)
-				.BorderImage( FEditorStyle::GetBrush("ToolPanel.GroupBorder") )
+				.BorderImage( WitEditorHelperUtilities::GetBrush("ToolPanel.GroupBorder") )
 				.Content()
 				[
 					SNew(SVerticalBox)
@@ -173,7 +174,7 @@ void SWitSpeechGeneratorTab::Construct(const FArguments& InArgs)
 					[
 						SNew(SBorder)
 						.Padding(5)
-						.BorderImage( FEditorStyle::GetBrush("ToolPanel.GroupBorder") )
+						.BorderImage( WitEditorHelperUtilities::GetBrush("ToolPanel.GroupBorder") )
 						.Content()
 						[
 							SNew(SVerticalBox)
@@ -535,3 +536,5 @@ UWitTextCollectionAsset* SWitSpeechGeneratorTab::CreateTextCollectionAsset()
 
 	return Asset;
 }
+
+#undef LOCTEXT_NAMESPACE

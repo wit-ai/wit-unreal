@@ -14,6 +14,8 @@
 #include "Widgets/Layout/SScrollBox.h"
 #include "Engine/Selection.h"
 #include "Editor.h"
+#include "EditorStyleSet.h"
+#include "Tool/Utilities/WitEditorHelperUtilities.h"
 
 #define LOCTEXT_NAMESPACE "SWitUnderstandingViewerTab"
 
@@ -71,7 +73,7 @@ void SWitUnderstandingViewerTab::Construct(const FArguments& InArgs)
 			[
 				SNew(SBorder)
 				.Padding(5)
-				.BorderImage( FEditorStyle::GetBrush("ToolPanel.GroupBorder") )
+				.BorderImage( WitEditorHelperUtilities::GetBrush("ToolPanel.GroupBorder") )
 				.Content()
 				[
 					SNew(SVerticalBox)
@@ -163,7 +165,7 @@ void SWitUnderstandingViewerTab::Construct(const FArguments& InArgs)
 					[
 						SNew(SBorder)
 						.Padding(5)
-						.BorderImage( FEditorStyle::GetBrush("ToolPanel.GroupBorder") )
+						.BorderImage( WitEditorHelperUtilities::GetBrush("ToolPanel.GroupBorder") )
 						.Content()
 						[
 							DetailsWidget.ToSharedRef()
@@ -397,3 +399,6 @@ void UWitResponseObject::OnWitResponse(const bool bIsSuccessful, const FWitRespo
 	Response = WitResponse;
 	DetailsWidget->SetVisibility(EVisibility::Visible);
 }
+
+
+#undef LOCTEXT_NAMESPACE
