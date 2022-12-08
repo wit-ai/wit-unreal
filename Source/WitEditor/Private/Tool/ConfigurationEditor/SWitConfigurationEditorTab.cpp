@@ -69,7 +69,7 @@ void SWitConfigurationEditorTab::Construct(const FArguments& InArgs)
 	ChildSlot
 	[
 		SNew(SScrollBox)
-		
+		 
 		+ SScrollBox::Slot().VAlign(VAlign_Top).Padding(10)
 		[
 			SNew(SVerticalBox)
@@ -138,7 +138,7 @@ void SWitConfigurationEditorTab::Construct(const FArguments& InArgs)
 					+ SVerticalBox::Slot().Padding(0, 0).AutoHeight()
 					[
 						SNew(SHorizontalBox)
-
+			
 						+ SHorizontalBox::Slot().HAlign(HAlign_Right).Padding(10,5,10,2)
 						[
 							SNew(SButton)
@@ -291,7 +291,7 @@ FReply SWitConfigurationEditorTab::OnNewButtonClicked()
 		{
 			DetailsContentWidget->SetObject(NewAsset);
 		}
-		
+
 		FWitConfigurationUtilities::RefreshConfiguration(NewAsset);
 	}
 	
