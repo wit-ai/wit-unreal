@@ -209,7 +209,7 @@ FReply FWitUnderstandingPropertyCustomization::OnAddIntentWithEntityMatcherClick
 		{
 			continue;
 		}
-
+	
 		FString EntityNameAsString;
 		const FPropertyAccess::Result AccessResult = EntityKeyPropertyHandle->GetValue(EntityNameAsString);
 
@@ -286,7 +286,7 @@ FReply FWitUnderstandingPropertyCustomization::OnAddIntentWithEntitiesMatcherCli
 		{
 			continue;
 		}
-
+	
 		FString EntityNameAsString;
 		const FPropertyAccess::Result AccessResult = EntityKeyPropertyHandle->GetValue(EntityNameAsString);
 
