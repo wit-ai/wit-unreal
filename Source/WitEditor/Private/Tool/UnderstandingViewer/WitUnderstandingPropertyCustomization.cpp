@@ -22,7 +22,7 @@
 
 /**
  * Convenience function to create an instance of the customization
- *
+ * 
  * @return the instance created
  */
 TSharedRef<IPropertyTypeCustomization> FWitUnderstandingPropertyCustomization::MakeInstance()
@@ -32,15 +32,15 @@ TSharedRef<IPropertyTypeCustomization> FWitUnderstandingPropertyCustomization::M
 
 /**
  * Called to customize the header of the FWitIntent UStruct
- *
+ * 
  * @param StructPropertyHandle property handle for the structure
  * @param HeaderRow row widget
- * @param StructCustomizationUtils additional customization options
+ * @param StructCustomizationUtils additional customization options 
  */
 void FWitUnderstandingPropertyCustomization::CustomizeHeader(TSharedRef<IPropertyHandle> StructPropertyHandle, FDetailWidgetRow& HeaderRow, IPropertyTypeCustomizationUtils& StructCustomizationUtils)
 {
 	// Retrieve the name property. We need this when creating an intent handler
-
+	
 	IntentNamePropertyHandle = StructPropertyHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FWitIntent, Name));
 	check(IntentNamePropertyHandle.IsValid());
 
@@ -53,9 +53,9 @@ void FWitUnderstandingPropertyCustomization::CustomizeHeader(TSharedRef<IPropert
 	{
 		EntitiesPropertyHandle = nullptr;
 	}
-
+		
 	const TSharedPtr<SWidget> ValueWidget = StructPropertyHandle->CreatePropertyValueWidget(false);
-
+	
 	HeaderRow
 		.NameContent()
 		[
@@ -69,7 +69,7 @@ void FWitUnderstandingPropertyCustomization::CustomizeHeader(TSharedRef<IPropert
 			[
 				ValueWidget.ToSharedRef()
 			]
-
+			
 			+ SHorizontalBox::Slot().AutoWidth().Padding(2,6).VAlign(VAlign_Center)
 			[
 				SNew(SButton)
@@ -98,7 +98,7 @@ void FWitUnderstandingPropertyCustomization::CustomizeHeader(TSharedRef<IPropert
 
 /**
  * Called to customize the children (members) of the FWitIntent UStruct
- *
+ * 
  * @param StructPropertyHandle property handle for the structure
  * @param StructBuilder build used for building the customizations
  * @param StructCustomizationUtils additional customization options
@@ -107,7 +107,7 @@ void FWitUnderstandingPropertyCustomization::CustomizeChildren(TSharedRef<IPrope
 {
 	const TSharedPtr<IPropertyHandle> IdPropertyHandle = StructPropertyHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FWitIntent, Id));
 	check(IdPropertyHandle.IsValid());
-
+	
 	const TSharedPtr<IPropertyHandle> ConfidencePropertyHandle = StructPropertyHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FWitIntent, Confidence));
 	check(ConfidencePropertyHandle.IsValid());
 
@@ -134,17 +134,17 @@ FReply FWitUnderstandingPropertyCustomization::OnAddIntentMatcherClicked()
 	{
 		return FReply::Unhandled();
 	}
-
+	
 	UVoiceIntentMatcher* NewIntentMatcher = Cast<UVoiceIntentMatcher>(AddNewComponent(VoiceExperience, UVoiceIntentMatcher::StaticClass()));
 
 	if (NewIntentMatcher == nullptr)
 	{
 		return FReply::Unhandled();
 	}
-
+	
 	FString IntentNameAsString;
 	IntentNamePropertyHandle->GetValue(IntentNameAsString);
-
+		
 	NewIntentMatcher->IntentName = IntentNameAsString;
 
 	// Force a re-select of the object to get it to refresh
@@ -174,19 +174,19 @@ FReply FWitUnderstandingPropertyCustomization::OnAddIntentWithEntityMatcherClick
 	{
 		return FReply::Unhandled();
 	}
-
+	
 	UVoiceIntentWithEntityMatcher* NewIntentWithEntityMatcher = Cast<UVoiceIntentWithEntityMatcher>(AddNewComponent(VoiceExperience, UVoiceIntentWithEntityMatcher::StaticClass()));
 
 	if (NewIntentWithEntityMatcher == nullptr)
 	{
 		return FReply::Unhandled();
 	}
-
+	
 	FString IntentNameAsString;
 	IntentNamePropertyHandle->GetValue(IntentNameAsString);
 
 	NewIntentWithEntityMatcher->IntentName = IntentNameAsString;
-
+	
 	// Retrieve the entity names and add them
 
 	uint32 NumEntities = 0;
@@ -195,7 +195,7 @@ FReply FWitUnderstandingPropertyCustomization::OnAddIntentWithEntityMatcherClick
 	{
 		EntitiesPropertyHandle->GetNumChildren(NumEntities);
 	}
-
+	
 	for (uint32 i = 0; i < NumEntities; ++i)
 	{
 		const TSharedPtr<IPropertyHandle> EntityValuePropertyHandle = EntitiesPropertyHandle->GetChildHandle(i);
@@ -209,7 +209,7 @@ FReply FWitUnderstandingPropertyCustomization::OnAddIntentWithEntityMatcherClick
 		{
 			continue;
 		}
-
+		
 		FString EntityNameAsString;
 		const FPropertyAccess::Result AccessResult = EntityKeyPropertyHandle->GetValue(EntityNameAsString);
 
@@ -251,19 +251,19 @@ FReply FWitUnderstandingPropertyCustomization::OnAddIntentWithEntitiesMatcherCli
 	{
 		return FReply::Unhandled();
 	}
-
+	
 	UVoiceIntentWithEntitiesMatcher* NewIntentWithEntitiesMatcher = Cast<UVoiceIntentWithEntitiesMatcher>(AddNewComponent(VoiceExperience, UVoiceIntentWithEntitiesMatcher::StaticClass()));
 
 	if (NewIntentWithEntitiesMatcher == nullptr)
 	{
 		return FReply::Unhandled();
 	}
-
+	
 	FString IntentNameAsString;
 	IntentNamePropertyHandle->GetValue(IntentNameAsString);
 
 	NewIntentWithEntitiesMatcher->IntentName = IntentNameAsString;
-
+	
 	// Retrieve the entity names and add them
 
 	uint32 NumEntities = 0;
@@ -272,7 +272,7 @@ FReply FWitUnderstandingPropertyCustomization::OnAddIntentWithEntitiesMatcherCli
 	{
 		EntitiesPropertyHandle->GetNumChildren(NumEntities);
 	}
-
+	
 	for (uint32 i = 0; i < NumEntities; ++i)
 	{
 		const TSharedPtr<IPropertyHandle> EntityValuePropertyHandle = EntitiesPropertyHandle->GetChildHandle(i);
@@ -286,7 +286,7 @@ FReply FWitUnderstandingPropertyCustomization::OnAddIntentWithEntitiesMatcherCli
 		{
 			continue;
 		}
-
+		
 		FString EntityNameAsString;
 		const FPropertyAccess::Result AccessResult = EntityKeyPropertyHandle->GetValue(EntityNameAsString);
 
@@ -318,12 +318,12 @@ bool FWitUnderstandingPropertyCustomization::CanAddMatcher() const
 		UE_LOG(LogTemp, Warning, TEXT("Name property is invalid"));
 		return false;
 	}
-
+		
 	FString ValueAsString;
 	const FPropertyAccess::Result AccessResult = IntentNamePropertyHandle->GetValue(ValueAsString);
 
 	const bool bIsValidNameValue = ((AccessResult == FPropertyAccess::Success) && !ValueAsString.IsEmpty());
-
+	
 	if (!bIsValidNameValue)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Name value could not be read from name property"));
@@ -339,7 +339,7 @@ bool FWitUnderstandingPropertyCustomization::CanAddMatcher() const
 	}
 
 	const bool bIsWorld = VoiceExperience->GetWorld() != nullptr;
-
+	
 	if (!bIsWorld)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("There is no world for the Wit API"));
@@ -347,7 +347,7 @@ bool FWitUnderstandingPropertyCustomization::CanAddMatcher() const
 	}
 
 	const bool bIsClassDefaultObject = VoiceExperience->HasAnyFlags(RF_ClassDefaultObject);
-
+	
 	if (bIsClassDefaultObject)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Cannot add matcher to class default object"));
@@ -360,7 +360,7 @@ bool FWitUnderstandingPropertyCustomization::CanAddMatcher() const
 /**
  * Adds a new component of the given class to the given actor. This function is based on AddNewComponent is SCSSEditor.cpp. However it dose
  * not update the editor view correctly and therefore is less than ideal. I'm still not yet clear on the correct way to do this
- *
+ * 
  * @param ActorInstance [in] the actor to add the component to
  * @param NewComponentClass [in] the component class to add
  * @return the newly created and added component
@@ -368,32 +368,32 @@ bool FWitUnderstandingPropertyCustomization::CanAddMatcher() const
 UActorComponent* FWitUnderstandingPropertyCustomization::AddNewComponent(AActor* ActorInstance, UClass* NewComponentClass) const
 {
 	// Begin a transaction. The transaction will end when the component name will be provided/confirmed by the user.
-
+	
 	TUniquePtr<FScopedTransaction> AddTransaction = MakeUnique<FScopedTransaction>( LOCTEXT("AddComponent", "Add Component") );
 
 	ActorInstance->Modify();
 
 	// Create an appropriate name for the new component
-
+	
 	const FName NewComponentName = *FComponentEditorUtils::GenerateValidVariableName(NewComponentClass, ActorInstance);
-
+			
 	// Get the set of owned components that exists prior to instancing the new component
-
+	
 	TInlineComponentArray<UActorComponent*> PreInstanceComponents;
 	ActorInstance->GetComponents(PreInstanceComponents);
 
 	// Construct the new component and attach as needed
-
+	
 	UActorComponent* NewInstanceComponent = NewObject<UActorComponent>(ActorInstance, NewComponentClass, NewComponentName, RF_Transactional);
-
+	
 	// Add to SerializedComponents array so it gets saved
-
+	
 	ActorInstance->AddInstanceComponent(NewInstanceComponent);
 	NewInstanceComponent->OnComponentCreated();
 	NewInstanceComponent->RegisterComponent();
 
 	// Register any new components that may have been created during construction of the instanced component, but were not explicitly registered.
-
+	
 	TInlineComponentArray<UActorComponent*> PostInstanceComponents;
 	ActorInstance->GetComponents(PostInstanceComponents);
 
@@ -406,7 +406,7 @@ UActorComponent* FWitUnderstandingPropertyCustomization::AddNewComponent(AActor*
 	}
 
 	// Rerun construction scripts
-
+	
 	ActorInstance->RerunConstructionScripts();
 
 	return NewInstanceComponent;
@@ -414,13 +414,13 @@ UActorComponent* FWitUnderstandingPropertyCustomization::AddNewComponent(AActor*
 
 /**
  * Gets the selected WitVoiceExperience in the scene (if any)
- *
+ * 
  * @return pointer to the Voice Experience actor if selected otherwise null
  */
 AVoiceExperience* FWitUnderstandingPropertyCustomization::GetSelectedVoiceExperience()
 {
 	const bool bIsSingleSelectedActor = GEditor->GetSelectedActorCount() == 1;
-
+	
 	if (!bIsSingleSelectedActor)
 	{
 		return nullptr;

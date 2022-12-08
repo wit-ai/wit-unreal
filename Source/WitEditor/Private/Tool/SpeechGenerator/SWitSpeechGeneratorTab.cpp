@@ -47,7 +47,7 @@ void SWitSpeechGeneratorTab::Construct(const FArguments& InArgs)
 	DetailsContentWidget->SetVisibility(EVisibility::Visible);
 	
 	FDetailsViewArgs Args;
-
+	
 	Args.bAllowSearch = false;
 	Args.bAllowFavoriteSystem = false;
 	Args.bHideSelectionTip = true;
@@ -71,7 +71,7 @@ void SWitSpeechGeneratorTab::Construct(const FArguments& InArgs)
 	ChildSlot
 	[
 		SNew(SScrollBox)
-		
+		 
 		+ SScrollBox::Slot().VAlign(VAlign_Top).Padding(10)
 		[
 			SNew(SVerticalBox)
@@ -119,7 +119,7 @@ void SWitSpeechGeneratorTab::Construct(const FArguments& InArgs)
 					+ SVerticalBox::Slot().Padding(0, 0).AutoHeight()
 					[
 						SNew(SHorizontalBox)
-						
+
 						+ SHorizontalBox::Slot().HAlign(HAlign_Right).Padding(10,5,10,2)
 						[
 							SNew(SButton)
@@ -149,7 +149,7 @@ void SWitSpeechGeneratorTab::Construct(const FArguments& InArgs)
 					.Text(LOCTEXT("SpeechGeneratorUsage1", "Select a TTS Experience actor to begin."))
 					.Visibility(this, &SWitSpeechGeneratorTab::GetSelectMessageVisibility)
 				]
-				
+
 				+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Fill).Padding(12.f)
 				[
 					SNew(STextBlock)
@@ -161,7 +161,7 @@ void SWitSpeechGeneratorTab::Construct(const FArguments& InArgs)
 				[
 					SNew(SVerticalBox)
 					.Visibility(this, &SWitSpeechGeneratorTab::GetResultVisibility)
-					
+										
 					+ SVerticalBox::Slot().AutoHeight().Padding(5)
 					[
 						SNew(STextBlock)
@@ -178,7 +178,7 @@ void SWitSpeechGeneratorTab::Construct(const FArguments& InArgs)
 						.Content()
 						[
 							SNew(SVerticalBox)
-							
+
 							+ SVerticalBox::Slot().Padding(0, 0).AutoHeight()
 							[
 								SNew(SOverlay)
