@@ -26,9 +26,9 @@
 void SWitConfigurationEditorTab::Construct(const FArguments& InArgs)
 {
 	FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
-
+	
 	FDetailsViewArgs ContentArgs;
-
+	
 	ContentArgs.bAllowSearch = false;
 	ContentArgs.bAllowFavoriteSystem = false;
 	ContentArgs.bHideSelectionTip = true;
@@ -43,14 +43,14 @@ void SWitConfigurationEditorTab::Construct(const FArguments& InArgs)
 
 	DetailsContentWidget = PropertyModule.CreateDetailView(ContentArgs);
 	DetailsContentWidget->SetVisibility(EVisibility::Visible);
-
+	
 	EditedConfiguration = NewObject<UWitEditedConfiguration>();
 	EditedConfiguration->AddToRoot();
-
+	
 	EditedConfiguration->DetailsContentWidget = DetailsContentWidget;
 
 	FDetailsViewArgs Args;
-
+	
 	Args.bAllowSearch = false;
 	Args.bAllowFavoriteSystem = false;
 	Args.bHideSelectionTip = true;
@@ -65,7 +65,7 @@ void SWitConfigurationEditorTab::Construct(const FArguments& InArgs)
 	DetailsWidget = PropertyModule.CreateDetailView(Args);
 	DetailsWidget->SetVisibility(EVisibility::Visible);
 	DetailsWidget->SetObject(EditedConfiguration, true);
-
+	
 	ChildSlot
 	[
 		SNew(SScrollBox)
@@ -73,7 +73,7 @@ void SWitConfigurationEditorTab::Construct(const FArguments& InArgs)
 		+ SScrollBox::Slot().VAlign(VAlign_Top).Padding(10)
 		[
 			SNew(SVerticalBox)
-
+			
 			// Create a new configuration
 
 			+ SVerticalBox::Slot().AutoHeight().Padding(5)
@@ -81,10 +81,10 @@ void SWitConfigurationEditorTab::Construct(const FArguments& InArgs)
 				SNew(STextBlock)
 				.Font(FCoreStyle::GetDefaultFontStyle("Bold", 9))
 				.ColorAndOpacity( FLinearColor( 0.5f, 0.5f, 0.5f, 1.0f ) )
-
+				
 				.Text(FText::FromString(TEXT("Create new configuration")))
 			]
-
+			
 			+ SVerticalBox::Slot().AutoHeight()
 			[
 				SNew(SBorder)
@@ -97,7 +97,7 @@ void SWitConfigurationEditorTab::Construct(const FArguments& InArgs)
 					+ SVerticalBox::Slot().Padding(0, 0).AutoHeight()
 					[
 						SNew(SHorizontalBox)
-
+						
 						+ SHorizontalBox::Slot().VAlign(VAlign_Center).FillWidth(0.1f).Padding(10, 0)
 						[
 							SNew(STextBlock)
@@ -117,7 +117,7 @@ void SWitConfigurationEditorTab::Construct(const FArguments& InArgs)
 					+ SVerticalBox::Slot().Padding(0, 0).AutoHeight()
 					[
 						SNew(SHorizontalBox)
-
+						
 						+ SHorizontalBox::Slot().VAlign(VAlign_Center).FillWidth(0.1f).Padding(10, 0)
 						[
 							SNew(STextBlock)
@@ -138,7 +138,7 @@ void SWitConfigurationEditorTab::Construct(const FArguments& InArgs)
 					+ SVerticalBox::Slot().Padding(0, 0).AutoHeight()
 					[
 						SNew(SHorizontalBox)
-
+						
 						+ SHorizontalBox::Slot().HAlign(HAlign_Right).Padding(10,5,10,2)
 						[
 							SNew(SButton)
