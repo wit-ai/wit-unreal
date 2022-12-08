@@ -68,7 +68,7 @@ void SWitUnderstandingViewerTab::Construct(const FArguments& InArgs)
 				.ColorAndOpacity( FLinearColor( 0.5f, 0.5f, 0.5f, 1.0f ) )
 				.Text(LOCTEXT("SendMessageTitle", "Send message"))
 			]
-
+			
 			+ SVerticalBox::Slot().AutoHeight()
 			[
 				SNew(SBorder)
