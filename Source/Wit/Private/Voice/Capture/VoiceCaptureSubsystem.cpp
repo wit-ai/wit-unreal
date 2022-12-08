@@ -15,6 +15,7 @@
 #if PLATFORM_ANDROID
 #include "AndroidPermissionFunctionLibrary.h"
 #include "AndroidPermissionCallbackProxy.h"
+#include "Misc/CoreDelegates.h"
 #endif
 
 /**

@@ -407,7 +407,7 @@ bool FWitHelperUtilities::SaveClipToAssetFile(const FString& ClipDirectory, cons
 #if UE_VERSION_OLDER_THAN(5,1,0)
 	UPackage::SavePackage(CachePackage, CacheAsset, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone, *PackageFileName, GError, nullptr, true, true, SAVE_NoError);
 #else
-	const FSavePackageArgs SaveArgs = { nullptr, nullptr, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone, SAVE_NoError, true, nullptr, true, FDateTime::Now(), GError};
+	const FSavePackageArgs SaveArgs = { nullptr, nullptr, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone, SAVE_NoError, true, true, true, FDateTime::Now(), GError};
 	UPackage::SavePackage(CachePackage, CacheAsset, *PackageFileName, SaveArgs);
 #endif
 	
