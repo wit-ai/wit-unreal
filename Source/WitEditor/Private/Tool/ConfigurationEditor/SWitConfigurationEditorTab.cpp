@@ -291,7 +291,7 @@ FReply SWitConfigurationEditorTab::OnNewButtonClicked()
 		{
 			DetailsContentWidget->SetObject(NewAsset);
 		}
-
+	
 		FWitConfigurationUtilities::RefreshConfiguration(NewAsset);
 	}
 	

@@ -30,7 +30,7 @@ void SWitSpeechGeneratorTab::Construct(const FArguments& InArgs)
 	FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
 
 	FDetailsViewArgs ContentArgs;
-
+	
 	ContentArgs.bAllowSearch = false;
 	ContentArgs.bAllowFavoriteSystem = false;
 	ContentArgs.bHideSelectionTip = true;
@@ -45,7 +45,7 @@ void SWitSpeechGeneratorTab::Construct(const FArguments& InArgs)
 
 	DetailsContentWidget = PropertyModule.CreateDetailView(ContentArgs);
 	DetailsContentWidget->SetVisibility(EVisibility::Visible);
-
+	
 	FDetailsViewArgs Args;
 
 	Args.bAllowSearch = false;
@@ -64,20 +64,20 @@ void SWitSpeechGeneratorTab::Construct(const FArguments& InArgs)
 
 	EditedTextCollection = NewObject<UWitEditedTextCollection>();
 	EditedTextCollection->AddToRoot();
-
+	
 	DetailsWidget->SetObject(EditedTextCollection, true);
 	EditedTextCollection->DetailsContentWidget = DetailsContentWidget;
-
+	
 	ChildSlot
 	[
 		SNew(SScrollBox)
-
+		
 		+ SScrollBox::Slot().VAlign(VAlign_Top).Padding(10)
 		[
 			SNew(SVerticalBox)
 
 			// Section to contain the text input and send button
-
+			
 			+ SVerticalBox::Slot().AutoHeight().Padding(5)
 			[
 				SNew(STextBlock)
@@ -85,7 +85,7 @@ void SWitSpeechGeneratorTab::Construct(const FArguments& InArgs)
 				.ColorAndOpacity( FLinearColor( 0.5f, 0.5f, 0.5f, 1.0f ) )
 				.Text(LOCTEXT("CreateNewTextCollection", "Create new text collection"))
 			]
-
+			
 			+ SVerticalBox::Slot().AutoHeight()
 			[
 				SNew(SBorder)
@@ -98,7 +98,7 @@ void SWitSpeechGeneratorTab::Construct(const FArguments& InArgs)
 					+ SVerticalBox::Slot().Padding(0, 0).AutoHeight()
 					[
 						SNew(SHorizontalBox)
-
+						
 						+ SHorizontalBox::Slot().VAlign(VAlign_Center).FillWidth(0.1f).Padding(10, 0)
 						[
 							SNew(STextBlock)
@@ -119,7 +119,7 @@ void SWitSpeechGeneratorTab::Construct(const FArguments& InArgs)
 					+ SVerticalBox::Slot().Padding(0, 0).AutoHeight()
 					[
 						SNew(SHorizontalBox)
-
+						
 						+ SHorizontalBox::Slot().HAlign(HAlign_Right).Padding(10,5,10,2)
 						[
 							SNew(SButton)
@@ -130,15 +130,15 @@ void SWitSpeechGeneratorTab::Construct(const FArguments& InArgs)
 						]
 					]
 				]
-			]
+			]	
 
 			+ SVerticalBox::Slot().Padding(0,10)
 			[
 				SNew(SBox)
 			]
-
+			
 			// Section to contain both the usage messaging and the actual response from Wit.ai
-
+			
 			+ SVerticalBox::Slot().AutoHeight()
 			[
 				SNew(SOverlay)
@@ -149,7 +149,7 @@ void SWitSpeechGeneratorTab::Construct(const FArguments& InArgs)
 					.Text(LOCTEXT("SpeechGeneratorUsage1", "Select a TTS Experience actor to begin."))
 					.Visibility(this, &SWitSpeechGeneratorTab::GetSelectMessageVisibility)
 				]
-
+				
 				+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Fill).Padding(12.f)
 				[
 					SNew(STextBlock)
@@ -161,7 +161,7 @@ void SWitSpeechGeneratorTab::Construct(const FArguments& InArgs)
 				[
 					SNew(SVerticalBox)
 					.Visibility(this, &SWitSpeechGeneratorTab::GetResultVisibility)
-
+					
 					+ SVerticalBox::Slot().AutoHeight().Padding(5)
 					[
 						SNew(STextBlock)
@@ -178,7 +178,7 @@ void SWitSpeechGeneratorTab::Construct(const FArguments& InArgs)
 						.Content()
 						[
 							SNew(SVerticalBox)
-
+							
 							+ SVerticalBox::Slot().Padding(0, 0).AutoHeight()
 							[
 								SNew(SOverlay)
@@ -192,7 +192,7 @@ void SWitSpeechGeneratorTab::Construct(const FArguments& InArgs)
 							+ SVerticalBox::Slot().Padding(0, 0).AutoHeight()
 							[
 								SNew(SHorizontalBox)
-
+								
 								+ SHorizontalBox::Slot().HAlign(HAlign_Right).Padding(10,5,10,2)
 								[
 									SNew(SButton)
@@ -202,7 +202,7 @@ void SWitSpeechGeneratorTab::Construct(const FArguments& InArgs)
 									.OnClicked(this, &SWitSpeechGeneratorTab::OnConvertButtonClicked)
 								]
 							]
-
+							
 							+ SVerticalBox::Slot().Padding(0, 0)
 							[
 								SNew(SOverlay)
@@ -214,7 +214,7 @@ void SWitSpeechGeneratorTab::Construct(const FArguments& InArgs)
 							]
 						]
 					]
-				]
+				]	
 			]
 		]
 	];
@@ -222,7 +222,7 @@ void SWitSpeechGeneratorTab::Construct(const FArguments& InArgs)
 
 /**
  * Whether we should show the selection usage message
- *
+ * 
  * @return true if we should show otherwise false
  */
 EVisibility SWitSpeechGeneratorTab::GetSelectMessageVisibility() const
@@ -233,40 +233,40 @@ EVisibility SWitSpeechGeneratorTab::GetSelectMessageVisibility() const
 	}
 
 	const ATtsExperience* TtsExperience = GetSelectedTtsExperience();
-
+	
 	if (TtsExperience == nullptr)
 	{
-		return EVisibility::Visible;
+		return EVisibility::Visible;	
 	}
-
+	
 	return EVisibility::Hidden;
 }
 
 /**
  * Whether we should show the waiting usage message
- *
+ * 
  * @return true if we should show otherwise false
  */
 EVisibility SWitSpeechGeneratorTab::GetWaitMessageVisibility() const
 {
 	const ATtsExperience* TtsExperience = GetSelectedTtsExperience();
-
+	
 	if (TtsExperience == nullptr)
 	{
-		return EVisibility::Hidden;
+		return EVisibility::Hidden;	
 	}
 
 	if (TtsExperience->IsRequestInProgress() || EditedTextCollection->bIsConvertInProgress)
 	{
 		return EVisibility::Visible;
 	}
-
+	
 	return EVisibility::Hidden;
 }
 
 /**
  * Whether we should show the result
- *
+ * 
  * @return true if we should show otherwise false
  */
 EVisibility SWitSpeechGeneratorTab::GetResultVisibility() const
@@ -275,7 +275,7 @@ EVisibility SWitSpeechGeneratorTab::GetResultVisibility() const
 	{
 		return EVisibility::Hidden;
 	}
-
+	
 	if (GetWaitMessageVisibility() == EVisibility::Visible)
 	{
 		return EVisibility::Hidden;
@@ -286,7 +286,7 @@ EVisibility SWitSpeechGeneratorTab::GetResultVisibility() const
 
 /**
  * Callback when the convert button is clicked
- *
+ * 
  * @return whether the reply was handled or not
  */
 FReply SWitSpeechGeneratorTab::OnConvertButtonClicked()
@@ -295,53 +295,53 @@ FReply SWitSpeechGeneratorTab::OnConvertButtonClicked()
 	{
 		return FReply::Handled();
 	}
-
+	
 	if (EditedTextCollection->TextCollection->Items.Num() == 0)
 	{
 		return FReply::Handled();
 	}
-
+	
 	ATtsExperience* TtsExperience = GetSelectedTtsExperience();
-
+	
 	if (TtsExperience == nullptr || TtsExperience->TtsService == nullptr || TtsExperience->EventHandler == nullptr)
 	{
 		return FReply::Handled();
 	}
-
+		
 	if (TtsExperience->IsRequestInProgress())
 	{
 		return FReply::Handled();
 	}
-
+	
 	UTtsService* TtsService = TtsExperience->TtsService;
 
 	TtsService->SetHandlers(TtsExperience->EventHandler, nullptr, nullptr);
 	TtsService->SetConfiguration(TtsExperience->Configuration, nullptr);
-
+	
 	TtsExperience->EventHandler->OnSynthesizeRawResponse.AddUniqueDynamic(EditedTextCollection, &UWitEditedTextCollection::OnSynthesizeRawResponse);
 	TtsExperience->EventHandler->OnSynthesizeError.AddUniqueDynamic(EditedTextCollection, &UWitEditedTextCollection::OnSynthesizeError);
-
+	
 	EditedTextCollection->CurrentConvertIndex = 0;
 	EditedTextCollection->CurrentConvertIndex = EditedTextCollection->FindNextItemToConvert();
 
 	const bool bIsMoreItemsToConvert = EditedTextCollection->CurrentConvertIndex < EditedTextCollection->TextCollection->Items.Num();
-
+	
 	if (bIsMoreItemsToConvert)
 	{
 		// We must invalidate the memory cache to ensure that it is bypassed and the clips always get regenerated
 
 		TtsExperience->UnloadAllClips();
-
+		
 		EditedTextCollection->bIsConvertInProgress = true;
 		EditedTextCollection->ConvertTextItem(EditedTextCollection->TextCollection->Items[EditedTextCollection->CurrentConvertIndex]);
 	}
-
+	
 	return FReply::Handled();
 }
 
 /**
  * Determines if the convert button should be enabled or not
- *
+ * 
  * @return true if enabled otherwise false
  */
 bool SWitSpeechGeneratorTab::IsConvertButtonEnabled() const
@@ -360,7 +360,7 @@ bool SWitSpeechGeneratorTab::IsConvertButtonEnabled() const
 
 /**
  * Callback when the new button is clicked
- *
+ * 
  * @return whether the reply was handled or not
  */
 FReply SWitSpeechGeneratorTab::OnNewButtonClicked()
@@ -376,13 +376,13 @@ FReply SWitSpeechGeneratorTab::OnNewButtonClicked()
 			DetailsContentWidget->SetObject(NewAsset);
 		}
 	}
-
+	
 	return FReply::Handled();
 }
 
 /**
  * Determines if the new button should be enabled or not
- *
+ * 
  * @return true if enabled otherwise false
  */
 bool SWitSpeechGeneratorTab::IsNewButtonEnabled() const
@@ -392,8 +392,8 @@ bool SWitSpeechGeneratorTab::IsNewButtonEnabled() const
 
 /**
  * Callback when the new collection text box loses focus ("return" not able to trigger this )
- *
- * @param InText [in] the text that was entered
+ * 
+ * @param InText [in] the text that was entered 
  */
 void SWitSpeechGeneratorTab::OnNewCollectionTextCommitted(const FText& InText, ETextCommit::Type)
 {
@@ -412,13 +412,13 @@ void SWitSpeechGeneratorTab::OnNewCollectionTextChanged(const FText& InText)
 
 /**
  * Gets the selected WitTtsExperience in the scene (if any)
- *
+ * 
  * @return pointer to the Tts Experience actor if selected otherwise null
  */
 ATtsExperience* SWitSpeechGeneratorTab::GetSelectedTtsExperience()
 {
 	const bool bIsSingleSelectedActor = GEditor->GetSelectedActorCount() == 1;
-
+	
 	if (!bIsSingleSelectedActor)
 	{
 		return nullptr;
@@ -438,7 +438,7 @@ void UWitEditedTextCollection::OnSynthesizeRawResponse(const FString& ClipId, co
 
 	++CurrentConvertIndex;
 	CurrentConvertIndex = FindNextItemToConvert();
-
+	
 	const bool bIsMoreItemsToConvert = CurrentConvertIndex < TextCollection->Items.Num();
 
 	if (bIsMoreItemsToConvert)
@@ -458,7 +458,7 @@ void UWitEditedTextCollection::OnSynthesizeError(const FString& ErrorMessage, co
 {
 	++CurrentConvertIndex;
 	CurrentConvertIndex = FindNextItemToConvert();
-
+	
 	const bool bIsMoreItemsToConvert = CurrentConvertIndex < TextCollection->Items.Num();
 
 	if (bIsMoreItemsToConvert)
@@ -482,7 +482,7 @@ void UWitEditedTextCollection::ConvertTextItem(FWitTextItem& ItemToConvert)
 	ItemToConvert.ClipId = FWitHelperUtilities::GetVoiceClipId(ClipSettings);
 
 	ATtsExperience* TtsExperience = SWitSpeechGeneratorTab::GetSelectedTtsExperience();
-
+	
 	TtsExperience->ConvertTextToSpeechWithSettings(ClipSettings);
 }
 
@@ -514,7 +514,7 @@ UWitTextCollectionAsset* SWitSpeechGeneratorTab::CreateTextCollectionAsset()
 {
 	const FString AssetNameText = NewCollectionText.ToString();
 	const FString PackagePath = FString::Printf(TEXT("/Game/%s"), *AssetNameText);
-
+	
 	UPackage* Package = CreatePackage(*PackagePath);
 	const FString PackageName = FPaths::GetBaseFilename(PackagePath);
 
@@ -523,7 +523,7 @@ UWitTextCollectionAsset* SWitSpeechGeneratorTab::CreateTextCollectionAsset()
 		UE_LOG(LogTemp, Warning, TEXT("SWitConfigurationEditorTab::CreateConfigurationAsset: failed to create package file for (%s)"), *AssetNameText);
 		return nullptr;
 	}
-
+	
 	UWitTextCollectionAsset* Asset = NewObject<UWitTextCollectionAsset>(Package, UWitTextCollectionAsset::StaticClass(), *PackageName, RF_Public | RF_Standalone);
 
 	if (Asset == nullptr)
@@ -531,7 +531,7 @@ UWitTextCollectionAsset* SWitSpeechGeneratorTab::CreateTextCollectionAsset()
 		UE_LOG(LogTemp, Warning, TEXT("SWitConfigurationEditorTab::CreateConfigurationAsset: failed to create asset file for (%s)"), *AssetNameText);
 		return nullptr;
 	}
-
+	
 	(void)Asset->MarkPackageDirty();
 
 	return Asset;
