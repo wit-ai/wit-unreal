@@ -69,11 +69,11 @@ void SWitConfigurationEditorTab::Construct(const FArguments& InArgs)
 	ChildSlot
 	[
 		SNew(SScrollBox)
-
+		
 		+ SScrollBox::Slot().VAlign(VAlign_Top).Padding(10)
 		[
 			SNew(SVerticalBox)
-			
+
 			// Create a new configuration
 
 			+ SVerticalBox::Slot().AutoHeight().Padding(5)
@@ -113,7 +113,7 @@ void SWitConfigurationEditorTab::Construct(const FArguments& InArgs)
 							.OnTextChanged(this, &SWitConfigurationEditorTab::OnNewConfigurationTextChanged)
 						]
 					]
-
+					
 					+ SVerticalBox::Slot().Padding(0, 0).AutoHeight()
 					[
 						SNew(SHorizontalBox)
@@ -138,7 +138,7 @@ void SWitConfigurationEditorTab::Construct(const FArguments& InArgs)
 					+ SVerticalBox::Slot().Padding(0, 0).AutoHeight()
 					[
 						SNew(SHorizontalBox)
-						
+
 						+ SHorizontalBox::Slot().HAlign(HAlign_Right).Padding(10,5,10,2)
 						[
 							SNew(SButton)
@@ -163,7 +163,7 @@ void SWitConfigurationEditorTab::Construct(const FArguments& InArgs)
 				.ColorAndOpacity( FLinearColor( 0.5f, 0.5f, 0.5f, 1.0f ) )
 				.Text(LOCTEXT("EditConfigurationTitle", "Edit existing configuration"))
 			]
-
+			
 			// Edit an existing configuration
 
 			+ SVerticalBox::Slot().AutoHeight()
@@ -174,7 +174,7 @@ void SWitConfigurationEditorTab::Construct(const FArguments& InArgs)
 				.Content()
 				[
 					SNew(SVerticalBox)
-
+					
 					+ SVerticalBox::Slot().Padding(0, 0).AutoHeight()
 					[
 						SNew(SOverlay)
@@ -188,7 +188,7 @@ void SWitConfigurationEditorTab::Construct(const FArguments& InArgs)
 					+ SVerticalBox::Slot().Padding(0, 0).AutoHeight()
 					[
 						SNew(SHorizontalBox)
-
+						
 						+ SHorizontalBox::Slot().HAlign(HAlign_Right).Padding(10,5,10,2)
 						[
 							SNew(SButton)
@@ -198,7 +198,7 @@ void SWitConfigurationEditorTab::Construct(const FArguments& InArgs)
 							.OnClicked(this, &SWitConfigurationEditorTab::OnCreatePresetButtonClicked)
 						]
 					]
-
+					
 					+ SVerticalBox::Slot().Padding(0, 0)
 					[
 						SNew(SOverlay)
@@ -216,13 +216,13 @@ void SWitConfigurationEditorTab::Construct(const FArguments& InArgs)
 
 /**
  * Callback when the create presents button is clicked
- *
+ * 
  * @return whether the reply was handled or not
  */
 FReply SWitConfigurationEditorTab::OnCreatePresetButtonClicked()
 {
 	// Create a preset asset from all the combinations of voice name + style
-
+		
 	for (const FWitVoiceDefinition& AvailableVoice: EditedConfiguration->Configuration->Application.Data.Voices)
 	{
 		const FString PresetAssetName = AvailableVoice.Name;
@@ -232,7 +232,7 @@ FReply SWitConfigurationEditorTab::OnCreatePresetButtonClicked()
 #if WITH_VOICESDK
 		PackagePath = FString::Printf(TEXT("/VoiceSDK/Presets/%s"), *PresetAssetName);
 #endif
-
+			
 		UPackage* PresetPackage = CreatePackage(*PackagePath);
 
 		if (PresetPackage == nullptr)
@@ -250,7 +250,7 @@ FReply SWitConfigurationEditorTab::OnCreatePresetButtonClicked()
 		}
 
 		PresetAsset->Synthesize.Voice = AvailableVoice.Name;
-
+    
 		(void)PresetAsset->MarkPackageDirty();
 	}
 
@@ -259,7 +259,7 @@ FReply SWitConfigurationEditorTab::OnCreatePresetButtonClicked()
 
 /**
  * Determines if the create preset button should be enabled or not
- *
+ * 
  * @return true if enabled otherwise false
  */
 bool SWitConfigurationEditorTab::IsCreatePresetButtonEnabled() const
@@ -276,7 +276,7 @@ bool SWitConfigurationEditorTab::IsCreatePresetButtonEnabled() const
 
 /**
  * Callback when the new button is clicked
- *
+ * 
  * @return whether the reply was handled or not
  */
 FReply SWitConfigurationEditorTab::OnNewButtonClicked()
@@ -291,16 +291,16 @@ FReply SWitConfigurationEditorTab::OnNewButtonClicked()
 		{
 			DetailsContentWidget->SetObject(NewAsset);
 		}
-
+		
 		FWitConfigurationUtilities::RefreshConfiguration(NewAsset);
 	}
-
+	
 	return FReply::Handled();
 }
 
 /**
  * Determines if the new button should be enabled or not
- *
+ * 
  * @return true if enabled otherwise false
  */
 bool SWitConfigurationEditorTab::IsNewButtonEnabled() const
@@ -334,7 +334,7 @@ void SWitConfigurationEditorTab::OnNewConfigurationTextChanged(const FText& InTe
 UWitAppConfigurationAsset* SWitConfigurationEditorTab::CreateConfigurationAsset()
 {
 	const FString PackagePath = FString::Printf(TEXT("/Game/%s"), *NewConfigurationText.ToString());
-
+	
 	UPackage* Package = CreatePackage(*PackagePath);
 	const FString PackageName = FPaths::GetBaseFilename(PackagePath);
 
@@ -343,7 +343,7 @@ UWitAppConfigurationAsset* SWitConfigurationEditorTab::CreateConfigurationAsset(
 		UE_LOG(LogTemp, Warning, TEXT("SWitConfigurationEditorTab::CreateConfigurationAsset: failed to create package file for (%s)"), *NewConfigurationText.ToString());
 		return nullptr;
 	}
-
+	
 	UWitAppConfigurationAsset* Asset = NewObject<UWitAppConfigurationAsset>(Package, UWitAppConfigurationAsset::StaticClass(), *PackageName, RF_Public | RF_Standalone);
 
 	if (Asset == nullptr)
@@ -353,7 +353,7 @@ UWitAppConfigurationAsset* SWitConfigurationEditorTab::CreateConfigurationAsset(
 	}
 
 	Asset->Application.ServerAccessToken = ServerTokenText.ToString();
-
+	
 	(void)Asset->MarkPackageDirty();
 
 	return Asset;
