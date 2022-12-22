@@ -6,12 +6,17 @@
  */
 
 #include "TtsConfigurationDetailCustomization.h"
+
+#include "AssetRegistry/AssetRegistryModule.h"
 #include "Input/Reply.h"
 #include "PropertyEditor/Public/DetailLayoutBuilder.h"
 #include "PropertyEditor/Public/DetailCategoryBuilder.h"
 #include "PropertyEditor/Public/DetailWidgetRow.h"
 #include "TTS/Experience/TtsExperience.h"
 #include "Widgets/Input/SButton.h"
+#include "Misc/EngineVersionComparison.h"
+#include "HAL/PlatformFileManager.h"
+#include "UObject/SavePackage.h"
 
 #define LOCTEXT_NAMESPACE "FWitEditorModule"
 
@@ -246,9 +251,10 @@ FReply FTtsConfigurationDetailCustomization::OnCreatePresetButtonClicked()
 			
 
             FString PackagePath = FString::Printf(TEXT("/Wit/Presets/%s"), *PresetAssetName);
-
 #if WITH_VOICESDK
 			PackagePath = FString::Printf(TEXT("/VoiceSDK/Presets/%s"), *PresetAssetName);
+#elif WITH_VOICESDK_MARKETPLACE
+			PackagePath = FString::Printf(TEXT("/Game/VoiceSDK/Presets/%s"), *PresetAssetName);
 #endif
 			
             UPackage* PresetPackage = CreatePackage(*PackagePath);
@@ -270,6 +276,20 @@ FReply FTtsConfigurationDetailCustomization::OnCreatePresetButtonClicked()
             PresetAsset->Synthesize.Voice = AvailableVoice.Name;
         
             (void)PresetAsset->MarkPackageDirty();
+			PresetPackage->MarkPackageDirty();
+
+			
+			FAssetRegistryModule::AssetCreated(PresetAsset);
+			const FString PackageFileName = FPackageName::LongPackageNameToFilename(PackagePath, FPackageName::GetAssetPackageExtension());
+
+#if UE_VERSION_OLDER_THAN(5,1,0)
+			UPackage::SavePackage(CachePackage, CacheAsset, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone, *PackageFileName, GError, nullptr, true, true, SAVE_NoError);
+#else
+			const FSavePackageArgs SaveArgs = { nullptr, nullptr, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone, SAVE_NoError, true, true, true, FDateTime::Now(), GError};
+			UPackage::SavePackage(PresetPackage, PresetAsset, *PackageFileName, SaveArgs);
+#endif
+
+			
 		}
 		
 		break;
