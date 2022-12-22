@@ -249,7 +249,6 @@ FReply FTtsConfigurationDetailCustomization::OnCreatePresetButtonClicked()
 		{
 			const FString PresetAssetName = AvailableVoice.Name;
 			
-
             FString PackagePath = FString::Printf(TEXT("/Wit/Presets/%s"), *PresetAssetName);
 #if WITH_VOICESDK_MARKETPLACE
 			PackagePath = FString::Printf(TEXT("/Game/VoiceSDK/Presets/%s"), *PresetAssetName);
@@ -257,11 +256,11 @@ FReply FTtsConfigurationDetailCustomization::OnCreatePresetButtonClicked()
 			PackagePath = FString::Printf(TEXT("/VoiceSDK/Presets/%s"), *PresetAssetName);
 #endif
 			
-            UPackage* PresetPackage = CreatePackage(*PackagePath);
+			 UPackage* PresetPackage = CreatePackage(*PackagePath);
 
             if (PresetPackage == nullptr)
             {
-                UE_LOG(LogTemp, Warning, TEXT("OnCreatePresetButtonClicked: failed to create package file for (%s)"), *PresetAssetName);
+				UE_LOG(LogTemp, Warning, TEXT("OnCreatePresetButtonClicked: failed to create package file for (%s)"), *PresetAssetName);
                 continue;
             }
     
