@@ -251,10 +251,10 @@ FReply FTtsConfigurationDetailCustomization::OnCreatePresetButtonClicked()
 			
 
             FString PackagePath = FString::Printf(TEXT("/Wit/Presets/%s"), *PresetAssetName);
-#if WITH_VOICESDK
-			PackagePath = FString::Printf(TEXT("/VoiceSDK/Presets/%s"), *PresetAssetName);
-#elif WITH_VOICESDK_MARKETPLACE
+#if WITH_VOICESDK_MARKETPLACE
 			PackagePath = FString::Printf(TEXT("/Game/VoiceSDK/Presets/%s"), *PresetAssetName);
+#elif WITH_VOICESDK
+			PackagePath = FString::Printf(TEXT("/VoiceSDK/Presets/%s"), *PresetAssetName);
 #endif
 			
             UPackage* PresetPackage = CreatePackage(*PackagePath);
