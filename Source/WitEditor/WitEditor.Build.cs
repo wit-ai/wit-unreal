@@ -14,6 +14,7 @@ public class WitEditor : ModuleRules
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 
 		PrivateDefinitions.Add("WITH_VOICESDK=0");
+		PrivateDefinitions.Add("WITH_VOICESDK_MARKETPLACE=0");
 		
 		PublicDependencyModuleNames.AddRange(
 			new string[] {
