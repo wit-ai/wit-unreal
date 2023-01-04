@@ -11,7 +11,7 @@
 #include "GenericPlatform/GenericPlatformHttp.h"
 #include "Wit/Utilities/WitLog.h"
 
-const FString FWitHttpRequest::WitSdkVersion = FString("47.0.3");
+const FString FWitHttpRequest::WitSdkVersion = FString("47.0.4");
 
 /**
  * Destructor
