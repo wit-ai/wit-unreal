@@ -249,12 +249,7 @@ FReply FTtsConfigurationDetailCustomization::OnCreatePresetButtonClicked()
 		{
 			const FString PresetAssetName = AvailableVoice.Name;
 			
-            FString PackagePath = FString::Printf(TEXT("/Wit/Presets/%s"), *PresetAssetName);
-#if WITH_VOICESDK_MARKETPLACE
-			PackagePath = FString::Printf(TEXT("/Game/VoiceSDK/Presets/%s"), *PresetAssetName);
-#elif WITH_VOICESDK
-			PackagePath = FString::Printf(TEXT("/VoiceSDK/Presets/%s"), *PresetAssetName);
-#endif
+            FString PackagePath = FString::Printf(TEXT("/Game/VoiceSDK/Presets/%s"), *PresetAssetName);
 			
 			 UPackage* PresetPackage = CreatePackage(*PackagePath);
 
@@ -276,7 +271,6 @@ FReply FTtsConfigurationDetailCustomization::OnCreatePresetButtonClicked()
         
             (void)PresetAsset->MarkPackageDirty();
 			PresetPackage->MarkPackageDirty();
-
 			
 			FAssetRegistryModule::AssetCreated(PresetAsset);
 			const FString PackageFileName = FPackageName::LongPackageNameToFilename(PackagePath, FPackageName::GetAssetPackageExtension());
