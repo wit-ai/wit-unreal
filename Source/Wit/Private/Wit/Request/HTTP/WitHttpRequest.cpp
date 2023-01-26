@@ -106,6 +106,10 @@ FString FWitHttpRequest::GetUserAgent()
 	
 	const FString SdkVersion = WitSdkVersion;
 
+	//  Plugin flavour
+
+	const FString PluginFlavour = FString("Original");
+
 	// Editor
 	
 #if WITH_EDITOR
@@ -122,7 +126,7 @@ FString FWitHttpRequest::GetUserAgent()
 	const FString PluginName = FString("wit-unreal");
 #endif
 	
-	FString UserAgent = FString::Printf(TEXT("%s-%s,%s,%s,%s,%s,%s,%s"),
+	FString UserAgent = FString::Printf(TEXT("%s-%s,%s,%s,%s,%s,%s,%s,%s"),
 		*FGenericPlatformHttp::EscapeUserAgentString(UserAgentPrefix),
 		*FGenericPlatformHttp::EscapeUserAgentString(SdkVersion),
 		*FGenericPlatformHttp::EscapeUserAgentString(PluginName),
@@ -130,7 +134,8 @@ FString FWitHttpRequest::GetUserAgent()
 		*FGenericPlatformHttp::EscapeUserAgentString(DeviceModel),
 		*FGenericPlatformHttp::EscapeUserAgentString(ConfigId),
 		*FGenericPlatformHttp::EscapeUserAgentString(DeviceName),
-		*FGenericPlatformHttp::EscapeUserAgentString(UserEditor));
+		*FGenericPlatformHttp::EscapeUserAgentString(UserEditor),
+		*FGenericPlatformHttp::EscapeUserAgentString(PluginFlavour));
 
 	return UserAgent;
 }
