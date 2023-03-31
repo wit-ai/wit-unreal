@@ -67,7 +67,6 @@ public:
 	/*
 	 * User agent for Wit
 	 */
-	static const FString WitSdkVersion;
 	static FString GetUserAgent();
 
 private:

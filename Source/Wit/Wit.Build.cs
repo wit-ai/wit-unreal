@@ -5,7 +5,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-
 using System.IO;
 using UnrealBuildTool;
 
@@ -29,7 +28,6 @@ public class Wit : ModuleRules
 		PrivateDefinitions.Add("WITH_CURL_XCURL=0");
 		PrivateDefinitions.Add("WITH_CURL=" + (bPlatformSupportsLibCurl ? "1" : "0"));
 		PrivateDefinitions.Add("WITH_SSL=1");
-		PrivateDefinitions.Add("WITH_VOICESDK_USERAGENT=0");
 		
 		PublicIncludePaths.AddRange(
 			new string[]
@@ -72,6 +70,7 @@ public class Wit : ModuleRules
 				"SSL",
 				"OpenSSL",
 				"libcurl",
+				"Projects",
 				"Sockets",
 				"SignalProcessing"
 			}
