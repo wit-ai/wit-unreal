@@ -9,9 +9,10 @@
 
 #include "WitHttpRequest.h"
 #include "GenericPlatform/GenericPlatformHttp.h"
+#include "Misc/App.h"
+#include "WitModule.h"
+#include "Wit/Utilities/WitHelperUtilities.h"
 #include "Wit/Utilities/WitLog.h"
-
-const FString FWitHttpRequest::WitSdkVersion = FString("49.0.1");
 
 /**
  * Destructor
@@ -81,8 +82,8 @@ void FWitHttpRequest::Tick(float DeltaSeconds)
 
 /**
  * Get the user agent to use for Wit requests
- * If Voice SDK installed: voice-sdk-46.0.2,voicesdk-unreal,Windows-10.0.xx.64bit,Unknown,xxx,Unknown,Editor
- * If Voice SDK is NOT installed:  wit-unreal-46.0.2,wit-unreal,Windows-10.0.xx.64bit,Unknown,xx,Unknown,Editor
+ * If Voice SDK installed: voicesdk-unreal-49.0.1,wit-unreal-49.0.1,"Windows-10.0.19045.1.256.64bit","GenuineIntel|Intel(R)Core(TM)i7-10750HCPU@2.60GHz",C6C3C9D74AE98762558677BF627B5666,com.Meta.voicesdk_unreal_demo,Editor,4.27.2
+ * If Voice SDK is NOT installed: wit-unreal-49.0.1,"Windows-10.0.19045.1.256.64bit","GenuineIntel|Intel(R)Core(TM)i7-10750HCPU@2.60GHz",C6C3C9D74AE98762558677BF627B5666,com.Meta.voicesdk_unreal_demo,Editor,4.27.2
  */
 FString FWitHttpRequest::GetUserAgent()
 {
@@ -93,49 +94,64 @@ FString FWitHttpRequest::GetUserAgent()
 	const FString OperatingSystem = FString::Printf(TEXT("%s-%s"), *PlatformName, *OSVersion);
 
 	// Device - these need to be filled in with something sensible
-
-	const FString DeviceModel = FString("Unknown");
-	const FString DeviceName = FString("Unknown");
+	const FString DeviceModel = FPlatformMisc::GetDeviceMakeAndModel();
 
 	// Unique GUID
 	
-	const FGuid Guid = FGuid::NewGuid();
-	const FString ConfigId = *Guid.ToString(EGuidFormats::Digits);
+	const FGuid Guid = FApp::GetSessionId();
+	const FString SessionId = *Guid.ToString(EGuidFormats::Digits);
+
+	// Additional Front User Data
+
+	const FString AdditionalFrontUserData = FWitHelperUtilities::AdditionalFrontUserData;
 
 	// SDK version
-	
-	const FString SdkVersion = WitSdkVersion;
 
-	//  Plugin flavour
+	const FString WitSdkVersion = FWitModule::Get().SdkVersion;
+	const FString WitPlugin = FString::Printf(TEXT("wit-unreal-%s"), *WitSdkVersion);
 
-	const FString PluginFlavour = FString("Original");
+	// Project
+
+	const FString ProjectSettingsPath = TEXT("/Script/EngineSettings.GeneralProjectSettings");
+	FString Company = FString::Printf(TEXT("YourCompany"));
+
+	GConfig->GetString(
+		*ProjectSettingsPath,
+		TEXT("CompanyName"),
+		Company,
+		GGameIni
+	);
+
+	FString Project = FApp::GetProjectName();
+	FString ProjectId = FString::Printf(TEXT("com.%s.%s"), *Company, *Project);
 
 	// Editor
 	
 #if WITH_EDITOR
-	const FString UserEditor = FString("Editor");
+	const FString UserEnv = FString("Editor");
 #else
-	const FString UserEditor = FString("Runtime");
+	const FString UserEnv = FString("Runtime");
 #endif
 
-#if WITH_VOICESDK_USERAGENT
-	const FString UserAgentPrefix = FString("voice-sdk");
-	const FString PluginName = FString("voicesdk-unreal");
-#else
-	const FString UserAgentPrefix = FString("wit-unreal");
-	const FString PluginName = FString("wit-unreal");
-#endif
+	const FString EditorVersion = ENGINE_VERSION_STRING;
+
+	// Additional End User Data
+
+	const FString AdditionalEndUserData = FWitHelperUtilities::AdditionalEndUserData;
 	
-	FString UserAgent = FString::Printf(TEXT("%s-%s,%s,%s,%s,%s,%s,%s,%s"),
-		*FGenericPlatformHttp::EscapeUserAgentString(UserAgentPrefix),
-		*FGenericPlatformHttp::EscapeUserAgentString(SdkVersion),
-		*FGenericPlatformHttp::EscapeUserAgentString(PluginName),
+	FString UserAgent = FString::Printf(TEXT("%s%s,\"%s\",\"%s\",%s,%s,%s,%s%s"),
+		*FGenericPlatformHttp::EscapeUserAgentString(AdditionalFrontUserData),
+		*FGenericPlatformHttp::EscapeUserAgentString(WitPlugin),
 		*FGenericPlatformHttp::EscapeUserAgentString(OperatingSystem),
 		*FGenericPlatformHttp::EscapeUserAgentString(DeviceModel),
-		*FGenericPlatformHttp::EscapeUserAgentString(ConfigId),
-		*FGenericPlatformHttp::EscapeUserAgentString(DeviceName),
-		*FGenericPlatformHttp::EscapeUserAgentString(UserEditor),
-		*FGenericPlatformHttp::EscapeUserAgentString(PluginFlavour));
+		*FGenericPlatformHttp::EscapeUserAgentString(SessionId),
+		*FGenericPlatformHttp::EscapeUserAgentString(ProjectId),
+		*FGenericPlatformHttp::EscapeUserAgentString(UserEnv),
+		*FGenericPlatformHttp::EscapeUserAgentString(EditorVersion),
+		*FGenericPlatformHttp::EscapeUserAgentString(AdditionalEndUserData)
+	);
+
+	UE_LOG(LogWit, Verbose, TEXT("UserAgent: %s"), *UserAgent);
 
 	return UserAgent;
 }

@@ -16,6 +16,28 @@
 #include "HAL/PlatformFileManager.h"
 #include "UObject/SavePackage.h"
 
+FString FWitHelperUtilities::AdditionalFrontUserData = "";
+FString FWitHelperUtilities::AdditionalEndUserData = "";
+
+ /**
+  * Adds a string to the user agent data to include in Wit web requests
+  */
+void FWitHelperUtilities::AddRequestUserData(const FString& UserData, const bool AddToFront)
+{
+	if (AddToFront)
+	{
+		AdditionalFrontUserData = AdditionalFrontUserData == ""
+			? FString::Printf(TEXT("%s,"), *UserData)
+			: FString::Printf(TEXT("%s%s,"), *AdditionalFrontUserData, *UserData);
+	}
+	else
+	{
+		AdditionalEndUserData = AdditionalEndUserData == ""
+			? FString::Printf(TEXT(",%s"), *UserData)
+			: FString::Printf(TEXT("%s,%s"), *AdditionalEndUserData, *UserData);
+	}
+}
+
 /**
  * Finds the VoiceExperience in the scene. This is slow so do not call every frame
  * 

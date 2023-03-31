@@ -7,6 +7,7 @@
 
 #include "WitModule.h"
 #include "Curl/CurlHttpManager.h"
+#include "Interfaces/IPluginManager.h"
 #include "Misc/EngineVersionComparison.h"
 #include "Modules/ModuleManager.h"
 #include "Wit/Utilities/WitLog.h"
@@ -14,6 +15,8 @@
 #define LOCTEXT_NAMESPACE "FWitModule"
 
 IMPLEMENT_MODULE(FWitModule, Wit)
+
+const FString FWitModule::Name = "Wit";
 
 FWitModule* FWitModule::Singleton = nullptr;
 
@@ -31,6 +34,19 @@ void FWitModule::StartupModule()
 
 		HttpManager = new FCurlHttpManager();
 		HttpManager->Initialize();
+	}
+
+	// find version code
+	IPluginManager& PluginManager = IPluginManager::Get();
+	TArray<TSharedRef<IPlugin>> Plugins = PluginManager.GetDiscoveredPlugins();
+	for (const TSharedRef<IPlugin>& Plugin : Plugins)
+	{
+		if (Plugin->GetName() == Name)
+		{
+			const FPluginDescriptor& Descriptor = Plugin->GetDescriptor();
+			Version = Descriptor.VersionName;
+			break;
+		}
 	}
 }
 
@@ -61,7 +77,7 @@ FWitModule& FWitModule::Get()
 	if (Singleton == nullptr)
 	{
 		check(IsInGameThread());
-		FModuleManager::LoadModuleChecked<FWitModule>("Wit");
+		FModuleManager::LoadModuleChecked<FWitModule>(*Name);
 	}
 	
 	check(Singleton != nullptr);

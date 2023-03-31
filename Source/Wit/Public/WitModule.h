@@ -19,6 +19,16 @@ class FWitModule final : public IModuleInterface
 public:
 
 	/**
+	 * Voice SDK name
+	 */
+	static const FString Name;
+
+	/**
+	 * Wit API version
+	 */
+	const FString& SdkVersion = Version;
+
+	/**
 	 * IModuleInterface implementation
 	 */
 	virtual void StartupModule() override;
@@ -47,6 +57,9 @@ private:
 
 	/** Keeps track of Http requests while they are being processed */
 	FHttpManager* HttpManager{nullptr};
+
+	/** Wit API version */
+	FString Version;
 
 	/** Singleton for the module while loaded and available */
 	static FWitModule* Singleton;
