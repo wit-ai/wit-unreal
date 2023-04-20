@@ -136,9 +136,6 @@ private:
 	  * Create the emulation voice capture
 	  */
 	void CreateEmulationVoiceCapture();
-
-	/** Track whether we need to forcibly reload the voice module. This can happen during backgrounding */
-	bool bShouldReloadVoiceModule{false};
 	
 	/** UE4's voice capture implementation */
 	TSharedPtr<class IVoiceCapture> VoiceCapture{};
