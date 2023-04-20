@@ -137,10 +137,7 @@ bool UVoiceCaptureSubsystem::CreateVoiceCapture()
 		// Attempt to load the voice module in case it's not already loaded for some reason. If it still fails then we can't continue. We
 		// don't use LoadModuleChecked because we don't want to assert if the load fails
 
-		if (bShouldReloadVoiceModule)
-		{
-			FModuleManager::LoadModulePtr<FVoiceModule>("Voice");
-		}
+		FModuleManager::LoadModulePtr<FVoiceModule>("Voice");
 		
 		if (!FVoiceModule::IsAvailable())
 		{
@@ -454,11 +451,9 @@ void UVoiceCaptureSubsystem::OnModulesChanged(FName ModuleName, EModuleChangeRea
 	if (ChangeReason == EModuleChangeReason::ModuleLoaded)
 	{
 		UE_LOG(LogWit, Verbose, TEXT("VoiceCapture - OnModulesChanged: module has been loaded"));
-		bShouldReloadVoiceModule = false;
 	}
 	else if (ChangeReason == EModuleChangeReason::ModuleUnloaded)
 	{
 		UE_LOG(LogWit, Verbose, TEXT("VoiceCapture - OnModulesChanged: module has been unloaded"));
-		bShouldReloadVoiceModule = true;
 	}
 }
