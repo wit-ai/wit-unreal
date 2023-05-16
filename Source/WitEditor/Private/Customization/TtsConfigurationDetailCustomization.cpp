@@ -13,6 +13,7 @@
 #include "PropertyEditor/Public/DetailCategoryBuilder.h"
 #include "PropertyEditor/Public/DetailWidgetRow.h"
 #include "TTS/Experience/TtsExperience.h"
+#include "Wit/Utilities/WitHelperUtilities.h"
 #include "Widgets/Input/SButton.h"
 #include "Misc/EngineVersionComparison.h"
 #include "HAL/PlatformFileManager.h"
@@ -251,7 +252,7 @@ FReply FTtsConfigurationDetailCustomization::OnCreatePresetButtonClicked()
 			
             FString PackagePath = FString::Printf(TEXT("/Game/VoiceSDK/Presets/%s"), *PresetAssetName);
 			
-			 UPackage* PresetPackage = CreatePackage(*PackagePath);
+			UPackage* PresetPackage = CreatePackage(*PackagePath);
 
             if (PresetPackage == nullptr)
             {
@@ -275,14 +276,7 @@ FReply FTtsConfigurationDetailCustomization::OnCreatePresetButtonClicked()
 			FAssetRegistryModule::AssetCreated(PresetAsset);
 			const FString PackageFileName = FPackageName::LongPackageNameToFilename(PackagePath, FPackageName::GetAssetPackageExtension());
 
-#if UE_VERSION_OLDER_THAN(5,1,0)
-			UPackage::SavePackage(PresetPackage, PresetAsset, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone, *PackageFileName, GError, nullptr, true, true, SAVE_NoError);
-#else
-			const FSavePackageArgs SaveArgs = { nullptr, nullptr, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone, SAVE_NoError, true, true, true, FDateTime::Now(), GError};
-			UPackage::SavePackage(PresetPackage, PresetAsset, *PackageFileName, SaveArgs);
-#endif
-
-			
+			FWitHelperUtilities::SaveAssetFile(PresetPackage, PresetAsset, PackageFileName);
 		}
 		
 		break;

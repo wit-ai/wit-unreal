@@ -113,6 +113,9 @@ public:
 	/* Save a clip in a UAsset file */
 	static bool SaveClipToAssetFile(const FString& ClipDirectory, const FString& ClipId, const TArray<uint8>& ClipData, const FTtsConfiguration& ClipSettings);
 
+	/* Save a UAsset file */
+	static void SaveAssetFile(UPackage* Package, UDataAsset* Asset, const FString FileName);
+
 	/* Save a clip in a binary file */
 	static bool SaveClipToBinaryFile(const FString& CacheFilePath, const TArray<uint8>& ClipData);
 
