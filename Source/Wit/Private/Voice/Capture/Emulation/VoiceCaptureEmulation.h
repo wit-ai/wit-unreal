@@ -11,6 +11,7 @@
 #include "Containers/Ticker.h"
 #include "Interfaces/VoiceCapture.h"
 #include "Misc/EngineVersionComparison.h"
+#include "Sound/SoundWave.h"
 
 /**
  * Null implementation of voice capture. This just returns 1 second of known input to hit the wake volume and then silence after

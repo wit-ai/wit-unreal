@@ -10,6 +10,7 @@
 #include "HAL/PlatformFilemanager.h"
 #include "Wit/Utilities/WitHelperUtilities.h"
 #include "Wit/Utilities/WitLog.h"
+#include "Misc/Paths.h"
 
 /**
  * Default constructor
