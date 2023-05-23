@@ -10,6 +10,7 @@
 #include "WitHttpRequest.h"
 #include "GenericPlatform/GenericPlatformHttp.h"
 #include "Misc/App.h"
+#include "Misc/ConfigCacheIni.h"
 #include "WitModule.h"
 #include "Wit/Utilities/WitHelperUtilities.h"
 #include "Wit/Utilities/WitLog.h"
