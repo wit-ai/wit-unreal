@@ -9,9 +9,9 @@
 
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "Input/Reply.h"
-#include "PropertyEditor/Public/DetailLayoutBuilder.h"
-#include "PropertyEditor/Public/DetailCategoryBuilder.h"
-#include "PropertyEditor/Public/DetailWidgetRow.h"
+#include "DetailLayoutBuilder.h"
+#include "DetailCategoryBuilder.h"
+#include "DetailWidgetRow.h"
 #include "TTS/Experience/TtsExperience.h"
 #include "Wit/Utilities/WitHelperUtilities.h"
 #include "Widgets/Input/SButton.h"

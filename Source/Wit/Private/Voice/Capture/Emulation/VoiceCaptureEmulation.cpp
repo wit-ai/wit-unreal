@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the license found in the
@@ -87,9 +87,13 @@ bool FVoiceCaptureEmulation::Start()
 			{
 				return false;
 			}
-
+#if UE_VERSION_OLDER_THAN(5,1,0)
 			SoundWave->InitAudioResource(AudioDevice->GetRuntimeFormat(SoundWave));
 			ICompressedAudioInfo* CompressedAudioInfo = AudioDevice->CreateCompressedAudioInfo(SoundWave);
+#else
+			SoundWave->InitAudioResource(SoundWave->GetRuntimeFormat());
+			ICompressedAudioInfo* CompressedAudioInfo = IAudioInfoFactoryRegistry::Get().Create(SoundWave->GetRuntimeFormat());
+#endif
 			FSoundQualityInfo SoundQualityInfo = { 0 };
 
 #if UE_VERSION_OLDER_THAN(5,0,0)
