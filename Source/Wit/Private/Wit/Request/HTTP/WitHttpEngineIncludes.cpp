@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the license found in the
@@ -20,10 +20,14 @@
 // 3. Add support for pausing and resuming requests using our own read function
 
 #if WITH_CURL && WITH_EDITOR
-
+#include "Misc/EngineVersionComparison.h"
 #include "HttpThread.cpp"
 #include "Curl/CurlHttp.cpp"
 #include "Curl/CurlHttpManager.cpp"
 #include "Curl/CurlHttpThread.cpp"
+#if UE_VERSION_OLDER_THAN(5,3,0)
+#else
+#include "IHttpThreadedRequest.cpp"
+#endif
 
 #endif

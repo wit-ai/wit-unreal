@@ -9,9 +9,9 @@
 
 #include "PropertyCustomizationHelpers.h"
 #include "Input/Reply.h"
-#include "PropertyEditor/Public/DetailLayoutBuilder.h"
-#include "PropertyEditor/Public/DetailCategoryBuilder.h"
-#include "PropertyEditor/Public/DetailWidgetRow.h"
+#include "DetailLayoutBuilder.h"
+#include "DetailCategoryBuilder.h"
+#include "DetailWidgetRow.h"
 #include "Widgets/Input/SButton.h"
 #include "Wit/Configuration/WitAppConfiguration.h"
 #include "Wit/Configuration/WitAppConfigurationAsset.h"

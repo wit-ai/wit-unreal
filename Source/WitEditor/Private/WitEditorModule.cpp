@@ -10,7 +10,7 @@
 #include "LevelEditor.h"
 #include "Wit/TTS/WitTtsService.h"
 #include "Customization/TtsConfigurationDetailCustomization.h"
-#include "PropertyEditor/Public/PropertyEditorModule.h"
+#include "PropertyEditorModule.h"
 #include "Tool/ConfigurationEditor/WitConfigurationDetailCustomization.h"
 #include "Tool/ConfigurationEditor/WitConfigurationEditorTabTool.h"
 #include "Tool/SpeechGenerator/WitSpeechGeneratorTabTool.h"

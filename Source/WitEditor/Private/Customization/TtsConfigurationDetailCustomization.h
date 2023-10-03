@@ -8,7 +8,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "PropertyEditor/Public/IDetailCustomization.h"
+#include "IDetailCustomization.h"
 
 class FReply;
 

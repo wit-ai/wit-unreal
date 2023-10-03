@@ -14,6 +14,7 @@
 #include "WitModule.h"
 #include "Wit/Utilities/WitHelperUtilities.h"
 #include "Wit/Utilities/WitLog.h"
+#include "Misc/EngineVersionComparison.h"
 
 /**
  * Destructor
@@ -295,7 +296,11 @@ FRequestPayloadInFileStream::~FRequestPayloadInFileStream()
 /**
  * Get the content length of the payload
  */
+#if UE_VERSION_OLDER_THAN(5, 3, 0)
 int32 FRequestPayloadInFileStream::GetContentLength() const
+#else
+uint64 FRequestPayloadInFileStream::GetContentLength() const
+#endif
 {
 	return static_cast<int32>(File->TotalSize());
 }
@@ -371,7 +376,11 @@ FRequestPayloadInMemory::~FRequestPayloadInMemory()
 /**
  * * Get the content length of the payload
  */
+#if UE_VERSION_OLDER_THAN(5, 3, 0)
 int32 FRequestPayloadInMemory::GetContentLength() const
+#else
+uint64 FRequestPayloadInMemory::GetContentLength() const
+#endif
 {
 	return Buffer.Num();
 }
