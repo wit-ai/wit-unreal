@@ -87,7 +87,7 @@ bool FVoiceCaptureEmulation::Start()
 			{
 				return false;
 			}
-#if UE_VERSION_OLDER_THAN(5,1,0)
+#if UE_VERSION_OLDER_THAN(5, 3, 0)
 			SoundWave->InitAudioResource(AudioDevice->GetRuntimeFormat(SoundWave));
 			ICompressedAudioInfo* CompressedAudioInfo = AudioDevice->CreateCompressedAudioInfo(SoundWave);
 #else
