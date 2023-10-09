@@ -434,7 +434,8 @@ void UVoiceCaptureSubsystem::OnApplicationWillEnterBackground()
 {
 	UE_LOG(LogWit, Verbose, TEXT("VoiceCapture - OnApplicationWillEnterBackground"));
 
-	Shutdown();
+	Stop();
+	VoiceCapture.Reset();
 }
 
 /**
