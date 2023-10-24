@@ -47,6 +47,16 @@ enum class EWitParameter : uint8
  * A list of the available audio formats for the /speech endpoint of Wit.ai.
  */
 UENUM()
+enum class EWitRequestAudioFormat : uint8
+{
+	Pcm,
+	Wav
+};
+
+/**
+ * A list of the available request header values for the /speech endpoint of Wit.ai.
+ */
+UENUM()
 enum class EWitRequestFormat : uint8
 {
 	Raw,

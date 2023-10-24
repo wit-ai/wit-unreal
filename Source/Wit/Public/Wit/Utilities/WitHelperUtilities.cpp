@@ -328,7 +328,13 @@ USoundWave* FWitHelperUtilities::CreateSoundWaveFromRawData(const uint8* RawData
 
 	if (!bIsValidWaveInfo)
 	{
-		return nullptr;
+		// Treat as raw PCM
+		FSoundWaveParams SoundWaveParams = FSoundWaveParams();
+		SoundWaveParams.TotalSamples = RawDataSize / sizeof(uint16);
+		SoundWaveParams.Duration = SoundWaveParams.TotalSamples / SoundWaveParams.SampleRate;
+		SoundWaveParams.RawData = RawData;
+		SoundWaveParams.RawDataSize = RawDataSize;
+		return CreateSoundWaveFromParams(SoundWaveParams);
 	}
 
 	const int32 ChannelCount = *WaveInfo.pChannels;
@@ -354,31 +360,51 @@ USoundWave* FWitHelperUtilities::CreateSoundWaveFromRawData(const uint8* RawData
 	UE_LOG(LogWit, Verbose, TEXT("Wave Info: Channel count (%d) duration (%f) sample data size (%d) sample rate (%d) bits per sample (%d) raw size (%d)"),
 		*WaveInfo.pChannels, Duration, WaveInfo.SampleDataSize, *WaveInfo.pSamplesPerSec, *WaveInfo.pBitsPerSample, RawDataSize);
 
-	USoundWave* SoundWave = NewObject<USoundWave>(USoundWave::StaticClass()); 
+	FSoundWaveParams SoundWaveParams = FSoundWaveParams();
+	SoundWaveParams.Duration = Duration;
+	SoundWaveParams.SampleRate = *WaveInfo.pSamplesPerSec;
+	SoundWaveParams.NumChannels = *WaveInfo.pChannels;
+	SoundWaveParams.TotalSamples = *WaveInfo.pSamplesPerSec * Duration;
+	SoundWaveParams.RawData = WaveInfo.SampleDataStart;
+	SoundWaveParams.RawDataSize = WaveInfo.SampleDataSize;
 
-	SoundWave->Duration = Duration;
-	SoundWave->SetSampleRate(*WaveInfo.pSamplesPerSec);
-	SoundWave->NumChannels = *WaveInfo.pChannels;
-	SoundWave->TotalSamples = *WaveInfo.pSamplesPerSec * SoundWave->Duration;
+	return CreateSoundWaveFromParams(SoundWaveParams);
+}
+
+/**
+ * Creates a sound wave from paramerterized data
+ *
+ * @param SoundWaveParams [in] struct containing the data necessary to create a sound wave
+ * @return the sound wave created or null if unsuccessful
+ */
+USoundWave* FWitHelperUtilities::CreateSoundWaveFromParams(const FSoundWaveParams& SoundWaveParams)
+{
+
+	USoundWave* SoundWave = NewObject<USoundWave>(USoundWave::StaticClass());
+
+	SoundWave->Duration = SoundWaveParams.Duration;
+	SoundWave->SetSampleRate(SoundWaveParams.SampleRate);
+	SoundWave->NumChannels = SoundWaveParams.NumChannels;
+	SoundWave->TotalSamples = SoundWaveParams.TotalSamples;
 	SoundWave->SoundGroup = SOUNDGROUP_Default;
 
 	// This is the preview data for in-editor
 
 #if UE_VERSION_OLDER_THAN(5,1,0)
-	SoundWave->RawData.Lock(LOCK_READ_WRITE);
-	void* LockedData = SoundWave->RawData.Realloc(RawDataSize);
-	FMemory::Memcpy(LockedData, RawData, RawDataSize);
+	SoundWave->SoundWaveParams.RawData.Lock(LOCK_READ_WRITE);
+	void* LockedData = SoundWave->RawData.Realloc(SoundWaveParams.RawDataSize);
+	FMemory::Memcpy(LockedData, SoundWaveParams.RawData, SoundWaveParams.RawDataSize);
 	SoundWave->RawData.Unlock();
 #elif WITH_EDITORONLY_DATA
-	const FSharedBuffer SharedBuffer = FSharedBuffer::Clone(RawData, RawDataSize);
-	SoundWave->RawData.UpdatePayload(SharedBuffer);	
+	const FSharedBuffer SharedBuffer = FSharedBuffer::Clone(SoundWaveParams.RawData, SoundWaveParams.RawDataSize);
+	SoundWave->RawData.UpdatePayload(SharedBuffer);
 #endif
-	
+
 	// This is the PCM data for packaged builds
-	
-	SoundWave->RawPCMDataSize = WaveInfo.SampleDataSize;
+
+	SoundWave->RawPCMDataSize = SoundWaveParams.RawDataSize;
 	SoundWave->RawPCMData = static_cast<uint8*>(FMemory::Malloc(SoundWave->RawPCMDataSize));
-	FMemory::Memmove(SoundWave->RawPCMData, WaveInfo.SampleDataStart, WaveInfo.SampleDataSize);
+	FMemory::Memmove(SoundWave->RawPCMData, SoundWaveParams.RawData, SoundWaveParams.RawDataSize);
 
 	return SoundWave;
 }

@@ -370,7 +370,7 @@ void UWitRequestSubsystem::OnRequestComplete(FHttpRequestPtr Request, FHttpRespo
 	const FString ContentType = Response->GetContentType();
 
 	const bool bIsJsonContentType = ContentType.Contains(TEXT("application/json"));
-	const bool bIsAudioContentType = ContentType.Contains(TEXT("audio/wav"));
+	const bool bIsAudioContentType = ContentType.Contains(TEXT("audio/wav")) || ContentType.Contains(TEXT("audio/raw"));
 
 	UE_LOG(LogWit, Verbose, TEXT("OnRequestComplete: Content as string (%s)"), *Content);
 
