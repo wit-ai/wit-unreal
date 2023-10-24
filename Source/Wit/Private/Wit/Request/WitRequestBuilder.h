@@ -45,7 +45,7 @@ public:
 	 * @param Configuration [in,out] the request configuration to fill in
 	 * @param Format [in] the desired accept format
 	 */
-	static void AddFormatAccept(FWitRequestConfiguration& Configuration, const EWitRequestFormat Format);
+	static void AddFormatAccept(FWitRequestConfiguration& Configuration, const EWitRequestAudioFormat Format);
 
 	/**
 	 * Add an audio format content type. This is required when using the /speech endpoint
@@ -112,10 +112,18 @@ public:
 	static const FString& GetParameterKeyString(const EWitParameter ParameterKey);
 
 	/**
-     * Converts an audio format into its final string representation
+	 * Converts an audio format into its final string representation
+	 *
+	 * @param Format [in] the audio format
+	 * @return the string representation of the audio format
+	 */
+	static const FString& GetFormatAudioString(const EWitRequestAudioFormat Format);
+
+	/**
+     * Converts an header value into its final string representation
      *
-     * @param Format [in] the audio format
-     * @return the string representation of the audio format
+     * @param Format [in] the header value
+     * @return the string representation of the header value
      */
 	static const FString& GetFormatString(const EWitRequestFormat Format);
 

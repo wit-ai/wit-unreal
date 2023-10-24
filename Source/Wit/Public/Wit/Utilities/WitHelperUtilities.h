@@ -164,4 +164,23 @@ private:
 
 	/** Additional user data to add to the end of user agent data in Wit requests */
 	static FString AdditionalEndUserData;
+
+	/** Struct that is used as a parameter to CreateSoundWaveFromParams */
+	struct FSoundWaveParams
+	{
+		float Duration{0};
+		uint32 SampleRate{24000};
+		int32 NumChannels{1};
+		float TotalSamples{0};
+		int32 RawDataSize{0};
+		const uint8* RawData{0};
+	};
+
+	/**
+	 * Creates a sound wave from paramerterized data
+	 *
+	 * @param SoundWaveParams [in] struct containing the data necessary to create a sound wave
+	 * @return the sound wave created or null if unsuccessful
+	 */
+	static USoundWave* CreateSoundWaveFromParams(const FSoundWaveParams& SoundWaveParams);
 };

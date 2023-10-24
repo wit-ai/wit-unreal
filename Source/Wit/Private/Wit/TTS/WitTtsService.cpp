@@ -150,7 +150,7 @@ void UWitTtsService::ConvertTextToSpeechWithSettings(const FTtsConfiguration& Cl
 	FWitRequestBuilder::SetRequestConfigurationWithDefaults(RequestConfiguration, EWitRequestEndpoint::Synthesize, Configuration->Application.ClientAccessToken,
 		Configuration->Application.Advanced.ApiVersion, Configuration->Application.Advanced.URL);
 	FWitRequestBuilder::AddFormatContentType(RequestConfiguration, EWitRequestFormat::Json);
-	FWitRequestBuilder::AddFormatAccept(RequestConfiguration, EWitRequestFormat::Wav);
+	FWitRequestBuilder::AddFormatAccept(RequestConfiguration, AudioType);
 
 	RequestConfiguration.bShouldUseCustomHttpTimeout = Configuration->Application.Advanced.bIsCustomHttpTimeout;
 	RequestConfiguration.HttpTimeout = Configuration->Application.Advanced.HttpTimeout;
