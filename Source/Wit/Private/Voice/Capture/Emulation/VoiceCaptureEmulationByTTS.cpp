@@ -47,7 +47,7 @@ void FVoiceCaptureEmulationByTts::Shutdown()
 
 void FVoiceCaptureEmulationByTts::OnSynthesizeRawResponse(const TArray<uint8>& BinaryData)
 {
-	const USoundWave* SoundWave = FWitHelperUtilities::CreateSoundWaveFromRawData(BinaryData.GetData(), BinaryData.Num());
+	const USoundWave* SoundWave = FWitHelperUtilities::CreateSoundWaveFromRawData(BinaryData.GetData(), BinaryData.Num(), EWitRequestAudioFormat::Wav, false);
 
 	if (SoundWave == nullptr)
 	{

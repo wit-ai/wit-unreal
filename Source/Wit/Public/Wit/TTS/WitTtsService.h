@@ -8,6 +8,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Sound/SoundWaveProcedural.h"
 #include "TTS/Configuration/TtsConfiguration.h"
 #include "TTS/Service/TtsService.h"
 #include "Wit/Request/WitResponse.h"
@@ -60,6 +61,18 @@ private:
 	/** Maximum length of text that can be passed to Wit.ai */
 	static constexpr int MaximumTextLengthInRequest{280};
 
+	/** Default sample rate of response returned from Wit.ai */
+	static const int32 DefaultSampleRate{24000};
+
+	/** Procedural sound wave to add progressive audio to */
+	TObjectPtr<USoundWaveProcedural> SoundWaveProcedural;
+
+	/** Buffer queue used to as a container for received audio data */
+	TArray<uint8> BufferQueue;
+
+	/** Previous data index used to process raw data */
+	int32 PreviousDataIndex{0};
+
 #if WITH_EDITORONLY_DATA
 	
 	/** Write the captured voice input to a wav file */
@@ -88,4 +101,6 @@ private:
 	/** Last requested generation settings */
 	FTtsConfiguration LastRequestedClipSettings{};
 
+	/** Called when a Wit synthesize request is in progress to process the incremental payload */
+	void OnSynthesizeRequestProgress(const TArray<uint8>& BinaryResponse, const TSharedPtr<FJsonObject> JsonResponse);
 };
