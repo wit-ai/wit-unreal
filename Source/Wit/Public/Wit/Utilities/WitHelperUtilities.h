@@ -102,7 +102,7 @@ public:
 	 * @param RawDataSize [in] the raw data size
 	 * @return the sound wave created or null if unsuccessful
 	 */
-	static USoundWave* CreateSoundWaveFromRawData(const uint8* RawData, const int32 RawDataSize);
+	static USoundWave* CreateSoundWaveFromRawData(const uint8* RawData, const int32 RawDataSize, const EWitRequestAudioFormat AudioFormat, const bool bStream);
 	
 	/* Load a clip stored in a UAsset file */
 	static bool LoadClipFromAssetFile(const FString& ClipDirectory, const FString& ClipId, TArray<uint8>& ClipData);
@@ -164,4 +164,24 @@ private:
 
 	/** Additional user data to add to the end of user agent data in Wit requests */
 	static FString AdditionalEndUserData;
+
+	/** Struct that is used as a parameter to CreateSoundWaveFromParams */
+	struct FSoundWaveParams
+	{
+		float Duration{0};
+		uint32 SampleRate{24000};
+		int32 NumChannels{1};
+		float TotalSamples{0};
+		int32 RawDataSize{0};
+		const uint8* RawData{0};
+		bool bStream{false};
+	};
+
+	/**
+	 * Creates a sound wave from paramerterized data
+	 *
+	 * @param SoundWaveParams [in] struct containing the data necessary to create a sound wave
+	 * @return the sound wave created or null if unsuccessful
+	 */
+	static USoundWave* CreateSoundWaveFromParams(const FSoundWaveParams& SoundWaveParams);
 };

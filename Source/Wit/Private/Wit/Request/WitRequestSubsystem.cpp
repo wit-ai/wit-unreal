@@ -317,9 +317,10 @@ void UWitRequestSubsystem::OnRequestProgress(FHttpRequestPtr Request, int32 Byte
 
 	SplitResponseIntoChunks(Content, ChunkedResponses);
 
-	const bool bIsMalformedResponse = (ChunkedResponses.Num() == 0);
-	if (bIsMalformedResponse)
+	const bool bIsDataResponse = (ChunkedResponses.Num() == 0);
+	if (bIsDataResponse)
 	{
+		Configuration.OnRequestProgress.Broadcast(ContentAsBytes, nullptr);
 		return;
 	}
 
@@ -370,7 +371,7 @@ void UWitRequestSubsystem::OnRequestComplete(FHttpRequestPtr Request, FHttpRespo
 	const FString ContentType = Response->GetContentType();
 
 	const bool bIsJsonContentType = ContentType.Contains(TEXT("application/json"));
-	const bool bIsAudioContentType = ContentType.Contains(TEXT("audio/wav"));
+	const bool bIsAudioContentType = ContentType.Contains(TEXT("audio/wav")) || ContentType.Contains(TEXT("audio/raw"));
 
 	UE_LOG(LogWit, Verbose, TEXT("OnRequestComplete: Content as string (%s)"), *Content);
 

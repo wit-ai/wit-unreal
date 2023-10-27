@@ -15,6 +15,7 @@
 #include "TTS/Cache/Storage/TtsStorageCacheHandler.h"
 #include "TTS/Configuration/TtsVoicePresetAsset.h"
 #include "TTS/Events/TtsEvents.h"
+#include "Wit/Request/WitRequestTypes.h"
 #include "TtsService.generated.h"
 
 /**
@@ -32,10 +33,16 @@ public:
 	/**
 	 * Set the configuration to use for TTS
 	 */
-	virtual void SetConfiguration(UWitAppConfigurationAsset* ConfigurationToUse, UTtsVoicePresetAsset* VoicePresetToUse)
+	virtual void SetConfiguration(
+		UWitAppConfigurationAsset* ConfigurationToUse,
+		UTtsVoicePresetAsset* VoicePresetToUse,
+		EWitRequestAudioFormat AudioTypeToUse,
+		bool bStreamToUse)
 	{
 		Configuration = ConfigurationToUse;
 		VoicePreset = VoicePresetToUse;
+		AudioType = AudioTypeToUse;
+		bStream = bStreamToUse;
 	}
 
 	/**
@@ -69,6 +76,17 @@ protected:
 	 */
 	UPROPERTY(Transient)
 	UTtsVoicePresetAsset* VoicePreset{};
+
+	/**
+	 * The Wit TTS Audio Type that will be used by Wit.ai
+	 */
+	UPROPERTY(Transient)
+	EWitRequestAudioFormat AudioType{EWitRequestAudioFormat::Wav};
+
+	/**
+	* Whether or not streaming is enabled on the call to Wit.ai
+	*/
+	bool bStream{false};
 
 	/**
 	 * The events that this service should use in callbacks

@@ -107,9 +107,9 @@ void FWitRequestBuilder::AddParameter(FWitRequestConfiguration& Configuration, c
  * @param Configuration [in,out] the request configuration to fill in
  * @param Format [in] the desired accept format
  */
-void FWitRequestBuilder::AddFormatAccept(FWitRequestConfiguration& Configuration, const EWitRequestFormat Format)
+void FWitRequestBuilder::AddFormatAccept(FWitRequestConfiguration& Configuration, const EWitRequestAudioFormat Format)
 {
-	Configuration.Accept = GetFormatString(Format);
+	Configuration.Accept = GetFormatAudioString(Format);
 }
 
 /**
@@ -315,6 +315,32 @@ const FString& FWitRequestBuilder::GetParameterKeyString(const EWitParameter Par
  *
  * @param Format the audio format
  * @return the string representation of the audio format
+ */
+const FString& FWitRequestBuilder::GetFormatAudioString(const EWitRequestAudioFormat Format)
+{
+	switch (Format)
+	{
+	case EWitRequestAudioFormat::Pcm:
+		{
+			return FormatValueRaw;
+		}
+	case EWitRequestAudioFormat::Wav:
+		{
+			return FormatValueWav;
+		}
+	default:
+		{
+			check(0);
+			return FormatValueWav;
+		}
+	}
+}
+
+/**
+ * Converts a request header value into its final string representation
+ *
+ * @param Format the request header value
+ * @return the string representation of the request header value
  */
 const FString& FWitRequestBuilder::GetFormatString(const EWitRequestFormat Format)
 {
