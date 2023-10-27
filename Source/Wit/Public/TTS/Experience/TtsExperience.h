@@ -95,6 +95,12 @@ public:
 	EWitRequestAudioFormat AudioType{EWitRequestAudioFormat::Wav};
 	
 	/**
+	* Should the response be streamed by Wit.ai
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TTS")
+	bool bStream{false};
+
+	/**
 	 * The events used by the voice service
 	 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "TTS")

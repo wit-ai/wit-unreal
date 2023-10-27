@@ -36,11 +36,13 @@ public:
 	virtual void SetConfiguration(
 		UWitAppConfigurationAsset* ConfigurationToUse,
 		UTtsVoicePresetAsset* VoicePresetToUse,
-		EWitRequestAudioFormat AudioTypeToUse)
+		EWitRequestAudioFormat AudioTypeToUse,
+		bool bStreamToUse)
 	{
 		Configuration = ConfigurationToUse;
 		VoicePreset = VoicePresetToUse;
 		AudioType = AudioTypeToUse;
+		bStream = bStreamToUse;
 	}
 
 	/**
@@ -80,6 +82,11 @@ protected:
 	 */
 	UPROPERTY(Transient)
 	EWitRequestAudioFormat AudioType{EWitRequestAudioFormat::Wav};
+
+	/**
+	* Whether or not streaming is enabled on the call to Wit.ai
+	*/
+	bool bStream{false};
 
 	/**
 	 * The events that this service should use in callbacks

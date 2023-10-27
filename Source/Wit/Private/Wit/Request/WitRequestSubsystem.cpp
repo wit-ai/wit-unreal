@@ -317,9 +317,10 @@ void UWitRequestSubsystem::OnRequestProgress(FHttpRequestPtr Request, int32 Byte
 
 	SplitResponseIntoChunks(Content, ChunkedResponses);
 
-	const bool bIsMalformedResponse = (ChunkedResponses.Num() == 0);
-	if (bIsMalformedResponse)
+	const bool bIsDataResponse = (ChunkedResponses.Num() == 0);
+	if (bIsDataResponse)
 	{
+		Configuration.OnRequestProgress.Broadcast(ContentAsBytes, nullptr);
 		return;
 	}
 

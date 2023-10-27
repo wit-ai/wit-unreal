@@ -321,18 +321,18 @@ const FString& FWitRequestBuilder::GetFormatAudioString(const EWitRequestAudioFo
 	switch (Format)
 	{
 	case EWitRequestAudioFormat::Pcm:
-	{
-		return FormatValueRaw;
-	}
+		{
+			return FormatValueRaw;
+		}
 	case EWitRequestAudioFormat::Wav:
-	{
-		return FormatValueWav;
-	}
+		{
+			return FormatValueWav;
+		}
 	default:
-	{
-		check(0);
-		return FormatValueWav;
-	}
+		{
+			check(0);
+			return FormatValueWav;
+		}
 	}
 }
 

@@ -154,9 +154,19 @@ void UWitTtsService::ConvertTextToSpeechWithSettings(const FTtsConfiguration& Cl
 
 	RequestConfiguration.bShouldUseCustomHttpTimeout = Configuration->Application.Advanced.bIsCustomHttpTimeout;
 	RequestConfiguration.HttpTimeout = Configuration->Application.Advanced.HttpTimeout;
+	RequestConfiguration.bShouldUseChunkedTransfer = bStream;
 
 	RequestConfiguration.OnRequestError.AddUObject(this, &UWitTtsService::OnSynthesizeRequestError);
 	RequestConfiguration.OnRequestComplete.AddUObject(this, &UWitTtsService::OnSynthesizeRequestComplete);
+	if (bStream && AudioType != EWitRequestAudioFormat::Pcm)
+	{
+		UE_LOG(LogWit, Warning, TEXT("ConvertTextToSpeechWithSettings: Audio streaming is not currently supported for (%s)"), *UEnum::GetValueAsString(AudioType));
+		bStream = false;
+	}
+	if (bStream)
+	{
+		RequestConfiguration.OnRequestProgress.AddUObject(this, &UWitTtsService::OnSynthesizeRequestProgress);
+	}
 
 	RequestSubsystem->BeginStreamRequest(RequestConfiguration);
 
@@ -170,6 +180,7 @@ void UWitTtsService::ConvertTextToSpeechWithSettings(const FTtsConfiguration& Cl
 	{
 		UE_LOG(LogWit, Warning, TEXT("ConvertTextToSpeechWithSettings: text is too long, the limit is %d characters"), MaximumTextLengthInRequest);
 	}
+
 	RequestBody->SetStringField("q",ClipSettings.Text);
 	
 	RequestBody->SetNumberField("speed",ClipSettings.Speed);
@@ -200,6 +211,8 @@ void UWitTtsService::ConvertTextToSpeech(const FString& TextToConvert)
 		UE_LOG(LogWit, Warning, TEXT("ConvertTextToSpeech: no voice preset found. Please assign a voice preset"));
 		return;
 	}
+
+	SoundWaveProcedural = nullptr;
 	
 	FTtsConfiguration ClipSettings(VoicePreset->Synthesize);
 	ClipSettings.Text = TextToConvert;
@@ -332,7 +345,47 @@ void UWitTtsService::OnSynthesizeRequestComplete(const TArray<uint8>& BinaryResp
 	{
 		EventHandler->OnSynthesizeRawResponseMulticast.Broadcast(BinaryResponse);
 		EventHandler->OnSynthesizeRawResponse.Broadcast(ClipId, BinaryResponse, LastRequestedClipSettings);
-		EventHandler->OnSynthesizeResponse.Broadcast(true, SoundWave);
+		if (!SoundWaveProcedural)
+		{
+			EventHandler->OnSynthesizeResponse.Broadcast(true, SoundWave);
+		}
+	}
+}
+
+/** Called when a Wit synthesize request is in progress to process the incremental payload 
+* 
+* @param BinaryData [in] the binary data
+* @param ClipSettings [in] the clip settings for the clip
+*/
+void UWitTtsService::OnSynthesizeRequestProgress(const TArray<uint8>& BinaryResponse, const TSharedPtr<FJsonObject> JsonResponse)
+{
+	const uint8* RawData = BinaryResponse.GetData();
+	const int32 RawDataSize = BinaryResponse.Num() % 2 == 0 ? BinaryResponse.Num() : BinaryResponse.Num() - 1;
+	const int32 MinBufferLength = GEngine->GetMainAudioDeviceRaw()->GetBufferLength();
+
+	if (!SoundWaveProcedural)
+	{
+		SoundWaveProcedural = Cast<USoundWaveProcedural>(FWitHelperUtilities::CreateSoundWaveFromRawData(RawData, RawDataSize, AudioType, bStream));
+		SoundWaveProcedural->bCanProcessAsync = true;
+		PreviousDataIndex = 0;
+		if (EventHandler)
+		{
+			EventHandler->OnSynthesizeResponse.Broadcast(true, SoundWaveProcedural);
+		}
+	}
+	SoundWaveProcedural->Duration = RawDataSize / sizeof(uint16) / DefaultSampleRate;
+
+	if (RawDataSize >= MinBufferLength)
+	{
+		const int IncreaseBufferLength = RawDataSize - PreviousDataIndex;
+		BufferQueue.SetNum(IncreaseBufferLength);
+		int8* Data = (int8*)&BufferQueue[0];
+		for (size_t i = 0; i < IncreaseBufferLength; ++i)
+		{
+			Data[i] = RawData[i + PreviousDataIndex];
+		}
+		SoundWaveProcedural->QueueAudio((const uint8*)Data, IncreaseBufferLength);
+		PreviousDataIndex = RawDataSize;
 	}
 }
 
@@ -398,7 +451,7 @@ void UWitTtsService::OnVoicesRequestError(const FString& ErrorMessage, const FSt
  */
 USoundWave* UWitTtsService::CreateSoundWaveAndAddToMemoryCache(const FString& ClipId, const TArray<uint8>& BinaryData, const FTtsConfiguration& ClipSettings) const
 {
-	USoundWave* SoundWave = FWitHelperUtilities::CreateSoundWaveFromRawData(BinaryData.GetData(), BinaryData.Num());
+	USoundWave* SoundWave = FWitHelperUtilities::CreateSoundWaveFromRawData(BinaryData.GetData(), BinaryData.Num(), AudioType, false);
 
 	if (SoundWave == nullptr)
 	{
