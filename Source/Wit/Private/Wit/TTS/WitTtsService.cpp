@@ -154,16 +154,16 @@ void UWitTtsService::ConvertTextToSpeechWithSettings(const FTtsConfiguration& Cl
 
 	RequestConfiguration.bShouldUseCustomHttpTimeout = Configuration->Application.Advanced.bIsCustomHttpTimeout;
 	RequestConfiguration.HttpTimeout = Configuration->Application.Advanced.HttpTimeout;
-	RequestConfiguration.bShouldUseChunkedTransfer = bStream;
+	RequestConfiguration.bShouldUseChunkedTransfer = bUseStreaming;
 
 	RequestConfiguration.OnRequestError.AddUObject(this, &UWitTtsService::OnSynthesizeRequestError);
 	RequestConfiguration.OnRequestComplete.AddUObject(this, &UWitTtsService::OnSynthesizeRequestComplete);
-	if (bStream && AudioType != EWitRequestAudioFormat::Pcm)
+	if (bUseStreaming && AudioType != EWitRequestAudioFormat::Pcm)
 	{
 		UE_LOG(LogWit, Warning, TEXT("ConvertTextToSpeechWithSettings: Audio streaming is not currently supported for (%s)"), *UEnum::GetValueAsString(AudioType));
-		bStream = false;
+		bUseStreaming = false;
 	}
-	if (bStream)
+	if (bUseStreaming)
 	{
 		RequestConfiguration.OnRequestProgress.AddUObject(this, &UWitTtsService::OnSynthesizeRequestProgress);
 	}
@@ -365,7 +365,7 @@ void UWitTtsService::OnSynthesizeRequestProgress(const TArray<uint8>& BinaryResp
 
 	if (!SoundWaveProcedural)
 	{
-		SoundWaveProcedural = Cast<USoundWaveProcedural>(FWitHelperUtilities::CreateSoundWaveFromRawData(RawData, RawDataSize, AudioType, bStream));
+		SoundWaveProcedural = Cast<USoundWaveProcedural>(FWitHelperUtilities::CreateSoundWaveFromRawData(RawData, RawDataSize, AudioType, bUseStreaming));
 		SoundWaveProcedural->bCanProcessAsync = true;
 		PreviousDataIndex = 0;
 		if (EventHandler)
@@ -373,7 +373,7 @@ void UWitTtsService::OnSynthesizeRequestProgress(const TArray<uint8>& BinaryResp
 			EventHandler->OnSynthesizeResponse.Broadcast(true, SoundWaveProcedural);
 		}
 	}
-	SoundWaveProcedural->Duration = RawDataSize / sizeof(uint16) / DefaultSampleRate;
+	SoundWaveProcedural->Duration = RawDataSize / BytesPerDataSample / DefaultSampleRate;
 
 	if (RawDataSize >= MinBufferLength)
 	{
@@ -451,7 +451,7 @@ void UWitTtsService::OnVoicesRequestError(const FString& ErrorMessage, const FSt
  */
 USoundWave* UWitTtsService::CreateSoundWaveAndAddToMemoryCache(const FString& ClipId, const TArray<uint8>& BinaryData, const FTtsConfiguration& ClipSettings) const
 {
-	USoundWave* SoundWave = FWitHelperUtilities::CreateSoundWaveFromRawData(BinaryData.GetData(), BinaryData.Num(), AudioType, false);
+	USoundWave* SoundWave = FWitHelperUtilities::CreateSoundWaveFromRawData(BinaryData.GetData(), BinaryData.Num(), AudioType, false /* bUseStreaming */);
 
 	if (SoundWave == nullptr)
 	{

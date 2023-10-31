@@ -37,12 +37,12 @@ public:
 		UWitAppConfigurationAsset* ConfigurationToUse,
 		UTtsVoicePresetAsset* VoicePresetToUse,
 		EWitRequestAudioFormat AudioTypeToUse,
-		bool bStreamToUse)
+		bool bUseStreamingToUse)
 	{
 		Configuration = ConfigurationToUse;
 		VoicePreset = VoicePresetToUse;
 		AudioType = AudioTypeToUse;
-		bStream = bStreamToUse;
+		bUseStreaming = bUseStreamingToUse;
 	}
 
 	/**
@@ -86,7 +86,7 @@ protected:
 	/**
 	* Whether or not streaming is enabled on the call to Wit.ai
 	*/
-	bool bStream{false};
+	bool bUseStreaming{false};
 
 	/**
 	 * The events that this service should use in callbacks
