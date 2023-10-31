@@ -102,7 +102,7 @@ public:
 	 * @param RawDataSize [in] the raw data size
 	 * @return the sound wave created or null if unsuccessful
 	 */
-	static USoundWave* CreateSoundWaveFromRawData(const uint8* RawData, const int32 RawDataSize, const EWitRequestAudioFormat AudioFormat, const bool bStream);
+	static USoundWave* CreateSoundWaveFromRawData(const uint8* RawData, const int32 RawDataSize, const EWitRequestAudioFormat AudioFormat, const bool bUseStreaming);
 	
 	/* Load a clip stored in a UAsset file */
 	static bool LoadClipFromAssetFile(const FString& ClipDirectory, const FString& ClipId, TArray<uint8>& ClipData);
@@ -168,13 +168,13 @@ private:
 	/** Struct that is used as a parameter to CreateSoundWaveFromParams */
 	struct FSoundWaveParams
 	{
-		float Duration{0};
+		float DurationInSeconds{0};
 		uint32 SampleRate{24000};
 		int32 NumChannels{1};
 		float TotalSamples{0};
 		int32 RawDataSize{0};
 		const uint8* RawData{0};
-		bool bStream{false};
+		bool bUseStreaming{false};
 	};
 
 	/**

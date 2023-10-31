@@ -64,6 +64,8 @@ private:
 	/** Default sample rate of response returned from Wit.ai */
 	static const int32 DefaultSampleRate{24000};
 
+	static const int32 BytesPerDataSample{2};
+
 	/** Procedural sound wave to add progressive audio to */
 	TObjectPtr<USoundWaveProcedural> SoundWaveProcedural;
 
