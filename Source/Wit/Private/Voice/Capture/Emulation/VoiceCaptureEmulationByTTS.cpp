@@ -9,6 +9,7 @@
 
 #include "AudioDecompress.h"
 #include "AudioDevice.h"
+#include "Engine.h"
 #include "Wit/Utilities/WitLog.h"
 #include "Wit/Utilities/WitHelperUtilities.h"
 

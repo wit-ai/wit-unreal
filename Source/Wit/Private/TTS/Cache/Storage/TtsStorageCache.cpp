@@ -7,6 +7,7 @@
 
 #include "TTS/Cache/Storage/TtsStorageCache.h"
 #include "TTS/Cache/Storage/Asset/TtsStorageCacheAsset.h"
+#include "GenericPlatform/GenericPlatformFile.h"
 #include "HAL/PlatformFilemanager.h"
 #include "Wit/Utilities/WitHelperUtilities.h"
 #include "Wit/Utilities/WitLog.h"
