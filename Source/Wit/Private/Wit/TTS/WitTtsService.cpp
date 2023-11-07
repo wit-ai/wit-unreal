@@ -68,6 +68,8 @@ bool UWitTtsService::IsRequestInProgress() const
  */
 void UWitTtsService::ConvertTextToSpeechWithSettings(const FTtsConfiguration& ClipSettings)
 {
+	SoundWaveProcedural = nullptr;
+
 	const FString ClipId = FWitHelperUtilities::GetVoiceClipId(ClipSettings);
 	
 	// Check if we already have this in the memory cache
@@ -211,8 +213,6 @@ void UWitTtsService::ConvertTextToSpeech(const FString& TextToConvert)
 		UE_LOG(LogWit, Warning, TEXT("ConvertTextToSpeech: no voice preset found. Please assign a voice preset"));
 		return;
 	}
-
-	SoundWaveProcedural = nullptr;
 	
 	FTtsConfiguration ClipSettings(VoicePreset->Synthesize);
 	ClipSettings.Text = TextToConvert;
@@ -378,6 +378,12 @@ void UWitTtsService::OnSynthesizeRequestProgress(const TArray<uint8>& BinaryResp
 	if (RawDataSize >= MinBufferLength)
 	{
 		const int IncreaseBufferLength = RawDataSize - PreviousDataIndex;
+		if (IncreaseBufferLength <= 0)
+		{
+			UE_LOG(LogWit, Warning, TEXT("OnSynthesizeRequestProgress: Trying to increase Buffer length by a non-positive amount"));
+			return;
+		}
+		
 		BufferQueue.SetNum(IncreaseBufferLength);
 		int8* Data = (int8*)&BufferQueue[0];
 		for (size_t i = 0; i < IncreaseBufferLength; ++i)
