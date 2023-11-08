@@ -303,6 +303,13 @@ void UWitRequestSubsystem::OnRequestProgress(FHttpRequestPtr Request, int32 Byte
 		return;	
 	}
 	
+	const FString Url = Request->GetURL();
+	if (Url.Contains("synthesize"))
+	{
+		Configuration.OnRequestProgress.Broadcast(ContentAsBytes, nullptr);
+		return;
+	}
+
 	UE_LOG(LogWit, Verbose, TEXT("OnRequestProgress: Content size (%d) bytes received (%d)"), ContentAsBytes.Num(), BytesReceived);
 
 	const FUTF8ToTCHAR ContentAsTChar(reinterpret_cast<const ANSICHAR*>(ContentAsBytes.GetData()), ContentAsBytes.Num());
@@ -317,10 +324,9 @@ void UWitRequestSubsystem::OnRequestProgress(FHttpRequestPtr Request, int32 Byte
 
 	SplitResponseIntoChunks(Content, ChunkedResponses);
 
-	const bool bIsDataResponse = (ChunkedResponses.Num() == 0);
-	if (bIsDataResponse)
+	const bool bIsMalformedResponse = (ChunkedResponses.Num() == 0);
+	if (bIsMalformedResponse)
 	{
-		Configuration.OnRequestProgress.Broadcast(ContentAsBytes, nullptr);
 		return;
 	}
 
