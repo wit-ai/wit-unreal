@@ -30,6 +30,7 @@ public class Wit : ModuleRules
 		PrivateDefinitions.Add("WITH_CURL_MULTIWAIT=0");
 		PrivateDefinitions.Add("WITH_CURL_MULTISOCKET=0");
 		PrivateDefinitions.Add("WITH_CURL=" + (bPlatformSupportsLibCurl ? "1" : "0"));
+		PrivateDefinitions.Add("WITH_CURL_QUICKEXIT=1");
 		PrivateDefinitions.Add("WITH_SSL=1");
 		
 		PublicIncludePaths.AddRange(
