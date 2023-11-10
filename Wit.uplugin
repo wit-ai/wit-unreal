@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
-	"Version": 53,
-	"VersionName": "53.0.1",
+	"Version": 59,
+	"VersionName": "59.0.1",
 	"FriendlyName": "Wit",
 	"Description": "Wit module that manages communications with the Wit.ai servers",
 	"Category": "Voice",
