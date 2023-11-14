@@ -8,6 +8,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Misc/EngineVersionComparison.h"
 #include "Sound/SoundWaveProcedural.h"
 #include "TTS/Configuration/TtsConfiguration.h"
 #include "TTS/Service/TtsService.h"
@@ -68,7 +69,11 @@ private:
 	static const int32 BytesPerDataSample{2};
 
 	/** Procedural sound wave to add progressive audio to */
+#if UE_VERSION_OLDER_THAN(5, 0, 0)
+	USoundWaveProcedural* SoundWaveProcedural;
+#else
 	TObjectPtr<USoundWaveProcedural> SoundWaveProcedural;
+#endif
 
 	/** Buffer queue used to as a container for received audio data */
 	TArray<uint8> BufferQueue;
