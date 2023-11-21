@@ -73,6 +73,11 @@ public:
 	
 protected:
 
+	/**
+	* Queue of SoundWave files to be played
+	*/
+	TArray<USoundWave*> SoundWaveQueue{};
+
 	virtual void BeginPlay() override;
 	virtual void BeginDestroy() override;
 	
@@ -84,5 +89,11 @@ protected:
 	 */
 	UFUNCTION()
 	void OnSynthesizeResponse(const bool bIsSuccessful, USoundWave* SoundWave);
+
+	/**
+	 * Callback that is called when an audio playback is finished. Plays the next queued SoundWave, if present
+	 */
+	UFUNCTION()
+	void OnAudioFinished();
 	
 };

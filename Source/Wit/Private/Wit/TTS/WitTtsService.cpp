@@ -68,7 +68,14 @@ bool UWitTtsService::IsRequestInProgress() const
  */
 void UWitTtsService::ConvertTextToSpeechWithSettings(const FTtsConfiguration& ClipSettings)
 {
-	SoundWaveProcedural = nullptr;
+	if (bQueueingEnabled)
+	{
+		PreviousDataIndex = 0;
+	}
+	else
+	{
+		SoundWaveProcedural = nullptr;
+	}
 
 	const FString ClipId = FWitHelperUtilities::GetVoiceClipId(ClipSettings);
 	

@@ -7,6 +7,7 @@
 
 #include "Wit/TTS/WitTtsSpeaker.h"
 #include "Components/AudioComponent.h"
+#include "Sound/SoundWaveProcedural.h"
 #include "Wit/Utilities/WitHelperUtilities.h"
 #include "Wit/Utilities/WitLog.h"
 
@@ -32,6 +33,7 @@ void AWitTtsSpeaker::BeginPlay()
 		
 		EventHandler->OnSynthesizeResponse.AddUniqueDynamic(this, &AWitTtsSpeaker::OnSynthesizeResponse);
 	}
+	AudioComponent->OnAudioFinished.AddDynamic(this, &AWitTtsSpeaker::OnAudioFinished);
 
 	Super::BeginPlay();
 }
@@ -124,9 +126,22 @@ void AWitTtsSpeaker::OnSynthesizeResponse(const bool bIsSuccessful, USoundWave* 
 	{
 		return;
 	}
-
+	if (bQueueingEnabled && IsSpeaking() && !Cast<USoundWaveProcedural>(SoundWave))
+	{
+		SoundWaveQueue.Add(SoundWave);
+		return;
+	}
 	Stop();
 	
 	AudioComponent->SetSound(SoundWave);
 	AudioComponent->Play();
+}
+
+void AWitTtsSpeaker::OnAudioFinished()
+{
+	if (!SoundWaveQueue.IsEmpty())
+	{
+		OnSynthesizeResponse(true, SoundWaveQueue[0]);
+		SoundWaveQueue.RemoveAt(0);
+	}
 }

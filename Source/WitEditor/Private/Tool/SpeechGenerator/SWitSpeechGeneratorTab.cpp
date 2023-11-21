@@ -316,7 +316,7 @@ FReply SWitSpeechGeneratorTab::OnConvertButtonClicked()
 	UTtsService* TtsService = TtsExperience->TtsService;
 
 	TtsService->SetHandlers(TtsExperience->EventHandler, nullptr, nullptr);
-	TtsService->SetConfiguration(TtsExperience->Configuration, nullptr, EWitRequestAudioFormat::Wav, false);
+	TtsService->SetConfiguration(TtsExperience->Configuration, nullptr, EWitRequestAudioFormat::Wav, false, false);
 	
 	TtsExperience->EventHandler->OnSynthesizeRawResponse.AddUniqueDynamic(EditedTextCollection, &UWitEditedTextCollection::OnSynthesizeRawResponse);
 	TtsExperience->EventHandler->OnSynthesizeError.AddUniqueDynamic(EditedTextCollection, &UWitEditedTextCollection::OnSynthesizeError);

@@ -37,12 +37,14 @@ public:
 		UWitAppConfigurationAsset* ConfigurationToUse,
 		UTtsVoicePresetAsset* VoicePresetToUse,
 		EWitRequestAudioFormat AudioTypeToUse,
-		bool bUseStreamingToUse)
+		bool bUseStreamingToUse,
+		bool bQueueingEnabledToUse)
 	{
 		Configuration = ConfigurationToUse;
 		VoicePreset = VoicePresetToUse;
 		AudioType = AudioTypeToUse;
 		bUseStreaming = bUseStreamingToUse;
+		bQueueingEnabled = bQueueingEnabledToUse;
 	}
 
 	/**
@@ -86,7 +88,14 @@ protected:
 	/**
 	* Whether or not streaming is enabled on the call to Wit.ai
 	*/
+	UPROPERTY(Transient)
 	bool bUseStreaming{false};
+
+	/**
+	* Whether or not the audio response should be queued
+	*/
+	UPROPERTY(Transient)
+	bool bQueueingEnabled{false};
 
 	/**
 	 * The events that this service should use in callbacks
