@@ -104,7 +104,7 @@ public:
 	* Should the audio response be queued 
 	*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TTS")
-	bool bQueueingEnabled{ false };
+	bool bQueueingEnabled{true};
 
 	/**
 	 * The events used by the voice service
