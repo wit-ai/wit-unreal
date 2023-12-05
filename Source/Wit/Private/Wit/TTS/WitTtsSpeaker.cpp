@@ -7,7 +7,6 @@
 
 #include "Wit/TTS/WitTtsSpeaker.h"
 #include "Components/AudioComponent.h"
-#include "Sound/SoundWaveProcedural.h"
 #include "Wit/Utilities/WitHelperUtilities.h"
 #include "Wit/Utilities/WitLog.h"
 
@@ -55,20 +54,22 @@ void AWitTtsSpeaker::BeginDestroy()
  * Speak a phrase with the default configuration
  *
  * @param TextToSpeak [in] the text to speak
+ * @param QueueAudio [in] should audio be placed in a queue
  */
-void AWitTtsSpeaker::Speak(const FString& TextToSpeak)
+void AWitTtsSpeaker::Speak(const FString& TextToSpeak, bool bQueueAudio)
 {
+	bQueueingEnabled = bQueueAudio;
 	if (VoicePreset != nullptr)
 	{
 		FTtsConfiguration ClipSettings = VoicePreset->Synthesize;
 		
 		ClipSettings.Text = TextToSpeak;
 		
-		ConvertTextToSpeechWithSettings(ClipSettings);
+		ConvertTextToSpeechWithSettings(ClipSettings, bQueueAudio);
 	}
 	else
 	{
-		ConvertTextToSpeech(TextToSpeak);
+		ConvertTextToSpeech(TextToSpeak, bQueueAudio);
 	}
 }
 
@@ -77,10 +78,12 @@ void AWitTtsSpeaker::Speak(const FString& TextToSpeak)
  * Speak a phrase with custom settings
  *
  * @param ClipSettings [in] the settings to use
+ * @param QueueAudio [in] should audio be placed in a queue
  */
-void AWitTtsSpeaker::SpeakWithSettings(const FTtsConfiguration& ClipSettings)
+void AWitTtsSpeaker::SpeakWithSettings(const FTtsConfiguration& ClipSettings, bool bQueueAudio)
 {
-	ConvertTextToSpeechWithSettings(ClipSettings);
+	bQueueingEnabled = bQueueAudio;
+	ConvertTextToSpeechWithSettings(ClipSettings, bQueueAudio);
 }
 
 /**
@@ -132,7 +135,7 @@ void AWitTtsSpeaker::OnSynthesizeResponse(const bool bIsSuccessful, USoundWave* 
 		return;
 	}
 	Stop();
-	
+
 	AudioComponent->SetSound(SoundWave);
 	AudioComponent->Play();
 }
