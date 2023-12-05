@@ -65,8 +65,9 @@ bool ATtsExperience::IsRequestInProgress() const
  * Sends a text string to Wit for conversion to speech with default settings
  *
  * @param TextToConvert [in] the string we want to convert to speech
+  * @param QueueAudio [in] should audio be placed in a queue
  */
-void ATtsExperience::ConvertTextToSpeech(const FString& TextToConvert)
+void ATtsExperience::ConvertTextToSpeech(const FString& TextToConvert, bool bQueueAudio)
 {
 	if (TtsService != nullptr)
 	{
@@ -79,13 +80,14 @@ void ATtsExperience::ConvertTextToSpeech(const FString& TextToConvert)
  * Sends a text string to Wit for conversion to speech with custom settings
  *
  * @param ClipSettings [in] the string we want to convert to speech
+ * @param QueueAudio [in] should audio be placed in a queue
  */
-void ATtsExperience::ConvertTextToSpeechWithSettings(const FTtsConfiguration& ClipSettings)
+void ATtsExperience::ConvertTextToSpeechWithSettings(const FTtsConfiguration& ClipSettings, bool bQueueAudio)
 {
 	if (TtsService != nullptr)
 	{
 		InitializeService();
-		TtsService->ConvertTextToSpeechWithSettings(ClipSettings);
+		TtsService->ConvertTextToSpeechWithSettings(ClipSettings, bQueueAudio);
 	}
 }
 

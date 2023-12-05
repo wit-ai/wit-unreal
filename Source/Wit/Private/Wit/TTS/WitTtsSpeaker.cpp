@@ -32,6 +32,7 @@ void AWitTtsSpeaker::BeginPlay()
 		
 		EventHandler->OnSynthesizeResponse.AddUniqueDynamic(this, &AWitTtsSpeaker::OnSynthesizeResponse);
 	}
+	AudioComponent->OnAudioFinished.AddDynamic(this, &AWitTtsSpeaker::OnAudioFinished);
 
 	Super::BeginPlay();
 }
@@ -53,20 +54,22 @@ void AWitTtsSpeaker::BeginDestroy()
  * Speak a phrase with the default configuration
  *
  * @param TextToSpeak [in] the text to speak
+ * @param QueueAudio [in] should audio be placed in a queue
  */
-void AWitTtsSpeaker::Speak(const FString& TextToSpeak)
+void AWitTtsSpeaker::Speak(const FString& TextToSpeak, bool bQueueAudio)
 {
+	bQueueingEnabled = bQueueAudio;
 	if (VoicePreset != nullptr)
 	{
 		FTtsConfiguration ClipSettings = VoicePreset->Synthesize;
 		
 		ClipSettings.Text = TextToSpeak;
 		
-		ConvertTextToSpeechWithSettings(ClipSettings);
+		ConvertTextToSpeechWithSettings(ClipSettings, bQueueAudio);
 	}
 	else
 	{
-		ConvertTextToSpeech(TextToSpeak);
+		ConvertTextToSpeech(TextToSpeak, bQueueAudio);
 	}
 }
 
@@ -75,10 +78,12 @@ void AWitTtsSpeaker::Speak(const FString& TextToSpeak)
  * Speak a phrase with custom settings
  *
  * @param ClipSettings [in] the settings to use
+ * @param QueueAudio [in] should audio be placed in a queue
  */
-void AWitTtsSpeaker::SpeakWithSettings(const FTtsConfiguration& ClipSettings)
+void AWitTtsSpeaker::SpeakWithSettings(const FTtsConfiguration& ClipSettings, bool bQueueAudio)
 {
-	ConvertTextToSpeechWithSettings(ClipSettings);
+	bQueueingEnabled = bQueueAudio;
+	ConvertTextToSpeechWithSettings(ClipSettings, bQueueAudio);
 }
 
 /**
@@ -124,9 +129,22 @@ void AWitTtsSpeaker::OnSynthesizeResponse(const bool bIsSuccessful, USoundWave* 
 	{
 		return;
 	}
-
+	if (bQueueingEnabled && IsSpeaking() && !Cast<USoundWaveProcedural>(SoundWave))
+	{
+		SoundWaveQueue.Add(SoundWave);
+		return;
+	}
 	Stop();
-	
+
 	AudioComponent->SetSound(SoundWave);
 	AudioComponent->Play();
+}
+
+void AWitTtsSpeaker::OnAudioFinished()
+{
+	if (!SoundWaveQueue.IsEmpty())
+	{
+		OnSynthesizeResponse(true, SoundWaveQueue[0]);
+		SoundWaveQueue.RemoveAt(0);
+	}
 }

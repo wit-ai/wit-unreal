@@ -37,17 +37,19 @@ public:
 	 * Speak a phrase with the default configuration
 	 *
 	 * @param TextToSpeak [in] text to speak
+	 * @param QueueAudio [in] should audio be placed in a queue
 	 */
 	UFUNCTION(BlueprintCallable, Category="TTS")
-	void Speak(const FString& TextToSpeak);
+	void Speak(const FString& TextToSpeak, const bool bQueueAudio = true);
 
 	/**
 	 * Speak a phrase with custom settings
 	 *
 	 * @param ClipSettings [in] the text and settings to speak
+	 * @param QueueAudio [in] should audio be placed in a queue
 	 */
 	UFUNCTION(BlueprintCallable, Category="TTS")
-	void SpeakWithSettings(const FTtsConfiguration& ClipSettings);
+	void SpeakWithSettings(const FTtsConfiguration& ClipSettings, bool bQueueAudio = true);
 
 	/**
 	 * Stop speaking
@@ -73,6 +75,13 @@ public:
 	
 protected:
 
+	/**
+	* Queue of SoundWave files to be played
+	*/
+	TArray<USoundWave*> SoundWaveQueue{};
+
+	bool bQueueingEnabled{true};
+
 	virtual void BeginPlay() override;
 	virtual void BeginDestroy() override;
 	
@@ -84,5 +93,11 @@ protected:
 	 */
 	UFUNCTION()
 	void OnSynthesizeResponse(const bool bIsSuccessful, USoundWave* SoundWave);
+
+	/**
+	 * Callback that is called when an audio playback is finished. Plays the next queued SoundWave, if present
+	 */
+	UFUNCTION()
+	void OnAudioFinished();
 	
 };

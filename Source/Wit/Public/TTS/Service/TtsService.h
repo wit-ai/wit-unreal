@@ -59,8 +59,8 @@ public:
 	 * ITtsService overrides
 	 */
 	virtual bool IsRequestInProgress() const override { return false; }
-	virtual void ConvertTextToSpeech(const FString& TextToConvert) override {}
-	virtual void ConvertTextToSpeechWithSettings(const FTtsConfiguration& ClipSettings) override {}
+	virtual void ConvertTextToSpeech(const FString& TextToConvert, bool bQueueAudio = true) override {}
+	virtual void ConvertTextToSpeechWithSettings(const FTtsConfiguration& ClipSettings, bool bQueueAudio = true) override {}
 	virtual void FetchAvailableVoices() override {}
 
 protected:
@@ -86,6 +86,7 @@ protected:
 	/**
 	* Whether or not streaming is enabled on the call to Wit.ai
 	*/
+	UPROPERTY(Transient)
 	bool bUseStreaming{false};
 
 	/**
