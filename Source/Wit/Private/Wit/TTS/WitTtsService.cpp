@@ -64,19 +64,11 @@ bool UWitTtsService::IsRequestInProgress() const
 /**
  * Sends a text string to Wit to be converted into speech
  *
- * @param ClipSettings [in] The synthesis settings we want to use
+ * @param ClipSettings [in] The synthesis settings we want to use 
+ * @param QueueAudio [in] should audio be placed in a queue
  */
-void UWitTtsService::ConvertTextToSpeechWithSettings(const FTtsConfiguration& ClipSettings)
+void UWitTtsService::ConvertTextToSpeechWithSettings(const FTtsConfiguration& ClipSettings, bool bQueueAudio)
 {
-	if (bQueueingEnabled)
-	{
-		PreviousDataIndex = 0;
-	}
-	else
-	{
-		SoundWaveProcedural = nullptr;
-	}
-
 	const FString ClipId = FWitHelperUtilities::GetVoiceClipId(ClipSettings);
 	
 	// Check if we already have this in the memory cache
@@ -146,7 +138,14 @@ void UWitTtsService::ConvertTextToSpeechWithSettings(const FTtsConfiguration& Cl
 		UE_LOG(LogWit, Warning, TEXT("ConvertTextToSpeechWithSettings: cannot convert text because no voice is specified and it is required"));
 		return;
 	}
-
+	if (bQueueAudio)
+	{
+		PreviousDataIndex = 0;
+	}
+	else
+	{
+		SoundWaveProcedural = nullptr;
+	}
 	LastRequestedClipSettings = ClipSettings;
 
 	UE_LOG(LogWit, Display, TEXT("ConvertTextToSpeechWithSettings: converting text (%s) with voice (%s)"), *ClipSettings.Text, *ClipSettings.Voice);
@@ -210,8 +209,9 @@ void UWitTtsService::ConvertTextToSpeechWithSettings(const FTtsConfiguration& Cl
  * Sends a text string to Wit to be converted into speech
  *
  * @param TextToConvert [in] The string we want to convert
+ * @param QueueAudio [in] should audio be placed in a queue
  */
-void UWitTtsService::ConvertTextToSpeech(const FString& TextToConvert)
+void UWitTtsService::ConvertTextToSpeech(const FString& TextToConvert, bool bQueueAudio)
 {
 	const bool bHasVoicePreset = VoicePreset != nullptr;
 	
@@ -224,7 +224,7 @@ void UWitTtsService::ConvertTextToSpeech(const FString& TextToConvert)
 	FTtsConfiguration ClipSettings(VoicePreset->Synthesize);
 	ClipSettings.Text = TextToConvert;
 
-	ConvertTextToSpeechWithSettings(ClipSettings);
+	ConvertTextToSpeechWithSettings(ClipSettings, bQueueAudio);
 }
 
 /**

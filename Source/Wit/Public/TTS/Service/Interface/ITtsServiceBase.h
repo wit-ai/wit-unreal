@@ -31,16 +31,18 @@ public:
 	/**
 	 * Sends a text string to Wit for conversion to speech with default settings
 	 *
-	 * @param TextToConvert [in] the string we want to convert to speech
+	 * @param TextToConvert [in] the string we want to convert to speech 
+	 * @param QueueAudio [in] should audio be placed in a queue
 	 */
-	virtual void ConvertTextToSpeech(const FString& TextToConvert) = 0;
+	virtual void ConvertTextToSpeech(const FString& TextToConvert, bool bQueueAudio = true) = 0;
 
 	/**
 	 * Sends a text string to Wit for conversion to speech with custom settings
 	 *
 	 * @param ClipSettings [in] the string we want to convert to speech
+	  * @param QueueAudio [in] should audio be placed in a queue
 	 */
-	virtual void ConvertTextToSpeechWithSettings(const FTtsConfiguration& ClipSettings) = 0;
+	virtual void ConvertTextToSpeechWithSettings(const FTtsConfiguration& ClipSettings, bool bQueueAudio = true) = 0;
 
 	/**
 	 * Fetch a list of available voices from Wit

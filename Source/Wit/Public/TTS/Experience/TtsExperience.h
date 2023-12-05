@@ -37,10 +37,10 @@ public:
 	virtual bool IsRequestInProgress() const override;
 
 	UFUNCTION(BlueprintCallable, Category="TTS")
-	virtual void ConvertTextToSpeech(const FString& TextToConvert) override;
+	virtual void ConvertTextToSpeech(const FString& TextToConvert, bool bQueueAudio = true) override;
 
 	UFUNCTION(BlueprintCallable, Category="TTS")
-	virtual void ConvertTextToSpeechWithSettings(const FTtsConfiguration& ClipSettings) override;
+	virtual void ConvertTextToSpeechWithSettings(const FTtsConfiguration& ClipSettings, bool bQueueAudio = true) override;
 
 	UFUNCTION(BlueprintCallable, Category="TTS")
 	virtual void FetchAvailableVoices() override;
@@ -99,12 +99,6 @@ public:
 	*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TTS")
 	bool bUseStreaming{false};
-
-	/**
-	* Should the audio response be queued 
-	*/
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TTS")
-	bool bQueueingEnabled{true};
 
 	/**
 	 * The events used by the voice service

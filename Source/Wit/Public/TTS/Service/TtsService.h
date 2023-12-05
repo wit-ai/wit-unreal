@@ -37,14 +37,12 @@ public:
 		UWitAppConfigurationAsset* ConfigurationToUse,
 		UTtsVoicePresetAsset* VoicePresetToUse,
 		EWitRequestAudioFormat AudioTypeToUse,
-		bool bUseStreamingToUse,
-		bool bQueueingEnabledToUse)
+		bool bUseStreamingToUse)
 	{
 		Configuration = ConfigurationToUse;
 		VoicePreset = VoicePresetToUse;
 		AudioType = AudioTypeToUse;
 		bUseStreaming = bUseStreamingToUse;
-		bQueueingEnabled = bQueueingEnabledToUse;
 	}
 
 	/**
@@ -61,8 +59,8 @@ public:
 	 * ITtsService overrides
 	 */
 	virtual bool IsRequestInProgress() const override { return false; }
-	virtual void ConvertTextToSpeech(const FString& TextToConvert) override {}
-	virtual void ConvertTextToSpeechWithSettings(const FTtsConfiguration& ClipSettings) override {}
+	virtual void ConvertTextToSpeech(const FString& TextToConvert, bool bQueueAudio = true) override {}
+	virtual void ConvertTextToSpeechWithSettings(const FTtsConfiguration& ClipSettings, bool bQueueAudio = true) override {}
 	virtual void FetchAvailableVoices() override {}
 
 protected:
@@ -90,12 +88,6 @@ protected:
 	*/
 	UPROPERTY(Transient)
 	bool bUseStreaming{false};
-
-	/**
-	* Whether or not the audio response should be queued
-	*/
-	UPROPERTY(Transient)
-	bool bQueueingEnabled{false};
 
 	/**
 	 * The events that this service should use in callbacks
