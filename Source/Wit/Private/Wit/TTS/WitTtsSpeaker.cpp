@@ -7,7 +7,6 @@
 
 #include "Wit/TTS/WitTtsSpeaker.h"
 #include "Components/AudioComponent.h"
-#include "Sound/SoundWaveProcedural.h"
 #include "Wit/Utilities/WitHelperUtilities.h"
 #include "Wit/Utilities/WitLog.h"
 
