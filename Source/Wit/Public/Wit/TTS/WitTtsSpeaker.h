@@ -80,6 +80,9 @@ protected:
 	*/
 	TArray<USoundWave*> SoundWaveQueue{};
 
+  /**
+  * Is Queueing of requests enabled
+  */
 	bool bQueueingEnabled{true};
 
 	virtual void BeginPlay() override;

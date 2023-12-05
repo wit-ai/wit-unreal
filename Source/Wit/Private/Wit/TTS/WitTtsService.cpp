@@ -69,6 +69,15 @@ bool UWitTtsService::IsRequestInProgress() const
  */
 void UWitTtsService::ConvertTextToSpeechWithSettings(const FTtsConfiguration& ClipSettings, bool bQueueAudio)
 {
+	if (bQueueingEnabled)
+	{
+		PreviousDataIndex = 0;
+	}
+	else
+	{
+		SoundWaveProcedural = nullptr;
+	}
+
 	const FString ClipId = FWitHelperUtilities::GetVoiceClipId(ClipSettings);
 	
 	// Check if we already have this in the memory cache
