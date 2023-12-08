@@ -81,18 +81,40 @@ private:
 	/** Previous data index used to process raw data */
 	int32 PreviousDataIndex{0};
 
+	/** Stop the request that is currently in progress */
+	bool bStopInProgressRequest;
+
+	/** Clip settings enqueued */
+	TArray<FTtsConfiguration> QueuedSettings;
+
 #if WITH_EDITORONLY_DATA
 	
 	/** Write the captured voice input to a wav file */
 	static void WriteRawPCMDataToWavFile(const uint8* RawPCMData, const int32 RawPCMDataSize, const int32 NumChannels, const int32 SampleRate);
 
 #endif
+
+	/**
+	 * Sends a text string to Wit for conversion to speech with custom settings
+	 *
+	 * @param NewRequest [in] is this a new request or the next piece of a split request
+	 * @param QueueAudio [in] should audio be placed in a queue
+	 */
+	void ConvertTextToSpeechWithSettingsInternal(const bool bNewRequest, const bool bQueueAudio);
+
+	/**
+	 * Splits a speech segment into smaller segments
+	 *
+	 * @param ClipSettings [in] the string we want to convert to speech
+	 * @param QueueAudio [in] should audio be placed in a queue
+	 */
+	void SplitSpeech(const FTtsConfiguration& ClipSettings, const bool bQueueAudio);
 	
 	/** Called when a storage cache request is fully completed to process the loaded data */
 	void OnStorageCacheRequestComplete(const TArray<uint8>& BinaryData, const FTtsConfiguration& ClipSettings) const;
 
 	/** Called when a Wit synthesize request is fully completed to process the response payload */
-	void OnSynthesizeRequestComplete(const TArray<uint8>& BinaryResponse, const TSharedPtr<FJsonObject> JsonResponse) const;
+	void OnSynthesizeRequestComplete(const TArray<uint8>& BinaryResponse, const TSharedPtr<FJsonObject> JsonResponse);
 
 	/** Called when a synthesize request errors */
 	void OnSynthesizeRequestError(const FString& ErrorMessage, const FString& HumanReadableErrorMessage) const;

@@ -14,6 +14,7 @@
 #include "TTS/Configuration/TtsConfiguration.h"
 #include "Wit/Utilities/WitLog.h"
 #include "Wit/Utilities/WitHelperUtilities.h"
+#include "Wit/Utilities/WitTtsSpeechSplitter.h"
 
 #if WITH_EDITORONLY_DATA
 
@@ -41,7 +42,7 @@ void UWitTtsService::BeginDestroy()
 
 	UWitRequestSubsystem* RequestSubsystem = GEngine->GetEngineSubsystem<UWitRequestSubsystem>();
 	const bool bIsRequestInProgress = RequestSubsystem != nullptr && RequestSubsystem->IsRequestInProgress();
-	
+
 	if (bIsRequestInProgress)
 	{
 		RequestSubsystem->CancelRequest();
@@ -64,47 +65,84 @@ bool UWitTtsService::IsRequestInProgress() const
 /**
  * Sends a text string to Wit to be converted into speech
  *
- * @param ClipSettings [in] The synthesis settings we want to use 
- * @param QueueAudio [in] should audio be placed in a queue
+ * @param ClipSettings [in] The synthesis settings we want to use
  */
-void UWitTtsService::ConvertTextToSpeechWithSettings(const FTtsConfiguration& ClipSettings, bool bQueueAudio)
+void UWitTtsService::ConvertTextToSpeechWithSettings(const FTtsConfiguration& ClipSettings, const bool bQueueAudio)
 {
-	const FString ClipId = FWitHelperUtilities::GetVoiceClipId(ClipSettings);
-	
+	SplitSpeech(ClipSettings, bQueueAudio);
+	ConvertTextToSpeechWithSettingsInternal(true, bQueueAudio);
+}
+/**
+ * Sends a text string to Wit to be converted into speech
+ *
+ * @param ClipSettings [in] The synthesis settings we want to use
+ */
+void UWitTtsService::ConvertTextToSpeechWithSettingsInternal(const bool bNewRequest, const bool bQueueAudio)
+{
+	if (QueuedSettings.IsEmpty())
+	{
+		UE_LOG(LogWit, Warning, TEXT("ConvertTextToSpeechWithSettingsInternal: cached settings is empty"));
+		return;
+	}
+	FTtsConfiguration& RequestClipSettings = QueuedSettings[0];
+
+	if (bQueueAudio)
+	{
+		PreviousDataIndex = 0;
+	}
+	else
+	{
+		if (bNewRequest)
+		{
+			SoundWaveProcedural = nullptr;
+		}
+		else
+		{
+			PreviousDataIndex = 0;
+		}
+	}
+
+	const FString ClipId = FWitHelperUtilities::GetVoiceClipId(RequestClipSettings);
+
 	// Check if we already have this in the memory cache
-	
-	if (MemoryCacheHandler != nullptr) 
+
+	if (MemoryCacheHandler != nullptr)
 	{
 		USoundWave* CachedClip = MemoryCacheHandler->GetClip(ClipId);
 
 		const bool bIsClipCached = CachedClip != nullptr;
-		if (bIsClipCached)
+		if (bIsClipCached && !bUseStreaming)
 		{
-			UE_LOG(LogWit, Verbose, TEXT("ConvertTextToSpeechWithSettings: clip found in memory cache (%s)"), *ClipId);
+			UE_LOG(LogWit, Verbose, TEXT("ConvertTextToSpeechWithSettingsInternal: clip found in memory cache (%s)"), *ClipId);
 
 			if (EventHandler != nullptr)
 			{
+				QueuedSettings.RemoveAt(0);
 				EventHandler->OnSynthesizeResponse.Broadcast(true, CachedClip);
+				if (!QueuedSettings.IsEmpty())
+				{
+					ConvertTextToSpeechWithSettingsInternal(false, true);
+				}
 			}
-			
+
 			return;
 		}
 	}
 
 	// Check if we already have this in the storage cache
 
-	const bool bShouldUseStorageCache = StorageCacheHandler != nullptr && StorageCacheHandler->ShouldCache(ClipSettings.StorageCacheLocation);
-	
+	const bool bShouldUseStorageCache = StorageCacheHandler != nullptr && StorageCacheHandler->ShouldCache(RequestClipSettings.StorageCacheLocation);
+
 	if (bShouldUseStorageCache)
 	{
 		TArray<uint8> CachedClipData;
-		
-		const bool bIsClipCached = StorageCacheHandler->RequestClip(ClipId, ClipSettings.StorageCacheLocation, CachedClipData);
+
+		const bool bIsClipCached = StorageCacheHandler->RequestClip(ClipId, RequestClipSettings.StorageCacheLocation, CachedClipData);
 		if (bIsClipCached)
 		{
-			UE_LOG(LogWit, Verbose, TEXT("ConvertTextToSpeechWithSettings: clip found in storage cache (%s)"), *ClipId);
+			UE_LOG(LogWit, Verbose, TEXT("ConvertTextToSpeechWithSettingsInternal: clip found in storage cache (%s)"), *ClipId);
 
-			OnStorageCacheRequestComplete(CachedClipData, ClipSettings);
+			OnStorageCacheRequestComplete(CachedClipData, RequestClipSettings);
 			return;
 		}
 	}
@@ -112,44 +150,41 @@ void UWitTtsService::ConvertTextToSpeechWithSettings(const FTtsConfiguration& Cl
 	// If not cached then we send off a request to Wit.ai
 
 	const bool bHasConfiguration = Configuration != nullptr && !Configuration->Application.ClientAccessToken.IsEmpty();
-	
+
 	if (!bHasConfiguration)
 	{
-		UE_LOG(LogWit, Warning, TEXT("ConvertTextToSpeechWithSettings: cannot convert text because no configuration found. Please assign a configuration and access token"));
+		UE_LOG(LogWit, Warning, TEXT("ConvertTextToSpeechWithSettingsInternal: cannot convert text because no configuration found. Please assign a configuration and access token"));
 		return;
 	}
-	
+
 	UWitRequestSubsystem* RequestSubsystem = GEngine->GetEngineSubsystem<UWitRequestSubsystem>();
 
 	if (RequestSubsystem == nullptr)
 	{
-		UE_LOG(LogWit, Warning, TEXT("ConvertTextToSpeechWithSettings: cannot convert text because request subsystem does not exist"));
+		UE_LOG(LogWit, Warning, TEXT("ConvertTextToSpeechWithSettingsInternal: cannot convert text because request subsystem does not exist"));
 		return;
 	}
 
 	if (RequestSubsystem->IsRequestInProgress())
 	{
-		UE_LOG(LogWit, Warning, TEXT("ConvertTextToSpeechWithSettings: cannot convert text because a request is already in progress"));
+		UE_LOG(LogWit, Warning, TEXT("ConvertTextToSpeechWithSettingsInternal: cannot convert text because a request is already in progress"));
+		if (!bQueueAudio)
+		{
+			bStopInProgressRequest = true;
+		}
 		return;
 	}
 
-	if (ClipSettings.Voice.IsEmpty())
+	if (RequestClipSettings.Voice.IsEmpty())
 	{
-		UE_LOG(LogWit, Warning, TEXT("ConvertTextToSpeechWithSettings: cannot convert text because no voice is specified and it is required"));
+		UE_LOG(LogWit, Warning, TEXT("ConvertTextToSpeechWithSettingsInternal: cannot convert text because no voice is specified and it is required"));
 		return;
 	}
-	if (bQueueAudio)
-	{
-		PreviousDataIndex = 0;
-	}
-	else
-	{
-		SoundWaveProcedural = nullptr;
-	}
-	LastRequestedClipSettings = ClipSettings;
 
-	UE_LOG(LogWit, Display, TEXT("ConvertTextToSpeechWithSettings: converting text (%s) with voice (%s)"), *ClipSettings.Text, *ClipSettings.Voice);
-	
+	LastRequestedClipSettings = RequestClipSettings;
+
+	UE_LOG(LogWit, Display, TEXT("ConvertTextToSpeechWithSettingsInternal: converting text (%s) with voice (%s)"), *RequestClipSettings.Text, *RequestClipSettings.Voice);
+
 	// Construct the request with the desired configuration. We use the /synthesize endpoint in Wit.ai. See the Wit.ai documentation for more
 	// specifics of the parameters to this endpoint
 
@@ -168,7 +203,7 @@ void UWitTtsService::ConvertTextToSpeechWithSettings(const FTtsConfiguration& Cl
 	RequestConfiguration.OnRequestComplete.AddUObject(this, &UWitTtsService::OnSynthesizeRequestComplete);
 	if (bUseStreaming && AudioType != EWitRequestAudioFormat::Pcm)
 	{
-		UE_LOG(LogWit, Warning, TEXT("ConvertTextToSpeechWithSettings: Audio streaming is not currently supported for (%s)"), *UEnum::GetValueAsString(AudioType));
+		UE_LOG(LogWit, Warning, TEXT("ConvertTextToSpeechWithSettingsInternal: Audio streaming is not currently supported for (%s)"), *UEnum::GetValueAsString(AudioType));
 		bUseStreaming = false;
 	}
 	if (bUseStreaming)
@@ -182,49 +217,83 @@ void UWitTtsService::ConvertTextToSpeechWithSettings(const FTtsConfiguration& Cl
 	// but since most of the arguments are optional it's easier to just set them
 
 	const TSharedPtr<FJsonObject> RequestBody = MakeShared<FJsonObject>();
-	const bool bIsTextTooLong = ClipSettings.Text.Len() > MaximumTextLengthInRequest;
-		
+	const bool bIsTextTooLong = RequestClipSettings.Text.Len() > MaximumTextLengthInRequest;
+
 	if (bIsTextTooLong)
 	{
-		UE_LOG(LogWit, Warning, TEXT("ConvertTextToSpeechWithSettings: text is too long, the limit is %d characters"), MaximumTextLengthInRequest);
+		UE_LOG(LogWit, Warning, TEXT("ConvertTextToSpeechWithSettingsInternal: text is too long, the limit is %d characters"), MaximumTextLengthInRequest);
 	}
 
-	RequestBody->SetStringField("q",ClipSettings.Text);
-	
-	RequestBody->SetNumberField("speed",ClipSettings.Speed);
-	RequestBody->SetNumberField("pitch",ClipSettings.Pitch);
-	RequestBody->SetNumberField("gain",ClipSettings.Gain);
-	RequestBody->SetStringField("voice",ClipSettings.Voice);
-	
-	if (!ClipSettings.Style.IsEmpty())
+	RequestBody->SetStringField("q", RequestClipSettings.Text);
+
+	RequestBody->SetNumberField("speed", RequestClipSettings.Speed);
+	RequestBody->SetNumberField("pitch", RequestClipSettings.Pitch);
+	RequestBody->SetNumberField("gain", RequestClipSettings.Gain);
+	RequestBody->SetStringField("voice", RequestClipSettings.Voice);
+
+	if (!RequestClipSettings.Style.IsEmpty())
 	{
-		RequestBody->SetStringField("style",ClipSettings.Style);
+		RequestBody->SetStringField("style", RequestClipSettings.Style);
 	}
-	
+
 	RequestSubsystem->WriteJsonData(RequestBody.ToSharedRef());
 	RequestSubsystem->EndStreamRequest();
+	QueuedSettings.RemoveAt(0);
 }
 
 /**
  * Sends a text string to Wit to be converted into speech
  *
  * @param TextToConvert [in] The string we want to convert
- * @param QueueAudio [in] should audio be placed in a queue
  */
-void UWitTtsService::ConvertTextToSpeech(const FString& TextToConvert, bool bQueueAudio)
+void UWitTtsService::ConvertTextToSpeech(const FString& TextToConvert, const bool bQueueAudio)
 {
 	const bool bHasVoicePreset = VoicePreset != nullptr;
-	
+
 	if (!bHasVoicePreset)
 	{
 		UE_LOG(LogWit, Warning, TEXT("ConvertTextToSpeech: no voice preset found. Please assign a voice preset"));
 		return;
 	}
-	
+
 	FTtsConfiguration ClipSettings(VoicePreset->Synthesize);
 	ClipSettings.Text = TextToConvert;
 
-	ConvertTextToSpeechWithSettings(ClipSettings, bQueueAudio);
+	ConvertTextToSpeechWithSettings(ClipSettings);
+}
+
+/**
+ * Splits a speech segment into smaller segments
+ *
+ * @param ClipSettings [in] the string we want to convert to speech
+ * @param QueueAudio [in] should audio be placed in a queue
+ */
+void UWitTtsService::SplitSpeech(const FTtsConfiguration& ClipSettings, const bool bQueueAudio)
+{
+	if (!bQueueAudio)
+	{
+		QueuedSettings.Empty();
+	}
+	if (!FWitTtsSpeechSplitter::NeedsSplit(ClipSettings.Text, MaximumTextLengthInRequest))
+	{
+		QueuedSettings.Add(ClipSettings);
+		return;
+	}
+	TArray<FString> NewSpeech = FWitTtsSpeechSplitter::SplitSpeech(ClipSettings.Text, MaximumTextLengthInRequest);
+
+	for (FString Text : NewSpeech)
+	{
+		FTtsConfiguration NewClipSettings;
+		NewClipSettings.Gain = ClipSettings.Gain;
+		NewClipSettings.Pitch = ClipSettings.Pitch;
+		NewClipSettings.Speed = ClipSettings.Speed;
+		NewClipSettings.StorageCacheLocation = ClipSettings.StorageCacheLocation;
+		NewClipSettings.Style = ClipSettings.Style;
+		NewClipSettings.Voice = ClipSettings.Voice;
+		NewClipSettings.Text = Text;
+
+		QueuedSettings.Add(NewClipSettings);
+	}
 }
 
 /**
@@ -233,13 +302,13 @@ void UWitTtsService::ConvertTextToSpeech(const FString& TextToConvert, bool bQue
 void UWitTtsService::FetchAvailableVoices()
 {
 	const bool bHasConfiguration = Configuration != nullptr && !Configuration->Application.ClientAccessToken.IsEmpty();
-	
+
 	if (!bHasConfiguration)
 	{
 		UE_LOG(LogWit, Warning, TEXT("FetchAvailableVoices: cannot fetch available voices because no configuration found. Please assign a configuration and access token"));
 		return;
 	}
-	
+
 	UWitRequestSubsystem* RequestSubsystem = GEngine->GetEngineSubsystem<UWitRequestSubsystem>();
 
 	if (RequestSubsystem == nullptr)
@@ -255,7 +324,7 @@ void UWitTtsService::FetchAvailableVoices()
 	}
 
 	UE_LOG(LogWit, Display, TEXT("FetchAvailableVoices: fetching available voices"));
-	
+
 	// Construct the request with the desired configuration. We use the /voices endpoint in Wit.ai. See the Wit.ai documentation for more
 	// specifics of the parameters to this endpoint
 
@@ -289,7 +358,7 @@ void UWitTtsService::OnStorageCacheRequestComplete(const TArray<uint8>& BinaryDa
 	USoundWave* SoundWave = CreateSoundWaveAndAddToMemoryCache(ClipId, BinaryData, ClipSettings);
 
 	// In situations where we can't create a sound wave it generally means that the response we received is incomplete or corrupt in some way
-	
+
 	if (SoundWave == nullptr)
 	{
 		OnSynthesizeRequestError(TEXT("Sound wave creation failed"), TEXT("Creating a sound wave from the response failed"));
@@ -310,25 +379,25 @@ void UWitTtsService::OnStorageCacheRequestComplete(const TArray<uint8>& BinaryDa
  * @param BinaryResponse [in] the final binary response
  * @param JsonResponse [in] the final Json response
  */
-void UWitTtsService::OnSynthesizeRequestComplete(const TArray<uint8>& BinaryResponse, const TSharedPtr<FJsonObject> JsonResponse) const
+void UWitTtsService::OnSynthesizeRequestComplete(const TArray<uint8>& BinaryResponse, const TSharedPtr<FJsonObject> JsonResponse)
 {
-	UE_LOG(LogWit, Verbose, TEXT("OnSynthesizeRequestComplete - Final response size: %d"), BinaryResponse.Num());
+	UE_LOG(LogWit, Verbose, TEXT("OnSynthesizeRequestComplete - Final response size: %d"), QueuedSettings.Num());
 
 	const FString ClipId = FWitHelperUtilities::GetVoiceClipId(LastRequestedClipSettings);
 	USoundWave* SoundWave = CreateSoundWaveAndAddToMemoryCache(ClipId, BinaryResponse, LastRequestedClipSettings);
 
 	// In situations where we can't create a sound wave it generally means that the response we received is incomplete or corrupt in some way
-	
+
 	if (SoundWave == nullptr)
 	{
 		OnSynthesizeRequestError(TEXT("Sound wave creation failed"), TEXT("Creating a sound wave from the response failed"));
 		return;
 	}
-	
+
 	// Add to the storage cache. The storage cache stores raw binary data rather than sound waves
 
 	const bool bShouldUseStorageCache = StorageCacheHandler != nullptr && StorageCacheHandler->ShouldCache(LastRequestedClipSettings.StorageCacheLocation);
-	
+
 	if (bShouldUseStorageCache)
 	{
 		StorageCacheHandler->AddClip(ClipId, BinaryResponse, LastRequestedClipSettings);
@@ -337,35 +406,48 @@ void UWitTtsService::OnSynthesizeRequestComplete(const TArray<uint8>& BinaryResp
 #if WITH_EDITORONLY_DATA
 
 	// Output the wav file to a file for debugging purposes
-	
+
 	if (bIsWavFileOutputEnabled)
 	{
 		FWaveModInfo WaveInfo;
 
-		WaveInfo.ReadWaveInfo(BinaryResponse.GetData(), BinaryResponse.Num());	
+		WaveInfo.ReadWaveInfo(BinaryResponse.GetData(), BinaryResponse.Num());
 		WriteRawPCMDataToWavFile(WaveInfo.SampleDataStart, WaveInfo.SampleDataSize, *WaveInfo.pChannels, *WaveInfo.pSamplesPerSec);
 	}
 
 #endif
 
-	if (EventHandler != nullptr)
+	if (EventHandler != nullptr && !bStopInProgressRequest)
 	{
 		EventHandler->OnSynthesizeRawResponseMulticast.Broadcast(BinaryResponse);
 		EventHandler->OnSynthesizeRawResponse.Broadcast(ClipId, BinaryResponse, LastRequestedClipSettings);
 		if (!SoundWaveProcedural)
 		{
+
 			EventHandler->OnSynthesizeResponse.Broadcast(true, SoundWave);
 		}
 	}
+
+	bStopInProgressRequest = false;
+
+	if (!QueuedSettings.IsEmpty())
+	{
+		ConvertTextToSpeechWithSettingsInternal(false, true);
+	}
 }
 
-/** Called when a Wit synthesize request is in progress to process the incremental payload 
-* 
+/** Called when a Wit synthesize request is in progress to process the incremental payload
+*
 * @param BinaryData [in] the binary data
 * @param ClipSettings [in] the clip settings for the clip
 */
 void UWitTtsService::OnSynthesizeRequestProgress(const TArray<uint8>& BinaryResponse, const TSharedPtr<FJsonObject> JsonResponse)
 {
+	if (bStopInProgressRequest)
+	{
+		SoundWaveProcedural = nullptr;
+		return;
+	}
 	const uint8* RawData = BinaryResponse.GetData();
 	const int32 RawDataSize = BinaryResponse.Num() % 2 == 0 ? BinaryResponse.Num() : BinaryResponse.Num() - 1;
 	const int32 MinBufferLength = GEngine->GetMainAudioDeviceRaw()->GetBufferLength();
@@ -390,7 +472,7 @@ void UWitTtsService::OnSynthesizeRequestProgress(const TArray<uint8>& BinaryResp
 			UE_LOG(LogWit, Warning, TEXT("OnSynthesizeRequestProgress: Trying to increase Buffer length by a non-positive amount"));
 			return;
 		}
-		
+
 		BufferQueue.SetNum(IncreaseBufferLength);
 		int8* Data = (int8*)&BufferQueue[0];
 		for (size_t i = 0; i < IncreaseBufferLength; ++i)
@@ -433,7 +515,7 @@ void UWitTtsService::OnVoicesRequestComplete(const TArray<uint8>& BinaryResponse
 	{
 		return;
 	}
-	
+
 	UE_LOG(LogWit, Verbose, TEXT("OnVoicesRequestComplete - Final response size: %d"), BinaryResponse.Num());
 
 	const bool bIsConversionError = !FJsonObjectConverter::JsonObjectToUStruct(JsonResponse.ToSharedRef(), &EventHandler->VoicesResponse);
@@ -470,7 +552,7 @@ USoundWave* UWitTtsService::CreateSoundWaveAndAddToMemoryCache(const FString& Cl
 	{
 		return nullptr;
 	}
-	
+
 	// Add to the memory cache. The memory cache stores sound waves
 
 	if (MemoryCacheHandler != nullptr)
@@ -494,11 +576,11 @@ void UWitTtsService::WriteRawPCMDataToWavFile(const uint8* RawPCMData, const int
 
 	const FString WavFileName = TEXT("SynthesisOutput");
 	FString WavFilePath = TEXT("Wit");
-	
+
 	TTSRecordingData->Writer.BeginWriteToWavFile(TTSRecordingData->InputBuffer, WavFileName, WavFilePath, []()
-	{
-		TTSRecordingData.Reset();
-	});
+		{
+			TTSRecordingData.Reset();
+		});
 }
 
 #endif
