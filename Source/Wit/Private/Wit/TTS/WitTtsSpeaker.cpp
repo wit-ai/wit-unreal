@@ -7,6 +7,7 @@
 
 #include "Wit/TTS/WitTtsSpeaker.h"
 #include "Components/AudioComponent.h"
+#include "Sound/SoundWaveProcedural.h"
 #include "Wit/Utilities/WitHelperUtilities.h"
 #include "Wit/Utilities/WitLog.h"
 
@@ -58,7 +59,11 @@ void AWitTtsSpeaker::BeginDestroy()
  */
 void AWitTtsSpeaker::Speak(const FString& TextToSpeak, bool bQueueAudio)
 {
-	bQueueingEnabled = bQueueAudio;
+	if (!bQueueAudio)
+	{
+		Stop();
+		SoundWaveQueue.Empty();
+	}
 	if (VoicePreset != nullptr)
 	{
 		FTtsConfiguration ClipSettings = VoicePreset->Synthesize;
@@ -82,7 +87,11 @@ void AWitTtsSpeaker::Speak(const FString& TextToSpeak, bool bQueueAudio)
  */
 void AWitTtsSpeaker::SpeakWithSettings(const FTtsConfiguration& ClipSettings, bool bQueueAudio)
 {
-	bQueueingEnabled = bQueueAudio;
+	if (!bQueueAudio)
+	{
+		Stop();
+		SoundWaveQueue.Empty();
+	}
 	ConvertTextToSpeechWithSettings(ClipSettings, bQueueAudio);
 }
 
@@ -129,7 +138,7 @@ void AWitTtsSpeaker::OnSynthesizeResponse(const bool bIsSuccessful, USoundWave* 
 	{
 		return;
 	}
-	if (bQueueingEnabled && IsSpeaking() && !Cast<USoundWaveProcedural>(SoundWave))
+	if (IsSpeaking() && !Cast<USoundWaveProcedural>(SoundWave))
 	{
 		SoundWaveQueue.Add(SoundWave);
 		return;
@@ -140,6 +149,9 @@ void AWitTtsSpeaker::OnSynthesizeResponse(const bool bIsSuccessful, USoundWave* 
 	AudioComponent->Play();
 }
 
+/**
+ * Callback that is called when an audio playback is finished. Plays the next queued SoundWave, if present
+ */
 void AWitTtsSpeaker::OnAudioFinished()
 {
 	if (!SoundWaveQueue.IsEmpty())
