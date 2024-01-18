@@ -17,7 +17,7 @@
 /**
  * Top level actor for Wit composer interactions
  */
-UCLASS( ClassGroup=(Meta), NotPlaceable )
+UCLASS( ClassGroup=(Meta) )
 class WIT_API AWitComposerExperience final : public AActor
 {
 	GENERATED_BODY()
