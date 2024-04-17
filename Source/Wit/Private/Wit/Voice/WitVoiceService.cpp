@@ -6,6 +6,7 @@
  */
 
 #include "Wit/Voice/WitVoiceService.h"
+#include "Engine/Engine.h"
 #include "JsonObjectConverter.h"
 #include "Voice/Capture/VoiceCaptureSubsystem.h"
 #include "Wit/Request/WitRequestBuilder.h"

@@ -78,7 +78,7 @@ protected:
 	/**
 	* Queue of SoundWave files to be played
 	*/
-	TArray<USoundWave*> SoundWaveQueue{};
+	TArray<USoundBase*> SoundWaveQueue{};
 
 	virtual void BeginPlay() override;
 	virtual void BeginDestroy() override;
@@ -87,10 +87,10 @@ protected:
 	 * Callback that is called when a Wit.ai response is received which is used to see if we have a match
 	 * 
 	 * @param bIsSuccessful [in] true if the response was successful
-	 * @param SoundWave [in] the generated sound wave
+	 * @param SoundBase [in] the generated sound wave
 	 */
 	UFUNCTION()
-	void OnSynthesizeResponse(const bool bIsSuccessful, USoundWave* SoundWave);
+	void OnSynthesizeResponse(const bool bIsSuccessful, USoundBase* SoundBase);
 
 	/**
 	 * Callback that is called when an audio playback is finished. Plays the next queued SoundWave, if present

@@ -20,6 +20,9 @@
 // 3. Add support for pausing and resuming requests using our own read function
 
 #if WITH_CURL && WITH_EDITOR
+#undef HTTP_API
+#define HTTP_API DLLEXPORT
+
 #include "Misc/EngineVersionComparison.h"
 #include "HttpThread.cpp"
 #include "Curl/CurlHttp.cpp"
@@ -27,7 +30,8 @@
 #include "Curl/CurlHttpThread.cpp"
 #if UE_VERSION_OLDER_THAN(5,3,0)
 #else
+#include "GenericPlatform/HttpRequestCommon.cpp"
 #include "IHttpThreadedRequest.cpp"
 #endif
-
+DEFINE_LOG_CATEGORY(LogHttp);
 #endif

@@ -101,6 +101,13 @@ public:
 	bool bUseStreaming{false};
 
 	/**
+	* How many seconds of data to buffer before playing audio.
+	* Larger values introduce latency, but helps prevent audio stuttering
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TTS", meta = (EditCondition = "bUseStreaming", EditConditionHides))
+	float InitialStreamBufferSize{ 0.02f };
+
+	/**
 	 * The events used by the voice service
 	 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "TTS")

@@ -87,10 +87,10 @@ protected:
 	 * Callback that is called when a Wit.ai response is received which is used to see if we have a match
 	 * 
 	 * @param bIsSuccessful [in] true if the response was successful
-	 * @param SoundWave [in] the generated sound wave
+	 * @param SoundBase [in] the generated sound wave
 	 */
 	UFUNCTION()
-	void OnSynthesizeResponse(const bool bIsSuccessful, USoundWave* SoundWave);
+	void OnSynthesizeResponse(const bool bIsSuccessful, USoundBase* SoundBase);
 
 private:
 	

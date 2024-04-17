@@ -42,7 +42,7 @@ void ATtsExperience::InitializeService()
 	if (TtsService != nullptr)
 	{
 		TtsService->SetHandlers(EventHandler, MemoryCacheHandler, StorageCacheHandler);
-		TtsService->SetConfiguration(Configuration, VoicePreset, AudioType, bUseStreaming);
+		TtsService->SetConfiguration(Configuration, VoicePreset, AudioType, bUseStreaming, InitialStreamBufferSize);
 	}
 }
 

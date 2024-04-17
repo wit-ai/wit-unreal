@@ -13,7 +13,7 @@
 #include "TTS/Configuration/TtsConfiguration.h"
 #include "TtsEvents.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSynthesizeResponseDelegate, const bool, bIsSuccessful, USoundWave*, SoundWave);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSynthesizeResponseDelegate, const bool, bIsSuccessful, USoundBase*, SoundBase);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSynthesizeErrorDelegate, const FString&, ErrorMessage, const FString&, HumanReadableMessage);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnSynthesizeRawResponseDelegate, const FString&, ClipId, const TArray<uint8>&, BinaryData, const FTtsConfiguration&, ClipSettings);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnSynthesizeRawResponseMulticastDelegate, const TArray<uint8>&);

@@ -280,7 +280,11 @@ size_t FWitHttpRequest::StreamUploadCallback(void* Ptr, size_t SizeInBlocks, siz
 /**
  * Construct a stream payload from an archive 
  */
+#if UE_VERSION_OLDER_THAN(5, 4, 0)
 FRequestPayloadInFileStream::FRequestPayloadInFileStream(TSharedRef<FArchive, ESPMode::ThreadSafe> InFile) : File(InFile)
+#else
+FRequestPayloadInFileStream::FRequestPayloadInFileStream(TSharedRef<FArchive, ESPMode::ThreadSafe> InFile, bool bTrue) : File(InFile)
+#endif
 {
 	// Deliberately empty
 }
@@ -304,6 +308,17 @@ uint64 FRequestPayloadInFileStream::GetContentLength() const
 {
 	return static_cast<int32>(File->TotalSize());
 }
+
+/**
+ * Close the payload
+ */
+#if UE_VERSION_OLDER_THAN(5, 4, 0)
+#else
+void FRequestPayloadInFileStream::Close()
+{
+	// Deliberately empty
+}
+#endif
 
 /**
  * Get access to the payload content
@@ -384,6 +399,17 @@ uint64 FRequestPayloadInMemory::GetContentLength() const
 {
 	return Buffer.Num();
 }
+
+/**
+ * Close the payload
+ */
+#if UE_VERSION_OLDER_THAN(5, 4, 0)
+#else
+void FRequestPayloadInMemory::Close()
+{
+	// Deliberately empty
+}
+#endif
 
 /**
  * Get access to the content payload

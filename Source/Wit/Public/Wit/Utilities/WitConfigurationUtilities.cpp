@@ -6,6 +6,7 @@
  */
 
 #include "WitConfigurationUtilities.h"
+#include "Engine/Engine.h"
 #include "Wit/Request/WitRequestSubsystem.h"
 #include "Wit/Request/WitRequestBuilder.h"
 #include "Wit/Utilities/WitLog.h"

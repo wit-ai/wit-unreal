@@ -7,6 +7,7 @@
 
 #include "Wit/TTS/WitTtsService.h"
 #include "AudioMixerDevice.h"
+#include "Engine/Engine.h"
 #include "JsonObjectConverter.h"
 #include "Wit/Request/WitRequestBuilder.h"
 #include "Wit/Request/WitRequestSubsystem.h"
@@ -15,6 +16,46 @@
 #include "Wit/Utilities/WitLog.h"
 #include "Wit/Utilities/WitHelperUtilities.h"
 #include "Wit/Utilities/WitTtsSpeechSplitter.h"
+
+#ifdef CPP_PLUGIN
+THIRD_PARTY_INCLUDES_START
+#ifdef check
+#pragma push_macro("check")
+#undef check
+#endif
+#ifdef ensure
+#undef ensure
+#endif
+#ifdef event
+#undef event
+#endif
+#ifdef DCHECK_LE
+#undef DCHECK_LE
+#endif
+#ifdef LOG
+#undef LOG
+#endif
+
+typedef uint8_t u_int8_t;
+
+#include "VoiceSDK/v2/interfaces/IVoiceSdkApi.hpp"
+#include "VoiceSDK/v2/interfaces/io/ITextStaticInputProvider.hpp"
+#include "VoiceSDK/v2/interfaces/io/ITextStreamInputProvider.hpp"
+#include "VoiceSDK/v2/interfaces/request/tts/ITextToSpeechRequestParameter.hpp"
+
+#include "VoiceSDK/v2/impl/parameters/VoiceSdkParameter.hpp"
+#include "VoiceSDK/v2/impl/RequestParameterFactory.hpp"
+#include "VoiceSDK/v2/impl/InputProviderFactory.hpp"
+#include "VoiceSDK/v2/impl/unidirection/VoiceSdkApi.hpp"
+
+#include "VoiceSDK/v2/stubs/StubVoiceSdkApi.hpp"
+#include "VoiceSDK/v2/stubs/StubStorage.hpp"
+
+using namespace meta::voicesdk::v2;
+
+#pragma pop_macro("check")
+THIRD_PARTY_INCLUDES_END
+#endif
 
 #if WITH_EDITORONLY_DATA
 
@@ -66,6 +107,7 @@ bool UWitTtsService::IsRequestInProgress() const
  * Sends a text string to Wit to be converted into speech
  *
  * @param ClipSettings [in] The synthesis settings we want to use
+ * @param QueueAudio [in] should audio be placed in a queue
  */
 void UWitTtsService::ConvertTextToSpeechWithSettings(const FTtsConfiguration& ClipSettings, const bool bQueueAudio)
 {
@@ -76,6 +118,7 @@ void UWitTtsService::ConvertTextToSpeechWithSettings(const FTtsConfiguration& Cl
  * Sends a text string to Wit to be converted into speech
  *
  * @param ClipSettings [in] The synthesis settings we want to use
+ * @param QueueAudio [in] should audio be placed in a queue
  */
 void UWitTtsService::ConvertTextToSpeechWithSettingsInternal(const bool bNewRequest, const bool bQueueAudio)
 {
@@ -114,6 +157,7 @@ void UWitTtsService::ConvertTextToSpeechWithSettingsInternal(const bool bNewRequ
 		if (bIsClipCached && !bUseStreaming)
 		{
 			UE_LOG(LogWit, Verbose, TEXT("ConvertTextToSpeechWithSettingsInternal: clip found in memory cache (%s)"), *ClipId);
+			SoundWaveProcedural = nullptr;
 
 			if (EventHandler != nullptr)
 			{
@@ -157,6 +201,52 @@ void UWitTtsService::ConvertTextToSpeechWithSettingsInternal(const bool bNewRequ
 		return;
 	}
 
+	if (RequestClipSettings.Voice.IsEmpty())
+	{
+		UE_LOG(LogWit, Warning, TEXT("ConvertTextToSpeechWithSettings: cannot convert text because no voice is specified and it is required"));
+		return;
+	}
+
+	LastRequestedClipSettings = RequestClipSettings;
+
+#ifdef CPP_PLUGIN
+#if PLATFORM_ANDROID
+	std::shared_ptr<StubStorage> Storage = std::make_shared<StubStorage>();
+	std::shared_ptr<IVoiceSdkApi> VoiceSdkApi = std::make_shared<StubVoiceSdkApi>(Storage);
+
+	std::shared_ptr<RequestParameterFactory> ParameterFactory = std::make_shared<RequestParameterFactory>();
+	std::shared_ptr<ITextToSpeechRequestParameter> TtsRequestParameter = ParameterFactory->createTextToSpeechRequestParameter();
+	TtsRequestParameter->setSpeed(RequestClipSettings.Speed);
+	TtsRequestParameter->setPitch(RequestClipSettings.Pitch);
+	TtsRequestParameter->setVoice(TCHAR_TO_UTF8(*RequestClipSettings.Voice));
+	if (!RequestClipSettings.Style.IsEmpty())
+	{
+		//TODO: Switch RequestClipSettings.Style from FString to common::VoiceStyle enum and set parameter
+	}
+
+	std::shared_ptr<InputProviderFactory> ProviderFactory = std::make_shared<InputProviderFactory>();
+	if (bUseStreaming)
+	{
+		std::shared_ptr<ITextStreamInputProvider> StreamInputProvider = ProviderFactory->createTextStreamInputProvider();
+		if (!StreamInputProvider)
+		{
+			UE_LOG(LogWit, Error, TEXT("ConvertTextToSpeechWithSettings: Streaming not yet supported via CPP_PLUGIN"));
+			return;
+		}
+		StreamInputProvider->writeText(TCHAR_TO_UTF8(*RequestClipSettings.Text));
+		StreamInputProvider->writeEndOfStream();
+	}
+	else
+	{
+		std::shared_ptr<ITextStaticInputProvider> StaticInputProvider = ProviderFactory->createTextStaticInputProvider();
+		StaticInputProvider->setText(TCHAR_TO_UTF8(*RequestClipSettings.Text));
+		VoiceSdkApi->activate(
+			std::string(TCHAR_TO_UTF8(*ClipId)), std::move(TtsRequestParameter), StaticInputProvider);
+	}
+
+#endif
+#else
+
 	UWitRequestSubsystem* RequestSubsystem = GEngine->GetEngineSubsystem<UWitRequestSubsystem>();
 
 	if (RequestSubsystem == nullptr)
@@ -174,14 +264,6 @@ void UWitTtsService::ConvertTextToSpeechWithSettingsInternal(const bool bNewRequ
 		}
 		return;
 	}
-
-	if (RequestClipSettings.Voice.IsEmpty())
-	{
-		UE_LOG(LogWit, Warning, TEXT("ConvertTextToSpeechWithSettingsInternal: cannot convert text because no voice is specified and it is required"));
-		return;
-	}
-
-	LastRequestedClipSettings = RequestClipSettings;
 
 	UE_LOG(LogWit, Display, TEXT("ConvertTextToSpeechWithSettingsInternal: converting text (%s) with voice (%s)"), *RequestClipSettings.Text, *RequestClipSettings.Voice);
 
@@ -239,6 +321,7 @@ void UWitTtsService::ConvertTextToSpeechWithSettingsInternal(const bool bNewRequ
 	RequestSubsystem->WriteJsonData(RequestBody.ToSharedRef());
 	RequestSubsystem->EndStreamRequest();
 	QueuedSettings.RemoveAt(0);
+#endif
 }
 
 /**
@@ -426,6 +509,14 @@ void UWitTtsService::OnSynthesizeRequestComplete(const TArray<uint8>& BinaryResp
 
 			EventHandler->OnSynthesizeResponse.Broadcast(true, SoundWave);
 		}
+		else
+		{
+			const uint8* RawData = BinaryResponse.GetData();
+			const int32 RawDataSize = BinaryResponse.Num() % 2 == 0 ? BinaryResponse.Num() : BinaryResponse.Num() - 1;
+			const bool bShouldCheckSize = true;
+			AddProceduralData(RawData, RawDataSize, bShouldCheckSize);
+		}
+
 	}
 
 	bStopInProgressRequest = false;
@@ -448,40 +539,11 @@ void UWitTtsService::OnSynthesizeRequestProgress(const TArray<uint8>& BinaryResp
 		SoundWaveProcedural = nullptr;
 		return;
 	}
+
 	const uint8* RawData = BinaryResponse.GetData();
 	const int32 RawDataSize = BinaryResponse.Num() % 2 == 0 ? BinaryResponse.Num() : BinaryResponse.Num() - 1;
-	const int32 MinBufferLength = GEngine->GetMainAudioDeviceRaw()->GetBufferLength();
-
-	if (!SoundWaveProcedural)
-	{
-		SoundWaveProcedural = Cast<USoundWaveProcedural>(FWitHelperUtilities::CreateSoundWaveFromRawData(RawData, RawDataSize, AudioType, bUseStreaming));
-		SoundWaveProcedural->bCanProcessAsync = true;
-		PreviousDataIndex = 0;
-		if (EventHandler)
-		{
-			EventHandler->OnSynthesizeResponse.Broadcast(true, SoundWaveProcedural);
-		}
-	}
-	SoundWaveProcedural->Duration = RawDataSize / BytesPerDataSample / DefaultSampleRate;
-
-	if (RawDataSize >= MinBufferLength)
-	{
-		const int IncreaseBufferLength = RawDataSize - PreviousDataIndex;
-		if (IncreaseBufferLength <= 0)
-		{
-			UE_LOG(LogWit, Warning, TEXT("OnSynthesizeRequestProgress: Trying to increase Buffer length by a non-positive amount"));
-			return;
-		}
-
-		BufferQueue.SetNum(IncreaseBufferLength);
-		int8* Data = (int8*)&BufferQueue[0];
-		for (size_t i = 0; i < IncreaseBufferLength; ++i)
-		{
-			Data[i] = RawData[i + PreviousDataIndex];
-		}
-		SoundWaveProcedural->QueueAudio((const uint8*)Data, IncreaseBufferLength);
-		PreviousDataIndex = RawDataSize;
-	}
+	const bool bShouldCheckSize = false;
+	AddProceduralData(RawData, RawDataSize, bShouldCheckSize);
 }
 
 /**
@@ -561,6 +623,52 @@ USoundWave* UWitTtsService::CreateSoundWaveAndAddToMemoryCache(const FString& Cl
 	}
 
 	return SoundWave;
+}
+
+
+/** Adds incremental raw data to the Procedural Sound Wave buffer queue
+*
+* @param RawData [in] data to be added to buffer queue
+* @param RawDataSize [in] size of the data to be added
+* @param bShouldCheckSize [in] should the size be checked against min buffer size
+*/
+void UWitTtsService::AddProceduralData(const uint8* RawData, const int32 RawDataSize, bool bShouldCheckSize)
+{
+	const int32 MinBufferLength = BytesPerDataSample * DefaultSampleRate * InitialStreamBufferSize;
+
+	if (!SoundWaveProcedural)
+	{
+		SoundWaveProcedural = Cast<USoundWaveProcedural>(FWitHelperUtilities::CreateSoundWaveFromRawData(RawData, RawDataSize, AudioType, bUseStreaming));
+		SoundWaveProcedural->bCanProcessAsync = true;
+		PreviousDataIndex = 0;
+		if (EventHandler)
+		{
+			EventHandler->OnSynthesizeResponse.Broadcast(true, SoundWaveProcedural);
+		}
+	}
+	SoundWaveProcedural->Duration = float(RawDataSize) / BytesPerDataSample / DefaultSampleRate;
+	UE_LOG(LogWit, Verbose, TEXT("AddProceduralData - Duration: %f"), SoundWaveProcedural->Duration);
+	if (bShouldCheckSize || RawDataSize >= MinBufferLength)
+	{
+		const int IncreaseBufferLength = RawDataSize - PreviousDataIndex;
+		if (IncreaseBufferLength <= 0)
+		{
+			if (IncreaseBufferLength < 0) // Warn only if length is negative
+			{
+				UE_LOG(LogWit, Warning, TEXT("AddProceduralData: Trying to increase Buffer length by a non-positive amount"));
+			}
+			return;
+		}
+
+		BufferQueue.SetNum(IncreaseBufferLength);
+		int8* Data = (int8*)&BufferQueue[0];
+		for (size_t i = 0; i < IncreaseBufferLength; ++i)
+		{
+			Data[i] = RawData[i + PreviousDataIndex];
+		}
+		SoundWaveProcedural->QueueAudio((const uint8*)Data, IncreaseBufferLength);
+		PreviousDataIndex = RawDataSize;
+	}
 }
 
 #if WITH_EDITORONLY_DATA
