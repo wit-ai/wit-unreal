@@ -9,6 +9,7 @@
 #include "Curl/CurlHttpManager.h"
 #include "Interfaces/IPluginManager.h"
 #include "Misc/EngineVersionComparison.h"
+#include "Modules/ModuleInterface.h"
 #include "Modules/ModuleManager.h"
 #include "Wit/Utilities/WitLog.h"
 

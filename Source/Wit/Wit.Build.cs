@@ -15,13 +15,15 @@ public class Wit : ModuleRules
 		get
 		{
 			return Target.Platform.IsInGroup(UnrealPlatformGroup.Windows) ||
-			       Target.IsInPlatformGroup(UnrealPlatformGroup.Unix) ||
-			       Target.IsInPlatformGroup(UnrealPlatformGroup.Android);
+				   Target.IsInPlatformGroup(UnrealPlatformGroup.Unix) ||
+				   Target.IsInPlatformGroup(UnrealPlatformGroup.Android);
 		}
 	}
 	
 	public Wit(ReadOnlyTargetRules Target) : base(Target)
 	{
+		bEnableExceptions = true;
+
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 		
 		PrivateDefinitions.Add("WITH_CURL_LIBCURL=" + (bPlatformSupportsLibCurl ? "1" : "0"));
@@ -59,6 +61,9 @@ public class Wit : ModuleRules
 #if UE_5_1_OR_LATER
 				"nghttp2",
 				"zlib",
+#if UE_5_4_OR_LATER
+				"EventLoop",
+#endif	
 #endif				
 			}
 			);
@@ -79,6 +84,40 @@ public class Wit : ModuleRules
 				"SignalProcessing"
 			}
 			);
+
+		string ThirdPartyDir = Path.Combine(ModuleDirectory, "..", "ThirdParty");
+		PublicIncludePaths.Add(Path.Combine(ThirdPartyDir, "VoiceSDK", "include"));
+		PublicIncludePaths.Add(Path.Combine(ThirdPartyDir, "boost", "include"));
+		PublicIncludePaths.Add(Path.Combine(ThirdPartyDir, "double-conversion", "include"));
+		PublicIncludePaths.Add(Path.Combine(ThirdPartyDir, "fmt", "include"));
+		PublicIncludePaths.Add(Path.Combine(ThirdPartyDir, "folly", "include"));
+		PublicIncludePaths.Add(Path.Combine(ThirdPartyDir, "glog", "include"));
+		PublicIncludePaths.Add(Path.Combine(ThirdPartyDir, "gtest", "include"));
+		PublicIncludePaths.Add(Path.Combine(ThirdPartyDir, "thrift", "include"));
+		if (Target.Platform == UnrealTargetPlatform.Android)
+		{
+			string VoiceSdkLibraryPath = Path.Combine(ThirdPartyDir, "VoiceSDK", "lib", "Android");
+			PublicAdditionalLibraries.Add(Path.Combine(VoiceSdkLibraryPath, "libvoicesdk.pic.a"));
+			PublicAdditionalLibraries.Add(Path.Combine(VoiceSdkLibraryPath, "libstubs.pic.a"));
+			PublicAdditionalLibraries.Add(Path.Combine(VoiceSdkLibraryPath, "libutils.pic.a"));
+
+			PublicAdditionalLibraries.Add(Path.Combine(ThirdPartyDir, "double-conversion", "lib", "Android", "lib_double-conversion.pic.a"));
+
+			string FollyLibraryPath = Path.Combine(ThirdPartyDir, "folly", "lib", "Android");
+			PublicAdditionalLibraries.Add(Path.Combine(FollyLibraryPath, "libasync_base.pic.a"));
+			PublicAdditionalLibraries.Add(Path.Combine(FollyLibraryPath, "libdynamic.pic.a"));
+			PublicAdditionalLibraries.Add(Path.Combine(FollyLibraryPath, "libjson.pic.a"));
+			PublicAdditionalLibraries.Add(Path.Combine(FollyLibraryPath, "libunicode.pic.a"));
+			PublicAdditionalLibraries.Add(Path.Combine(FollyLibraryPath, "libhash_hash.a"));
+			PublicAdditionalLibraries.Add(Path.Combine(FollyLibraryPath, "libjson_pointer.a"));
+			PublicAdditionalLibraries.Add(Path.Combine(FollyLibraryPath, "libformat.a"));
+			PublicAdditionalLibraries.Add(Path.Combine(FollyLibraryPath, "libconv.a"));
+			PublicAdditionalLibraries.Add(Path.Combine(FollyLibraryPath, "libio_iobuf.a"));
+			PublicAdditionalLibraries.Add(Path.Combine(FollyLibraryPath, "libto_ascii.a"));
+			PublicAdditionalLibraries.Add(Path.Combine(FollyLibraryPath, "libsafe_assert.a"));
+
+			PublicAdditionalLibraries.Add(Path.Combine(ThirdPartyDir, "glog", "lib", "Android", "lib_glog.pic.a"));
+		}
 
 		DynamicallyLoadedModuleNames.AddRange(
 			new string[]

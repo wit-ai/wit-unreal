@@ -37,13 +37,16 @@ public:
 		UWitAppConfigurationAsset* ConfigurationToUse,
 		UTtsVoicePresetAsset* VoicePresetToUse,
 		EWitRequestAudioFormat AudioTypeToUse,
-		bool bUseStreamingToUse)
+		bool bUseStreamingToUse,
+		float InitialStreamBufferSizeToUse)
 	{
 		Configuration = ConfigurationToUse;
 		VoicePreset = VoicePresetToUse;
 		AudioType = AudioTypeToUse;
 		bUseStreaming = bUseStreamingToUse;
+		InitialStreamBufferSize = InitialStreamBufferSizeToUse;
 	}
+
 
 	/**
 	 * Set the handlers to use
@@ -88,6 +91,13 @@ protected:
 	*/
 	UPROPERTY(Transient)
 	bool bUseStreaming{false};
+
+	/**
+	* How many seconds of data to buffer before playing audio.
+	*/
+	UPROPERTY(Transient)
+	float InitialStreamBufferSize{ 0.1f };
+
 
 	/**
 	 * The events that this service should use in callbacks

@@ -8,6 +8,8 @@
 #include "Wit/Utilities/WitHelperUtilities.h"
 #include "JsonObjectConverter.h"
 #include "AssetRegistry/AssetRegistryModule.h"
+#include "Audio.h"
+#include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
 #include "Serialization/BufferArchive.h"
 #include "Sound/SoundWaveProcedural.h"

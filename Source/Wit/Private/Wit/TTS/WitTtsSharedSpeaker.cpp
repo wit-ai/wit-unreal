@@ -118,9 +118,9 @@ bool AWitTtsSharedSpeaker::IsLoading() const
  * Callback that is called when a Wit.ai response is received which is used to see if we have a match
  * 
  * @param bIsSuccessful [in] true if the response was successful
- * @param SoundWave [in] the generated sound wave
+ * @param SoundBase [in] the generated sound wave
  */
-void AWitTtsSharedSpeaker::OnSynthesizeResponse(const bool bIsSuccessful, USoundWave* SoundWave)
+void AWitTtsSharedSpeaker::OnSynthesizeResponse(const bool bIsSuccessful, USoundBase* SoundBase)
 {
 	if (!bIsSuccessful)
 	{
@@ -129,6 +129,6 @@ void AWitTtsSharedSpeaker::OnSynthesizeResponse(const bool bIsSuccessful, USound
 
 	Stop();
 	
-	AudioComponent->SetSound(SoundWave);
+	AudioComponent->SetSound(SoundBase);
 	AudioComponent->Play();
 }

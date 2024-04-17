@@ -133,4 +133,7 @@ private:
 
 	/** Called when a Wit synthesize request is in progress to process the incremental payload */
 	void OnSynthesizeRequestProgress(const TArray<uint8>& BinaryResponse, const TSharedPtr<FJsonObject> JsonResponse);
+
+	/** Adds incremental raw data to the Procedural Sound Wave buffer queue */
+	void AddProceduralData(const uint8* RawData, const int32 RawDataSize, bool bShouldCheckSize);
 };
