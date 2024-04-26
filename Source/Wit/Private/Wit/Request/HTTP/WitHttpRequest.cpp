@@ -283,6 +283,14 @@ size_t FWitHttpRequest::StreamUploadCallback(void* Ptr, size_t SizeInBlocks, siz
 #if UE_VERSION_OLDER_THAN(5, 4, 0)
 FRequestPayloadInFileStream::FRequestPayloadInFileStream(TSharedRef<FArchive, ESPMode::ThreadSafe> InFile) : File(InFile)
 #else
+FRequestPayloadInFileStream::FRequestPayloadInFileStream(const FString& InFilename) {
+  // Deliberately empty
+}
+TAutoConsoleVariable<int32> CVarHttpEventLoopEnableChance(
+    TEXT("http.CurlEventLoopEnableChance"),
+    0,
+    TEXT("Enable chance of event loop, from 0 to 100"),
+    ECVF_SaveForNextBoot);
 FRequestPayloadInFileStream::FRequestPayloadInFileStream(TSharedRef<FArchive, ESPMode::ThreadSafe> InFile, bool bTrue) : File(InFile)
 #endif
 {
@@ -314,6 +322,10 @@ uint64 FRequestPayloadInFileStream::GetContentLength() const
  */
 #if UE_VERSION_OLDER_THAN(5, 4, 0)
 #else
+bool FRequestPayloadInFileStream::Open() {
+    return true;
+}
+
 void FRequestPayloadInFileStream::Close()
 {
 	// Deliberately empty
@@ -405,6 +417,10 @@ uint64 FRequestPayloadInMemory::GetContentLength() const
  */
 #if UE_VERSION_OLDER_THAN(5, 4, 0)
 #else
+bool FRequestPayloadInMemory::Open() {
+    return true;
+}
+
 void FRequestPayloadInMemory::Close()
 {
 	// Deliberately empty
