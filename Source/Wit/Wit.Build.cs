@@ -19,13 +19,13 @@ public class Wit : ModuleRules
 				   Target.IsInPlatformGroup(UnrealPlatformGroup.Android);
 		}
 	}
-	
+
 	public Wit(ReadOnlyTargetRules Target) : base(Target)
 	{
 		bEnableExceptions = true;
 
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
-		
+
 		PrivateDefinitions.Add("WITH_CURL_LIBCURL=" + (bPlatformSupportsLibCurl ? "1" : "0"));
 		PrivateDefinitions.Add("WITH_CURL_XCURL=0");
 		PrivateDefinitions.Add("WITH_CURL_MULTIPOLL=0");
@@ -34,7 +34,7 @@ public class Wit : ModuleRules
 		PrivateDefinitions.Add("WITH_CURL=" + (bPlatformSupportsLibCurl ? "1" : "0"));
 		PrivateDefinitions.Add("WITH_CURL_QUICKEXIT=1");
 		PrivateDefinitions.Add("WITH_SSL=1");
-		
+
 		PublicIncludePaths.AddRange(
 			new string[]
 			{
@@ -55,9 +55,10 @@ public class Wit : ModuleRules
 				"CoreUObject",
 				"Engine",
 				"Json",
-				"JsonUtilities",				
+				"JsonUtilities",
 				"Voice",
 				"HTTP",
+				"WebSockets",
 #if UE_5_1_OR_LATER
 				"nghttp2",
 				"zlib",
@@ -93,11 +94,12 @@ public class Wit : ModuleRules
 		PublicIncludePaths.Add(Path.Combine(ThirdPartyDir, "folly", "include"));
 		PublicIncludePaths.Add(Path.Combine(ThirdPartyDir, "glog", "include"));
 		PublicIncludePaths.Add(Path.Combine(ThirdPartyDir, "gtest", "include"));
+		PublicIncludePaths.Add(Path.Combine(ThirdPartyDir, "magic_enum", "include"));
 		PublicIncludePaths.Add(Path.Combine(ThirdPartyDir, "thrift", "include"));
 		if (Target.Platform == UnrealTargetPlatform.Android)
 		{
 			string VoiceSdkLibraryPath = Path.Combine(ThirdPartyDir, "VoiceSDK", "lib", "Android");
-			PublicAdditionalLibraries.Add(Path.Combine(VoiceSdkLibraryPath, "libvoicesdk.pic.a"));
+			PublicAdditionalLibraries.Add(Path.Combine(VoiceSdkLibraryPath, "libvoicesdk.a"));
 			PublicAdditionalLibraries.Add(Path.Combine(VoiceSdkLibraryPath, "libstubs.pic.a"));
 			PublicAdditionalLibraries.Add(Path.Combine(VoiceSdkLibraryPath, "libutils.pic.a"));
 
@@ -105,7 +107,12 @@ public class Wit : ModuleRules
 
 			string FollyLibraryPath = Path.Combine(ThirdPartyDir, "folly", "lib", "Android");
 			PublicAdditionalLibraries.Add(Path.Combine(FollyLibraryPath, "libasync_base.pic.a"));
+			PublicAdditionalLibraries.Add(Path.Combine(FollyLibraryPath, "libc_string.a"));
+			PublicAdditionalLibraries.Add(Path.Combine(FollyLibraryPath, "libdemangle.a"));
 			PublicAdditionalLibraries.Add(Path.Combine(FollyLibraryPath, "libdynamic.pic.a"));
+			PublicAdditionalLibraries.Add(Path.Combine(FollyLibraryPath, "libexception_string.a"));
+			PublicAdditionalLibraries.Add(Path.Combine(FollyLibraryPath, "libexception.a"));
+			PublicAdditionalLibraries.Add(Path.Combine(FollyLibraryPath, "libexecutor.a"));
 			PublicAdditionalLibraries.Add(Path.Combine(FollyLibraryPath, "libjson.pic.a"));
 			PublicAdditionalLibraries.Add(Path.Combine(FollyLibraryPath, "libunicode.pic.a"));
 			PublicAdditionalLibraries.Add(Path.Combine(FollyLibraryPath, "libhash_hash.a"));

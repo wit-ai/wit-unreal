@@ -108,6 +108,12 @@ public:
 	float InitialStreamBufferSize{ 0.02f };
 
 	/**
+	* Should WebSocket be used to commuicate with Wit.ai
+	*/
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TTS", meta = (EditCondition = "false", EditConditionHides))
+	bool bUseWebSocket{false};
+
+	/**
 	 * The events used by the voice service
 	 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "TTS")

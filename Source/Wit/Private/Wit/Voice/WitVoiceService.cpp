@@ -15,6 +15,46 @@
 #include "AudioMixerDevice.h"
 #include "Wit/Utilities/WitHelperUtilities.h"
 
+#ifdef CPP_PLUGIN
+THIRD_PARTY_INCLUDES_START
+#ifdef check
+#pragma push_macro("check")
+#undef check
+#endif
+#ifdef ensure
+#undef ensure
+#endif
+#ifdef event
+#undef event
+#endif
+#ifdef DCHECK_LE
+#undef DCHECK_LE
+#endif
+#ifdef LOG
+#undef LOG
+#endif
+
+typedef uint8_t u_int8_t;
+
+#include <folly/executors/InlineExecutor.h>
+
+#include "VoiceSDK/v2/interfaces/IVoiceSdkApi.hpp"
+#include "VoiceSDK/v2/interfaces/io/ITextStaticInputProvider.hpp"
+#include "VoiceSDK/v2/interfaces/io/IAudioStreamInputProvider.hpp"
+#include "VoiceSDK/v2/interfaces/request/command/ICommandRequestParameter.hpp"
+#include "VoiceSDK/v2/interfaces/request/composer/IComposerRequestParameter.hpp"
+
+#include "VoiceSDK/v2/impl/parameters/VoiceSdkParameter.hpp"
+#include "VoiceSDK/v2/impl/RequestParameterFactory.hpp"
+#include "VoiceSDK/v2/impl/InputProviderFactory.hpp"
+#include "VoiceSDK/v2/impl/unidirection/VoiceSdkApi.hpp"
+
+using namespace meta::voicesdk::v2;
+
+#pragma pop_macro("check")
+THIRD_PARTY_INCLUDES_END
+#endif
+
 #if WITH_EDITORONLY_DATA
 
 // Use for debug recording of the voice input
@@ -139,8 +179,20 @@ void UWitVoiceService::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 		}
 
 #endif
-		
+#ifdef CPP_PLUGIN
+#if PLATFORM_ANDROID
+		if (!StreamInputProvider)
+		{
+			UE_LOG(LogWit, Error, TEXT("TickComponent: Not Initialized"));
+			return;
+		}
+		std::unique_ptr<folly::IOBuf> chunk;
+
+		StreamInputProvider->writeBytes(folly::IOBuf::copyBuffer(&VoiceCaptureSubsystem->GetVoiceBuffer(), VoiceCaptureSubsystem->GetVoiceBuffer().Num()));
+#endif
+#else
 		RequestSubsystem->WriteBinaryData(VoiceCaptureSubsystem->GetVoiceBuffer());
+#endif
 	}
 
 	// Keep track of whether we are actually receiving suitable voice input. This is used in deciding when to auto deactivate
@@ -363,6 +415,34 @@ void UWitVoiceService::BeginStreamRequest()
 	const UVoiceCaptureSubsystem* VoiceCaptureSubsystem = GEngine->GetEngineSubsystem<UVoiceCaptureSubsystem>();
 	UWitRequestSubsystem* RequestSubsystem = GEngine->GetEngineSubsystem<UWitRequestSubsystem>();
 	
+#ifdef CPP_PLUGIN
+#if PLATFORM_ANDROID
+	folly::InlineExecutor InlineExecutor;
+	folly::Executor::KeepAlive<> ExecutorToken;
+	ExecutorToken = getKeepAliveToken(InlineExecutor);
+
+	std::shared_ptr<IVoiceSdkApi> VoiceApi = std::make_shared<VoiceSdkApi>(
+		nullptr, // TODO: Replace with implementation of IVoiceSdkCallbacListener
+		ExecutorToken);
+
+	std::shared_ptr<RequestParameterFactory> ParameterFactory = std::make_shared<RequestParameterFactory>();
+	std::shared_ptr<IComposerRequestParameter> TtsRequestParameter = ParameterFactory->createComposerRequestParameter();
+
+	std::shared_ptr<InputProviderFactory> ProviderFactory = std::make_shared<InputProviderFactory>();
+
+	StreamInputProvider = ProviderFactory->createAudioStreamInputProvider();
+	if (!StreamInputProvider)
+	{
+		UE_LOG(LogWit, Error, TEXT("ConvertTextToSpeechWithSettings: Streaming not yet supported via CPP_PLUGIN"));
+		return;
+	}
+	StreamInputProvider->setAudioFormat(InputAudioFormat::RAW);
+	StreamInputProvider->setBits(16);
+	StreamInputProvider->setEncoding(AudioEncoding::SignedInteger);
+	StreamInputProvider->setEndian(Endian::LittleEndian);
+	StreamInputProvider->setSampleRate(VoiceCaptureSubsystem->SampleRate);
+#endif
+#else
 	// Construct the request with the desired configuration. We use the /speech endpoint in Wit.ai. See the Wit.ai documentation for more
 	// specifics of the parameters to this endpoint
 
@@ -392,7 +472,7 @@ void UWitVoiceService::BeginStreamRequest()
 	// becomes available. This greatly reduces latency over waiting for the whole voice data and then sending it
 
 	RequestSubsystem->BeginStreamRequest(RequestConfiguration);
-
+#endif
 	bIsVoiceStreamingActive = true;
 
 	// Notify that we've started sending voice data
@@ -469,7 +549,18 @@ bool UWitVoiceService::DoDeactivateVoiceInput()
 	
 	if (bIsRequestInProgress)
 	{
+#ifdef CPP_PLUGIN
+#if PLATFORM_ANDROID
+		if (!StreamInputProvider)
+		{
+			UE_LOG(LogWit, Error, TEXT("DoDeactivateVoiceInput: Not Initialized"));
+			return false;
+		}
+		StreamInputProvider->writeEndOfStream();
+#endif
+#else
 		RequestSubsystem->EndStreamRequest();
+#endif
 	}
 	else
 	{
@@ -595,6 +686,30 @@ void UWitVoiceService::SendTranscription(const FString& Text)
 	// Construct the request with the desired configuration. We use the /message endpoint in Wit.ai. See the Wit.ai documentation for more
 	// specifics of the parameters to this endpoint
 
+#ifdef CPP_PLUGIN
+#if PLATFORM_ANDROID
+	folly::InlineExecutor InlineExecutor;
+	folly::Executor::KeepAlive<> ExecutorToken;
+	ExecutorToken = getKeepAliveToken(InlineExecutor);
+
+	const std::shared_ptr<IVoiceSdkApi> VoiceApi = std::make_shared<VoiceSdkApi>(
+		nullptr, // TODO: Replace with implementation of IVoiceSdkCallbacListener
+		ExecutorToken);
+
+	std::shared_ptr<RequestParameterFactory> ParameterFactory = std::make_shared<RequestParameterFactory>();
+	std::shared_ptr<ICommandRequestParameter> CommandRequestParameter = ParameterFactory->createCommandRequestParameter();
+
+	std::shared_ptr<InputProviderFactory> ProviderFactory = std::make_shared<InputProviderFactory>();
+	std::shared_ptr<ITextStaticInputProvider> StaticInputProvider = ProviderFactory->createTextStaticInputProvider();
+	StaticInputProvider->setText(TCHAR_TO_UTF8(*Text));
+	const FGuid Guid = FGuid::NewGuid();
+	const FString RequestId = *Guid.ToString(EGuidFormats::Digits);
+	VoiceApi->activate(
+		std::string(TCHAR_TO_UTF8(*RequestId)), std::move(CommandRequestParameter), StaticInputProvider);
+
+
+#endif
+#else
 	FWitRequestConfiguration RequestConfiguration{};
 
 	FWitRequestBuilder::SetRequestConfigurationWithDefaults(RequestConfiguration, EWitRequestEndpoint::Message, Configuration->Application.ClientAccessToken,
@@ -616,6 +731,7 @@ void UWitVoiceService::SendTranscription(const FString& Text)
 	
 	RequestSubsystem->BeginStreamRequest(RequestConfiguration);
 	RequestSubsystem->EndStreamRequest();
+#endif
 }
 
 /**
@@ -639,6 +755,18 @@ void UWitVoiceService::SendTranscriptionWithRequestOptions(const FString& Text, 
  */
 void UWitVoiceService::AcceptPartialResponseAndCancelRequest(const FWitResponse& Response)
 {
+
+
+#ifdef CPP_PLUGIN
+#if PLATFORM_ANDROID
+	if (!StreamInputProvider)
+	{
+		UE_LOG(LogWit, Error, TEXT("DoDeactivateVoiceInput: Not Initialized"));
+		return;
+	}
+	StreamInputProvider->writeEndOfStream();
+#endif
+#else
 	UWitRequestSubsystem* RequestSubsystem = GEngine->GetEngineSubsystem<UWitRequestSubsystem>();
 
 	if (RequestSubsystem == nullptr)
@@ -646,8 +774,8 @@ void UWitVoiceService::AcceptPartialResponseAndCancelRequest(const FWitResponse&
 		UE_LOG(LogWit, Warning, TEXT("SendTranscription: cannot send transcription because request subsystem does not exist"));
 		return;
 	}
-
 	RequestSubsystem->CancelRequest();
+#endif
 
 	DeactivateVoiceInput();
 
