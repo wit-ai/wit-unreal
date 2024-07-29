@@ -38,15 +38,16 @@ public:
 		UTtsVoicePresetAsset* VoicePresetToUse,
 		EWitRequestAudioFormat AudioTypeToUse,
 		bool bUseStreamingToUse,
-		float InitialStreamBufferSizeToUse)
+		float InitialStreamBufferSizeToUse,
+		bool bUseWebSocketToUse)
 	{
 		Configuration = ConfigurationToUse;
 		VoicePreset = VoicePresetToUse;
 		AudioType = AudioTypeToUse;
 		bUseStreaming = bUseStreamingToUse;
 		InitialStreamBufferSize = InitialStreamBufferSizeToUse;
+		bUseWebSocket = bUseWebSocketToUse;
 	}
-
 
 	/**
 	 * Set the handlers to use
@@ -98,6 +99,11 @@ protected:
 	UPROPERTY(Transient)
 	float InitialStreamBufferSize{ 0.1f };
 
+	/**
+	* Whether or not streaming is enabled on the call to Wit.ai
+	*/
+	UPROPERTY(Transient)
+	bool bUseWebSocket{false};
 
 	/**
 	 * The events that this service should use in callbacks

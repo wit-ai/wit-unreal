@@ -34,7 +34,7 @@ void FWitModule::StartupModule()
 		FCurlHttpManager::InitCurl();
 
 		HttpManager = new FCurlHttpManager();
-		HttpManager->Initialize();
+		HttpManager->UpdateConfigs();
 	}
 
 	// find version code

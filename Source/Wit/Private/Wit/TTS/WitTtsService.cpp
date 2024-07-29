@@ -12,6 +12,7 @@
 #include "Wit/Request/WitRequestBuilder.h"
 #include "Wit/Request/WitRequestSubsystem.h"
 #include "Wit/Request/WitRequestTypes.h"
+#include "Wit/Socket/WitSocketSubsystem.h"
 #include "TTS/Configuration/TtsConfiguration.h"
 #include "Wit/Utilities/WitLog.h"
 #include "Wit/Utilities/WitHelperUtilities.h"
@@ -38,6 +39,8 @@ THIRD_PARTY_INCLUDES_START
 
 typedef uint8_t u_int8_t;
 
+#include <folly/executors/InlineExecutor.h>
+
 #include "VoiceSDK/v2/interfaces/IVoiceSdkApi.hpp"
 #include "VoiceSDK/v2/interfaces/io/ITextStaticInputProvider.hpp"
 #include "VoiceSDK/v2/interfaces/io/ITextStreamInputProvider.hpp"
@@ -47,9 +50,6 @@ typedef uint8_t u_int8_t;
 #include "VoiceSDK/v2/impl/RequestParameterFactory.hpp"
 #include "VoiceSDK/v2/impl/InputProviderFactory.hpp"
 #include "VoiceSDK/v2/impl/unidirection/VoiceSdkApi.hpp"
-
-#include "VoiceSDK/v2/stubs/StubVoiceSdkApi.hpp"
-#include "VoiceSDK/v2/stubs/StubStorage.hpp"
 
 using namespace meta::voicesdk::v2;
 
@@ -72,6 +72,21 @@ UWitTtsService::UWitTtsService()
 	: Super()
 {
 	PrimaryComponentTick.bCanEverTick = false;
+}
+
+void UWitTtsService::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (bUseWebSocket)
+	{
+		UWitSocketSubsystem* SocketSubsystem = GEngine->GetEngineSubsystem<UWitSocketSubsystem>();
+		SocketSubsystem->OnSocketStateChange.AddUObject(this, &UWitTtsService::OnSocketStateChange);
+		SocketSubsystem->CreateSocket(Configuration->Application.ClientAccessToken);
+		SocketSubsystem->OnSocketStreamProgress.AddUObject(this, &UWitTtsService::OnSynthesizeRequestProgress);
+		SocketSubsystem->OnSocketStreamComplete.AddUObject(this, &UWitTtsService::OnSocketStreamComplete);
+		UE_LOG(LogWit, Warning, TEXT("BeginPlay: Connection Started"));
+	}
 }
 
 /**
@@ -97,8 +112,17 @@ void UWitTtsService::BeginDestroy()
  */
 bool UWitTtsService::IsRequestInProgress() const
 {
-	const UWitRequestSubsystem* RequestSubsystem = GEngine->GetEngineSubsystem<UWitRequestSubsystem>();
-	const bool bIsRequestInProgress = RequestSubsystem != nullptr && RequestSubsystem->IsRequestInProgress();
+	bool bIsRequestInProgress;
+	if (bUseWebSocket)
+	{
+		UWitSocketSubsystem* SocketSubsystem = GEngine->GetEngineSubsystem<UWitSocketSubsystem>();
+		bIsRequestInProgress = SocketSubsystem != nullptr && SocketSubsystem->IsSynthesizeInProgress();
+	}
+	else
+	{
+		const UWitRequestSubsystem* RequestSubsystem = GEngine->GetEngineSubsystem<UWitRequestSubsystem>();
+		bIsRequestInProgress = RequestSubsystem != nullptr && RequestSubsystem->IsRequestInProgress();
+	}
 
 	return bIsRequestInProgress;
 }
@@ -114,6 +138,7 @@ void UWitTtsService::ConvertTextToSpeechWithSettings(const FTtsConfiguration& Cl
 	SplitSpeech(ClipSettings, bQueueAudio);
 	ConvertTextToSpeechWithSettingsInternal(true, bQueueAudio);
 }
+
 /**
  * Sends a text string to Wit to be converted into speech
  *
@@ -122,10 +147,33 @@ void UWitTtsService::ConvertTextToSpeechWithSettings(const FTtsConfiguration& Cl
  */
 void UWitTtsService::ConvertTextToSpeechWithSettingsInternal(const bool bNewRequest, const bool bQueueAudio)
 {
+	UE_LOG(LogWit, Verbose, TEXT("ConvertTextToSpeechWithSettingsInternal: Sending message"));
 	if (QueuedSettings.IsEmpty())
 	{
 		UE_LOG(LogWit, Warning, TEXT("ConvertTextToSpeechWithSettingsInternal: cached settings is empty"));
 		return;
+	}
+
+	UWitSocketSubsystem* SocketSubsystem = GEngine->GetEngineSubsystem<UWitSocketSubsystem>();
+
+	if (bUseWebSocket)
+	{
+		if (AudioType != EWitRequestAudioFormat::Pcm)
+		{
+			UE_LOG(LogWit, Warning, TEXT("ConvertTextToSpeechWithSettingsInternal: WebSocket is not currently supported for (%s), switching to PCM"),
+				*UEnum::GetValueAsString(AudioType));
+			AudioType = EWitRequestAudioFormat::Pcm;
+		}
+		if (SocketStatus == SocketState::Disconnected)
+		{
+			UE_LOG(LogWit, Display, TEXT("ConvertTextToSpeechWithSettingsInternal: Socket disconnected, restarting"));
+			SocketSubsystem->CreateSocket(Configuration->Application.ClientAccessToken);
+		}
+		else if (SocketStatus != SocketState::Authenticated)
+		{
+			UE_LOG(LogWit, Warning, TEXT("ConvertTextToSpeechWithSettingsInternal: Socket not yet connected, retrying"));
+			return;
+		}
 	}
 	FTtsConfiguration& RequestClipSettings = QueuedSettings[0];
 
@@ -200,7 +248,6 @@ void UWitTtsService::ConvertTextToSpeechWithSettingsInternal(const bool bNewRequ
 		UE_LOG(LogWit, Warning, TEXT("ConvertTextToSpeechWithSettingsInternal: cannot convert text because no configuration found. Please assign a configuration and access token"));
 		return;
 	}
-
 	if (RequestClipSettings.Voice.IsEmpty())
 	{
 		UE_LOG(LogWit, Warning, TEXT("ConvertTextToSpeechWithSettings: cannot convert text because no voice is specified and it is required"));
@@ -209,10 +256,23 @@ void UWitTtsService::ConvertTextToSpeechWithSettingsInternal(const bool bNewRequ
 
 	LastRequestedClipSettings = RequestClipSettings;
 
+	
+	UE_LOG(
+        LogWit,
+        Verbose,
+        TEXT("ConvertTextToSpeechWithSettingsInternal: converting text (%s) with voice (%s)"),
+        *RequestClipSettings.Text,
+        *RequestClipSettings.Voice);
+
 #ifdef CPP_PLUGIN
 #if PLATFORM_ANDROID
-	std::shared_ptr<StubStorage> Storage = std::make_shared<StubStorage>();
-	std::shared_ptr<IVoiceSdkApi> VoiceSdkApi = std::make_shared<StubVoiceSdkApi>(Storage);
+    folly::InlineExecutor InlineExecutor;
+    folly::Executor::KeepAlive<> ExecutorToken;
+    ExecutorToken = getKeepAliveToken(InlineExecutor);
+
+    const std::shared_ptr<IVoiceSdkApi> VoiceApi = std::make_shared<VoiceSdkApi>(
+        nullptr, // TODO: Replace with implementation of IVoiceSdkCallbacListener
+        ExecutorToken);
 
 	std::shared_ptr<RequestParameterFactory> ParameterFactory = std::make_shared<RequestParameterFactory>();
 	std::shared_ptr<ITextToSpeechRequestParameter> TtsRequestParameter = ParameterFactory->createTextToSpeechRequestParameter();
@@ -240,7 +300,7 @@ void UWitTtsService::ConvertTextToSpeechWithSettingsInternal(const bool bNewRequ
 	{
 		std::shared_ptr<ITextStaticInputProvider> StaticInputProvider = ProviderFactory->createTextStaticInputProvider();
 		StaticInputProvider->setText(TCHAR_TO_UTF8(*RequestClipSettings.Text));
-		VoiceSdkApi->activate(
+		VoiceApi->activate(
 			std::string(TCHAR_TO_UTF8(*ClipId)), std::move(TtsRequestParameter), StaticInputProvider);
 	}
 
@@ -265,7 +325,12 @@ void UWitTtsService::ConvertTextToSpeechWithSettingsInternal(const bool bNewRequ
 		return;
 	}
 
-	UE_LOG(LogWit, Display, TEXT("ConvertTextToSpeechWithSettingsInternal: converting text (%s) with voice (%s)"), *RequestClipSettings.Text, *RequestClipSettings.Voice);
+	UE_LOG(
+		LogWit,
+		Verbose,
+		TEXT("ConvertTextToSpeechWithSettingsInternal: converting text (%s) with voice (%s)"),
+		*RequestClipSettings.Text,
+		*RequestClipSettings.Voice);
 
 	// Construct the request with the desired configuration. We use the /synthesize endpoint in Wit.ai. See the Wit.ai documentation for more
 	// specifics of the parameters to this endpoint
@@ -293,8 +358,6 @@ void UWitTtsService::ConvertTextToSpeechWithSettingsInternal(const bool bNewRequ
 		RequestConfiguration.OnRequestProgress.AddUObject(this, &UWitTtsService::OnSynthesizeRequestProgress);
 	}
 
-	RequestSubsystem->BeginStreamRequest(RequestConfiguration);
-
 	// Construct the body parameters. The only required one is "q" which is the text we want to convert. We could use UStructToJsonObject
 	// but since most of the arguments are optional it's easier to just set them
 
@@ -318,8 +381,17 @@ void UWitTtsService::ConvertTextToSpeechWithSettingsInternal(const bool bNewRequ
 		RequestBody->SetStringField("style", RequestClipSettings.Style);
 	}
 
-	RequestSubsystem->WriteJsonData(RequestBody.ToSharedRef());
-	RequestSubsystem->EndStreamRequest();
+	if (bUseWebSocket)
+	{
+		SocketSubsystem->SendJsonData(RequestBody.ToSharedRef());
+	}
+	else
+	{
+		RequestSubsystem->BeginStreamRequest(RequestConfiguration);
+		RequestSubsystem->WriteJsonData(RequestBody.ToSharedRef());
+		RequestSubsystem->EndStreamRequest();
+	}
+
 	QueuedSettings.RemoveAt(0);
 #endif
 }
@@ -427,6 +499,47 @@ void UWitTtsService::FetchAvailableVoices()
 	RequestSubsystem->EndStreamRequest();
 }
 
+
+/**
+ * Called when the state of a WebSocket connection changes
+ *
+ * @param SocketStatus [in] updated status of the WebSocket connection
+ */
+void UWitTtsService::OnSocketStateChange(SocketState ReturnedSocketStatus)
+{
+	SocketStatus = ReturnedSocketStatus;
+	FString Status = *UEnum::GetValueAsString(SocketStatus);
+	UE_LOG(LogWit, Verbose, TEXT("OnSocketStateChange %s"), *Status);
+
+	UWitSocketSubsystem* SocketSubsystem = GEngine->GetEngineSubsystem<UWitSocketSubsystem>();
+	if (SocketStatus == SocketState::Authenticated)
+	{
+		if (bUseWebSocket && !SocketSubsystem->IsSynthesizeInProgress() && !QueuedSettings.IsEmpty())
+		{
+			const bool bNewRequest = true;
+			const bool bQueueAudio = true;
+			ConvertTextToSpeechWithSettingsInternal(bNewRequest, bQueueAudio);
+		}
+	}
+	if (SocketStatus == SocketState::Disconnected && !QueuedSettings.IsEmpty())
+	{
+		SocketSubsystem->CreateSocket(Configuration->Application.ClientAccessToken);
+	}
+}
+
+/**
+ * Called when a WebSocket stream is complete
+ */
+void UWitTtsService::OnSocketStreamComplete()
+{
+	if (bUseWebSocket && !QueuedSettings.IsEmpty())
+	{
+		const bool bNewRequest = true;
+		const bool bQueueAudio = true;
+		ConvertTextToSpeechWithSettingsInternal(bNewRequest, bQueueAudio);
+	}
+}
+
 /**
  * Called when a storage cache request is successfully completed. The binary data will contain the audio wav for the converted text
  *
@@ -516,7 +629,6 @@ void UWitTtsService::OnSynthesizeRequestComplete(const TArray<uint8>& BinaryResp
 			const bool bShouldCheckSize = true;
 			AddProceduralData(RawData, RawDataSize, bShouldCheckSize);
 		}
-
 	}
 
 	bStopInProgressRequest = false;
@@ -539,7 +651,6 @@ void UWitTtsService::OnSynthesizeRequestProgress(const TArray<uint8>& BinaryResp
 		SoundWaveProcedural = nullptr;
 		return;
 	}
-
 	const uint8* RawData = BinaryResponse.GetData();
 	const int32 RawDataSize = BinaryResponse.Num() % 2 == 0 ? BinaryResponse.Num() : BinaryResponse.Num() - 1;
 	const bool bShouldCheckSize = false;
@@ -625,7 +736,6 @@ USoundWave* UWitTtsService::CreateSoundWaveAndAddToMemoryCache(const FString& Cl
 	return SoundWave;
 }
 
-
 /** Adds incremental raw data to the Procedural Sound Wave buffer queue
 *
 * @param RawData [in] data to be added to buffer queue
@@ -638,7 +748,12 @@ void UWitTtsService::AddProceduralData(const uint8* RawData, const int32 RawData
 
 	if (!SoundWaveProcedural)
 	{
-		SoundWaveProcedural = Cast<USoundWaveProcedural>(FWitHelperUtilities::CreateSoundWaveFromRawData(RawData, RawDataSize, AudioType, bUseStreaming));
+		const bool bIsProcedural = true;
+		SoundWaveProcedural = Cast<USoundWaveProcedural>(FWitHelperUtilities::CreateSoundWaveFromRawData(
+			RawData,
+			RawDataSize,
+			AudioType,
+			bIsProcedural));
 		SoundWaveProcedural->bCanProcessAsync = true;
 		PreviousDataIndex = 0;
 		if (EventHandler)
@@ -650,7 +765,7 @@ void UWitTtsService::AddProceduralData(const uint8* RawData, const int32 RawData
 	UE_LOG(LogWit, Verbose, TEXT("AddProceduralData - Duration: %f"), SoundWaveProcedural->Duration);
 	if (bShouldCheckSize || RawDataSize >= MinBufferLength)
 	{
-		const int IncreaseBufferLength = RawDataSize - PreviousDataIndex;
+		const int IncreaseBufferLength = RawDataSize - (bUseWebSocket ? 0 : PreviousDataIndex);
 		if (IncreaseBufferLength <= 0)
 		{
 			if (IncreaseBufferLength < 0) // Warn only if length is negative
@@ -664,7 +779,7 @@ void UWitTtsService::AddProceduralData(const uint8* RawData, const int32 RawData
 		int8* Data = (int8*)&BufferQueue[0];
 		for (size_t i = 0; i < IncreaseBufferLength; ++i)
 		{
-			Data[i] = RawData[i + PreviousDataIndex];
+			Data[i] = RawData[i + (bUseWebSocket ? 0 : PreviousDataIndex)];
 		}
 		SoundWaveProcedural->QueueAudio((const uint8*)Data, IncreaseBufferLength);
 		PreviousDataIndex = RawDataSize;

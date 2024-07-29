@@ -12,6 +12,15 @@
 #include "Wit/Request/WitRequestTypes.h"
 #include "WitVoiceService.generated.h"
 
+#ifdef CPP_PLUGIN
+THIRD_PARTY_INCLUDES_START
+#include "VoiceSDK/v2/interfaces/io/IAudioStreamInputProvider.hpp"
+
+using namespace meta::voicesdk::v2;
+
+THIRD_PARTY_INCLUDES_END
+#endif
+
 class FJsonObject;
 /**
  * Component that encapsulates the Wit Voice Command API. Provides functionality for making speech and message requests
@@ -114,4 +123,10 @@ private:
 
 	/** Used to track how long since we reached wake volume when capturing */
 	float LastWakeTime{0.0f};
+
+#ifdef CPP_PLUGIN
+#if PLATFORM_ANDROID
+	std::shared_ptr<IAudioStreamInputProvider> StreamInputProvider;
+#endif
+#endif
 };
