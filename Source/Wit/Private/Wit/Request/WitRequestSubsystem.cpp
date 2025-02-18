@@ -365,11 +365,13 @@ void UWitRequestSubsystem::OnRequestComplete(FHttpRequestPtr Request, FHttpRespo
 	
 	if (!bIsSuccessful)
 	{
-		const FString ErrorMessage = FString::Format(TEXT("HTTP Error {0}"), { Response->GetResponseCode()});
-		const FString HumanReadableErrorMessage = FString::Format(TEXT("Request failed with error code {0}"), { Response->GetResponseCode()});
-		
-		Configuration.OnRequestError.Broadcast(ErrorMessage, HumanReadableErrorMessage);
-		
+		if (Response)
+		{
+			const FString ErrorMessage = FString::Format(TEXT("HTTP Error {0}"), { Response->GetResponseCode() });
+			const FString HumanReadableErrorMessage = FString::Format(TEXT("Request failed with error code {0}"), { Response->GetResponseCode() });
+
+			Configuration.OnRequestError.Broadcast(ErrorMessage, HumanReadableErrorMessage);
+		}
 		return;
 	}
 
