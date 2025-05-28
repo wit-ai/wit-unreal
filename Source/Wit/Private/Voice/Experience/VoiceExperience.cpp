@@ -27,7 +27,7 @@ void AVoiceExperience::BeginPlay()
 	if (VoiceService != nullptr)
 	{
 		VoiceService->SetEvents(VoiceEvents);
-		VoiceService->SetConfiguration(Configuration);
+		VoiceService->SetConfiguration(Configuration, bUseWebSocket);
 	}
 	
 	Super::BeginPlay();

@@ -171,8 +171,11 @@ void UWitRequestSubsystem::SendRequest()
 	HttpRequest->SetContentFromStream(MemoryReader.ToSharedRef());
 
 	// Setup callbacks to inform of request progress and request completion
-
+#if UE_VERSION_OLDER_THAN(5, 4, 0)
 	HttpRequest->OnRequestProgress().BindUObject(this, &UWitRequestSubsystem::OnRequestProgress);
+#else
+    HttpRequest->OnRequestProgress64().BindUObject(this, &UWitRequestSubsystem::OnRequestProgress);
+#endif
 	HttpRequest->OnProcessRequestComplete().BindUObject(this, &UWitRequestSubsystem::OnRequestComplete);
 
 	// Set custom timeout
@@ -287,7 +290,12 @@ bool UWitRequestSubsystem::IsRequestInProgress() const
  * @param BytesSent the amount of bytes that have so far been sent to server
  * @param BytesReceived the amount of bytes that have so far been received from server
  */
+#if UE_VERSION_OLDER_THAN(5, 4, 0)
 void UWitRequestSubsystem::OnRequestProgress(FHttpRequestPtr Request, int32 BytesSent, int32 BytesReceived)
+#else
+void UWitRequestSubsystem::OnRequestProgress(FHttpRequestPtr Request, uint64 BytesSent, uint64 BytesReceived)
+#endif
+
 {
 	if (!Configuration.OnRequestProgress.IsBound())
 	{
@@ -341,7 +349,7 @@ void UWitRequestSubsystem::OnRequestProgress(FHttpRequestPtr Request, int32 Byte
 		return;
 	}
 
-	const bool bIsValidPartialTranscription = Json->HasField("text");
+	const bool bIsValidPartialTranscription = Json->HasField(TEXT("text"));
 	if (!bIsValidPartialTranscription)
 	{
 		return;

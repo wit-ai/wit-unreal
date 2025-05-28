@@ -29,13 +29,23 @@
 #define HTTP_API DLLEXPORT
 #endif
 
+#if UE_VERSION_OLDER_THAN(5, 5, 0)
+#else
+// These defines are private. Redefining here as they are required to compile HttpThread.cpp.
+// Making them public in HTTP.Build.cs would be an engine change and this plugin needs to work with vanilla UE5. 
+#define UE_HTTP_DEFAULT_MAX_CONCURRENT_REQUESTS INT_MAX //int DefaultMaxConcurrentRequests { get { return int.MaxValue; } }
+#define UE_HTTP_SUPPORT_TO_INCREASE_MAX_REQUESTS_AT_RUNTIME 1 //(bPlatformSupportToIncreaseMaxRequestsAtRuntime ? "1" : "0")
+#endif
+
 #include "Curl/CurlHttp.cpp"
 #include "Curl/CurlHttpManager.cpp"
 #include "Curl/CurlHttpThread.cpp"
 #include "HttpThread.cpp"
 #if UE_VERSION_OLDER_THAN(5, 3, 0)
 #else
+#if UE_VERSION_OLDER_THAN(5, 5, 0)
 #include "IHttpThreadedRequest.cpp"
+#endif
 #endif
 #if UE_VERSION_OLDER_THAN(5, 4, 0)
 #else

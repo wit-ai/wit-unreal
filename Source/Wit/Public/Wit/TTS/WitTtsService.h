@@ -18,19 +18,6 @@
 class FJsonObject;
 
 /**
- * State of the WebSocket connection 
- */
-UENUM()
-enum class SocketState : uint8
-{
-	Disconnected,
-	Connecting,
-	Connected,
-	Authenticating,
-	Authenticated,
-};
-
-/**
  * Component that encapsulates the Wit Text to Speech API. Provides functionality for speech synthesis from text input
  * using Wit.ai. To use it simply attach the UWitTtsService component in the hierarchy of any Actor
  */
@@ -103,9 +90,6 @@ private:
 	/** Clip settings enqueued */
 	TArray<FTtsConfiguration> QueuedSettings;
 
-	/** Current status of the WebSocket connection */
-	SocketState SocketStatus;
-
 #if WITH_EDITORONLY_DATA
 	
 	/** Write the captured voice input to a wav file */
@@ -131,10 +115,8 @@ private:
 	
 	/**
 	 * Called when the state of a WebSocket connection changes
-	 *
-	 * @param SocketStatus [in] updated status of the WebSocket connection
 	 */
-	void OnSocketStateChange(SocketState SocketStatus);
+	void OnSocketStateChange();
 
 	/** Called when a WebSocket stream is complete */
 	void OnSocketStreamComplete();

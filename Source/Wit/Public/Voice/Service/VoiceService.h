@@ -30,7 +30,11 @@ public:
 	/**
 	 * Set the configuration to use with this service
 	 */
-	virtual void SetConfiguration(UWitAppConfigurationAsset* ConfigurationToUse) {	Configuration = ConfigurationToUse;	}
+	virtual void SetConfiguration(UWitAppConfigurationAsset* ConfigurationToUse, bool bUseWebSocketToUse)
+	{	
+		Configuration = ConfigurationToUse;
+		bUseWebSocket = bUseWebSocketToUse;
+	}
 
 	/**
 	 * Set the events to use with this service
@@ -61,6 +65,12 @@ protected:
 	 */
 	UPROPERTY(Transient)
 	UWitAppConfigurationAsset* Configuration{};
+
+	/**
+	* Whether or not streaming is enabled on the call to Wit.ai
+	*/
+	UPROPERTY(Transient)
+	bool bUseWebSocket{false};
 	
 	/**
 	 * The events that this service should use in callbacks

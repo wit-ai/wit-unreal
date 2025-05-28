@@ -13,6 +13,7 @@
 #include "Wit/Request/WitRequestConfiguration.h"
 #include "Subsystems/EngineSubsystem.h"
 #include "Serialization/MemoryReader.h"
+#include "Misc/EngineVersionComparison.h"
 #include "WitRequestSubsystem.generated.h"
 
 class FJsonObject;
@@ -90,7 +91,11 @@ private:
 	void SendRequest();
 
 	/** Called when an HTTP request is in progress to retrieve any changes to the response payload */
-	void OnRequestProgress(FHttpRequestPtr Request, int32 BytesSent, int32 BytesReceived);
+#if UE_VERSION_OLDER_THAN(5, 4, 0)
+    void OnRequestProgress(FHttpRequestPtr Request, int32 BytesSent, int32 BytesReceived);
+#else
+    void OnRequestProgress(FHttpRequestPtr Request, uint64 BytesSent, uint64 BytesReceived);
+#endif
 
 	/** Called when an HTTP request is fully completed to process the response payload */
 	void OnRequestComplete(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bIsSuccessful);

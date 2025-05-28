@@ -603,7 +603,7 @@ bool FWitHelperUtilities::LoadClipFromBinaryFile(const FString& CacheFilePath, T
 bool FWitHelperUtilities::IsWitResponse(const TSharedPtr<FJsonObject> JsonResponse)
 {
 	const TArray< TSharedPtr<FJsonValue> >* OutArray;
-	return JsonResponse->TryGetArrayField("intents", OutArray);
+	return JsonResponse->TryGetArrayField(TEXT("intents"), OutArray);
 }
 
 void FWitHelperUtilities::ConvertJsonToAllEntities(FWitResponse* WitResponse, const TSharedPtr<FJsonObject>* EntitiesJsonObject)
@@ -645,7 +645,7 @@ void FWitHelperUtilities::ConvertJsonToAllEntities(FWitResponse* WitResponse, co
 bool FWitHelperUtilities::ConvertJsonToWitResponse(const TSharedPtr<FJsonObject> JsonResponse, FWitResponse* WitResponse)
 {
 	const TSharedPtr<FJsonObject>* AllEntitiesJsonObject;
-	JsonResponse->TryGetObjectField("entities", AllEntitiesJsonObject);
+	JsonResponse->TryGetObjectField(TEXT("entities"), AllEntitiesJsonObject);
 	
 	const bool bIsConversionError = !FJsonObjectConverter::JsonObjectToUStruct(JsonResponse.ToSharedRef(), WitResponse);
 	if (bIsConversionError)

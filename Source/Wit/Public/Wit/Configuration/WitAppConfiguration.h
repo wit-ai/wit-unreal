@@ -28,7 +28,7 @@ struct WIT_API FWitAppAdvancedConfiguration
 	
 	/** The optional API version to use when making requests to Wit.ai */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Request Overrides")
-	FString ApiVersion{"20240726"};
+	FString ApiVersion{"20250514"};
 
 	/** Should we use a custom HTTP request timeout? */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Request Overrides")

@@ -262,7 +262,7 @@ bool FVoiceCaptureEmulation::Tick(float DeltaTime)
 	{
 #if UE_VERSION_OLDER_THAN(5,1,0)
 		uint64 ElementCount = SoundWave->RawData.GetElementCount();
-#elif WITH_EDITORONLY_DATA
+#elif UE_VERSION_OLDER_THAN(5,4,0) && WITH_EDITORONLY_DATA
 		uint64 ElementCount = SoundWave->RawData.GetPayloadSize();
 #else
 		uint64 ElementCount = SoundWave->RawPCMDataSize;

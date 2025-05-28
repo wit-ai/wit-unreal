@@ -10,6 +10,7 @@
 #include "CoreMinimal.h"
 #include "Voice/Service/VoiceService.h"
 #include "Wit/Request/WitRequestTypes.h"
+#include "Wit/TTS/WitTtsService.h"
 #include "WitVoiceService.generated.h"
 
 #ifdef CPP_PLUGIN
@@ -40,7 +41,7 @@ public:
 	/**
 	 * VoiceService overrides
 	 */
-	virtual void SetConfiguration(UWitAppConfigurationAsset* ConfigurationToUse) override;
+	virtual void SetConfiguration(UWitAppConfigurationAsset* ConfigurationToUse, bool bUseWebSocketToUse) override;
 
 	/**
 	 * IVoiceService overrides
@@ -72,6 +73,8 @@ private:
 	static void WriteRawPCMDataToWavFile(const uint8* RawPCMData, int32 RawPCMDataSize, int32 NumChannels, int32 SampleRate);
 
 #endif
+
+	void OnSocketStateChange();
 
 	/** Start the Wit speech request */
 	void BeginStreamRequest();
@@ -123,6 +126,7 @@ private:
 
 	/** Used to track how long since we reached wake volume when capturing */
 	float LastWakeTime{0.0f};
+
 
 #ifdef CPP_PLUGIN
 #if PLATFORM_ANDROID

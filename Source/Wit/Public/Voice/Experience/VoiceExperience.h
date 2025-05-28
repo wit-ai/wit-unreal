@@ -42,6 +42,12 @@ public:
 	UWitAppConfigurationAsset* Configuration{};
 
 	/**
+	* Should the request use WebSocket connection to Wit.ai
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Voice", meta = (EditCondition = "false", EditConditionHides))
+	bool bUseWebSocket{false};
+
+	/**
 	 * The events used by the voice service
 	 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Voice")

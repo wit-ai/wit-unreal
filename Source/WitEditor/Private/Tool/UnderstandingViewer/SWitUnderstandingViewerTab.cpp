@@ -298,7 +298,7 @@ FReply SWitUnderstandingViewerTab::OnSendButtonClicked()
 	UVoiceService* VoiceService = VoiceExperience->VoiceService;
 
 	VoiceService->SetEvents(VoiceExperience->VoiceEvents);
-	VoiceService->SetConfiguration(VoiceExperience->Configuration);
+	VoiceService->SetConfiguration(VoiceExperience->Configuration, false /* bUseWebSocket */);
 	
 	VoiceExperience->VoiceEvents->OnWitResponse.AddUniqueDynamic(ResponseObject, &UWitResponseObject::OnWitResponse);
 	

@@ -11,6 +11,7 @@
 #include "Voice/Capture/VoiceCaptureSubsystem.h"
 #include "Wit/Request/WitRequestBuilder.h"
 #include "Wit/Request/WitRequestSubsystem.h"
+#include "Wit/Socket/WitSocketSubsystem.h"
 #include "Wit/Utilities/WitLog.h"
 #include "AudioMixerDevice.h"
 #include "Wit/Utilities/WitHelperUtilities.h"
@@ -84,6 +85,16 @@ void UWitVoiceService::BeginPlay()
 	// interfering with each other and also to prevent unnecessary work
 
 	SetComponentTickEnabled(false);
+
+	if (bUseWebSocket)
+	{
+		UWitSocketSubsystem* SocketSubsystem = GEngine->GetEngineSubsystem<UWitSocketSubsystem>();
+		SocketSubsystem->OnSocketStateChange.AddUObject(this, &UWitVoiceService::OnSocketStateChange);
+		SocketSubsystem->CreateSocket(Configuration->Application.ClientAccessToken);
+		SocketSubsystem->OnSocketStreamProgress.AddUObject(this, &UWitVoiceService::OnSpeechRequestProgress);
+	}
+
+	UE_LOG(LogWit, Display, TEXT("BeginPlay: Connection Started"));
 }
 
 /**
@@ -102,6 +113,14 @@ void UWitVoiceService::BeginDestroy()
 
 	UWitRequestSubsystem* RequestSubsystem = GEngine->GetEngineSubsystem<UWitRequestSubsystem>();
 	const bool bIsRequestInProgress = RequestSubsystem != nullptr && RequestSubsystem->IsRequestInProgress();
+
+	if (bUseWebSocket)
+	{
+		UWitSocketSubsystem* SocketSubsystem = GEngine->GetEngineSubsystem<UWitSocketSubsystem>();
+		SocketSubsystem->OnSocketStateChange.Clear();
+		SocketSubsystem->OnSocketStreamProgress.Clear();
+		SocketSubsystem->CloseSocket();
+	}
 	
 	if (bIsRequestInProgress)
 	{
@@ -179,6 +198,7 @@ void UWitVoiceService::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 		}
 
 #endif
+
 #ifdef CPP_PLUGIN
 #if PLATFORM_ANDROID
 		if (!StreamInputProvider)
@@ -193,6 +213,12 @@ void UWitVoiceService::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 #else
 		RequestSubsystem->WriteBinaryData(VoiceCaptureSubsystem->GetVoiceBuffer());
 #endif
+	}
+
+	UWitSocketSubsystem* SocketSubsystem = GEngine->GetEngineSubsystem<UWitSocketSubsystem>();
+	if (bIsVoiceDataAvailable && SocketSubsystem->IsConverseInProgress())
+	{
+		SocketSubsystem->SendBinaryData(VoiceCaptureSubsystem->GetVoiceBuffer());
 	}
 
 	// Keep track of whether we are actually receiving suitable voice input. This is used in deciding when to auto deactivate
@@ -241,9 +267,9 @@ void UWitVoiceService::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 /**
  * Set the configuration
  */
-void UWitVoiceService::SetConfiguration(UWitAppConfigurationAsset* ConfigurationToUse)
+void UWitVoiceService::SetConfiguration(UWitAppConfigurationAsset* ConfigurationToUse, bool bUseWebSocketToUse)
 {
-	Super::SetConfiguration(ConfigurationToUse);
+	Super::SetConfiguration(ConfigurationToUse, bUseWebSocketToUse);
 
 	UVoiceCaptureSubsystem* VoiceCaptureSubsystem = GEngine->GetEngineSubsystem<UVoiceCaptureSubsystem>();
 
@@ -411,68 +437,79 @@ bool UWitVoiceService::ActivateVoiceInputImmediatelyWithRequestOptions(const FSt
 void UWitVoiceService::BeginStreamRequest()
 {
 	UE_LOG(LogWit, Display, TEXT("BeginStreamRequest: starting stream request"));
-	
-	const UVoiceCaptureSubsystem* VoiceCaptureSubsystem = GEngine->GetEngineSubsystem<UVoiceCaptureSubsystem>();
-	UWitRequestSubsystem* RequestSubsystem = GEngine->GetEngineSubsystem<UWitRequestSubsystem>();
-	
+
+	if (bUseWebSocket)
+	{
+		UWitSocketSubsystem* SocketSubsystem = GEngine->GetEngineSubsystem<UWitSocketSubsystem>();
+
+		const TSharedPtr<FJsonObject> RequestBody = MakeShared<FJsonObject>();
+		RequestBody->SetStringField("content_type", "audio/raw;bits=16;rate=16k;encoding=signed-integer;endian=little");
+		SocketSubsystem->SendJsonData(ERequestType::Converse, RequestBody.ToSharedRef());
+	}
+	else
+	{
+		const UVoiceCaptureSubsystem* VoiceCaptureSubsystem = GEngine->GetEngineSubsystem<UVoiceCaptureSubsystem>();
+		UWitRequestSubsystem* RequestSubsystem = GEngine->GetEngineSubsystem<UWitRequestSubsystem>();
 #ifdef CPP_PLUGIN
 #if PLATFORM_ANDROID
-	folly::InlineExecutor InlineExecutor;
-	folly::Executor::KeepAlive<> ExecutorToken;
-	ExecutorToken = getKeepAliveToken(InlineExecutor);
+		folly::InlineExecutor InlineExecutor;
+		folly::Executor::KeepAlive<> ExecutorToken;
+		ExecutorToken = getKeepAliveToken(InlineExecutor);
 
-	std::shared_ptr<IVoiceSdkApi> VoiceApi = std::make_shared<VoiceSdkApi>(
-		nullptr, // TODO: Replace with implementation of IVoiceSdkCallbacListener
-		ExecutorToken);
+		std::shared_ptr<IVoiceSdkApi> VoiceApi = std::make_shared<VoiceSdkApi>(
+			nullptr, // TODO: Replace with implementation of IVoiceSdkCallbacListener
+			ExecutorToken);
 
-	std::shared_ptr<RequestParameterFactory> ParameterFactory = std::make_shared<RequestParameterFactory>();
-	std::shared_ptr<IComposerRequestParameter> TtsRequestParameter = ParameterFactory->createComposerRequestParameter();
+		std::shared_ptr<RequestParameterFactory> ParameterFactory = std::make_shared<RequestParameterFactory>();
+		std::shared_ptr<IComposerRequestParameter> TtsRequestParameter = ParameterFactory->createComposerRequestParameter();
+		std::shared_ptr<InputProviderFactory> ProviderFactory = std::make_shared<InputProviderFactory>();
 
-	std::shared_ptr<InputProviderFactory> ProviderFactory = std::make_shared<InputProviderFactory>();
 
-	StreamInputProvider = ProviderFactory->createAudioStreamInputProvider();
-	if (!StreamInputProvider)
-	{
-		UE_LOG(LogWit, Error, TEXT("ConvertTextToSpeechWithSettings: Streaming not yet supported via CPP_PLUGIN"));
-		return;
-	}
-	StreamInputProvider->setAudioFormat(InputAudioFormat::RAW);
-	StreamInputProvider->setBits(16);
-	StreamInputProvider->setEncoding(AudioEncoding::SignedInteger);
-	StreamInputProvider->setEndian(Endian::LittleEndian);
-	StreamInputProvider->setSampleRate(VoiceCaptureSubsystem->SampleRate);
+		StreamInputProvider = ProviderFactory->createAudioStreamInputProvider();
+		if (!StreamInputProvider)
+		{
+			UE_LOG(LogWit, Error, TEXT("ConvertTextToSpeechWithSettings: Streaming not yet supported via CPP_PLUGIN"));
+			return;
+		}
+		StreamInputProvider->setAudioFormat(InputAudioFormat::RAW);
+		StreamInputProvider->setBits(16);
+		StreamInputProvider->setEncoding(AudioEncoding::SignedInteger);
+		StreamInputProvider->setEndian(Endian::LittleEndian);
+		StreamInputProvider->setSampleRate(VoiceCaptureSubsystem->SampleRate);
 #endif
 #else
-	// Construct the request with the desired configuration. We use the /speech endpoint in Wit.ai. See the Wit.ai documentation for more
-	// specifics of the parameters to this endpoint
 
-	FWitRequestConfiguration RequestConfiguration{};
+		// Construct the request with the desired configuration. We use the /speech endpoint in Wit.ai. See the Wit.ai documentation for more
+		// specifics of the parameters to this endpoint
 
-	FWitRequestBuilder::SetRequestConfigurationWithDefaults(RequestConfiguration, EWitRequestEndpoint::Speech, Configuration->Application.ClientAccessToken,
-		Configuration->Application.Advanced.ApiVersion, Configuration->Application.Advanced.URL);
-	FWitRequestBuilder::AddFormatContentType(RequestConfiguration, Format);
-	FWitRequestBuilder::AddEncodingContentType(RequestConfiguration, Encoding);
-	FWitRequestBuilder::AddSampleSizeContentType(RequestConfiguration, SampleSize);
-	FWitRequestBuilder::AddRateContentType(RequestConfiguration, VoiceCaptureSubsystem->SampleRate);
-	FWitRequestBuilder::AddEndianContentType(RequestConfiguration, EWitRequestEndian::Little);
+		FWitRequestConfiguration RequestConfiguration{};
 
-	RequestConfiguration.bShouldUseCustomHttpTimeout = Configuration->Application.Advanced.bIsCustomHttpTimeout;
-	RequestConfiguration.HttpTimeout = Configuration->Application.Advanced.HttpTimeout;
+		FWitRequestBuilder::SetRequestConfigurationWithDefaults(RequestConfiguration, EWitRequestEndpoint::Speech, Configuration->Application.ClientAccessToken,
+			Configuration->Application.Advanced.ApiVersion, Configuration->Application.Advanced.URL);
+		FWitRequestBuilder::AddFormatContentType(RequestConfiguration, Format);
+		FWitRequestBuilder::AddEncodingContentType(RequestConfiguration, Encoding);
+		FWitRequestBuilder::AddSampleSizeContentType(RequestConfiguration, SampleSize);
+		FWitRequestBuilder::AddRateContentType(RequestConfiguration, VoiceCaptureSubsystem->SampleRate);
+		FWitRequestBuilder::AddEndianContentType(RequestConfiguration, EWitRequestEndian::Little);
 
-	RequestConfiguration.OnRequestError.AddUObject(this, &UWitVoiceService::OnWitRequestError);
-	RequestConfiguration.OnRequestProgress.AddUObject(this, &UWitVoiceService::OnSpeechRequestProgress);
-	RequestConfiguration.OnRequestComplete.AddUObject(this, &UWitVoiceService::OnSpeechRequestComplete);
+		RequestConfiguration.bShouldUseCustomHttpTimeout = Configuration->Application.Advanced.bIsCustomHttpTimeout;
+		RequestConfiguration.HttpTimeout = Configuration->Application.Advanced.HttpTimeout;
 
-	if (Events != nullptr)
-	{
-		Events->OnRequestCustomize.ExecuteIfBound(RequestConfiguration);
-	}
-	
-	// Begin a streamed request to Wit.ai. For a streamed request we open an HTTP request to the server and continually write data as it
-	// becomes available. This greatly reduces latency over waiting for the whole voice data and then sending it
+		RequestConfiguration.OnRequestError.AddUObject(this, &UWitVoiceService::OnWitRequestError);
+		RequestConfiguration.OnRequestProgress.AddUObject(this, &UWitVoiceService::OnSpeechRequestProgress);
+		RequestConfiguration.OnRequestComplete.AddUObject(this, &UWitVoiceService::OnSpeechRequestComplete);
 
-	RequestSubsystem->BeginStreamRequest(RequestConfiguration);
+		if (Events != nullptr)
+		{
+			Events->OnRequestCustomize.ExecuteIfBound(RequestConfiguration);
+		}
+		// Begin a streamed request to Wit.ai. For a streamed request we open an HTTP request to the server and continually write data as it
+		// becomes available. This greatly reduces latency over waiting for the whole voice data and then sending it
+
+		RequestSubsystem->BeginStreamRequest(RequestConfiguration);
 #endif
+	}
+
 	bIsVoiceStreamingActive = true;
 
 	// Notify that we've started sending voice data
@@ -755,8 +792,6 @@ void UWitVoiceService::SendTranscriptionWithRequestOptions(const FString& Text, 
  */
 void UWitVoiceService::AcceptPartialResponseAndCancelRequest(const FWitResponse& Response)
 {
-
-
 #ifdef CPP_PLUGIN
 #if PLATFORM_ANDROID
 	if (!StreamInputProvider)
@@ -774,6 +809,7 @@ void UWitVoiceService::AcceptPartialResponseAndCancelRequest(const FWitResponse&
 		UE_LOG(LogWit, Warning, TEXT("SendTranscription: cannot send transcription because request subsystem does not exist"));
 		return;
 	}
+
 	RequestSubsystem->CancelRequest();
 #endif
 
@@ -793,16 +829,21 @@ void UWitVoiceService::AcceptPartialResponseAndCancelRequest(const FWitResponse&
  */
 void UWitVoiceService::OnSpeechRequestProgress(const TArray<uint8>& PartialBinaryResponse, const TSharedPtr<FJsonObject> PartialJsonResponse) const
 {
+	UE_LOG(LogWit, Verbose, TEXT("OnSpeechRequestProgress: %d"), PartialBinaryResponse.Num());
 	// The text field of the final response chunk represents the most recent transcription that Wit.ai was able to discern. We pass this to the user
 	// registered callback as it can be used to display intermediate partial transcriptions which make the application feel more responsive
 
+	if (!PartialJsonResponse)
+	{
+		return;
+	}
 	if (FWitHelperUtilities::IsWitResponse(PartialJsonResponse))
 	{
 		OnPartialResponse(PartialBinaryResponse, PartialJsonResponse);
 	}
 	else
 	{
-		const FString PartialTranscription = PartialJsonResponse->GetStringField("text");
+		const FString PartialTranscription = PartialJsonResponse->GetStringField(TEXT("text"));
 
 		if (Events != nullptr)
 		{
@@ -912,6 +953,22 @@ void UWitVoiceService::OnRequestComplete(const FWitResponse& Response) const
 
 	Events->OnFullTranscription.Broadcast(Events->WitResponse.Text);
 	Events->OnWitResponse.Broadcast(true, Events->WitResponse);
+}
+
+/**
+ * Called when the state of a WebSocket connection changes
+ */
+void UWitVoiceService::OnSocketStateChange()
+{
+	UWitSocketSubsystem* SocketSubsystem = GEngine->GetEngineSubsystem<UWitSocketSubsystem>();
+	ESocketState SocketStatus = SocketSubsystem->GetSocketState();
+	FString Status = *UEnum::GetValueAsString(SocketStatus);
+	UE_LOG(LogWit, Verbose, TEXT("OnSocketStateChange %s"), *Status);
+
+	if (SocketStatus == ESocketState::Disconnected)
+	{
+		SocketSubsystem->CreateSocket(Configuration->Application.ClientAccessToken);
+	}
 }
 
 /**

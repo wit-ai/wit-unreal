@@ -85,7 +85,7 @@ void UWitTtsService::BeginPlay()
 		SocketSubsystem->CreateSocket(Configuration->Application.ClientAccessToken);
 		SocketSubsystem->OnSocketStreamProgress.AddUObject(this, &UWitTtsService::OnSynthesizeRequestProgress);
 		SocketSubsystem->OnSocketStreamComplete.AddUObject(this, &UWitTtsService::OnSocketStreamComplete);
-		UE_LOG(LogWit, Warning, TEXT("BeginPlay: Connection Started"));
+		UE_LOG(LogWit, Display, TEXT("BeginPlay: Connection Started"));
 	}
 }
 
@@ -102,6 +102,15 @@ void UWitTtsService::BeginDestroy()
 	if (bIsRequestInProgress)
 	{
 		RequestSubsystem->CancelRequest();
+	}
+	if (bUseWebSocket)
+	{
+		UWitSocketSubsystem* SocketSubsystem = GEngine->GetEngineSubsystem<UWitSocketSubsystem>();
+		SocketSubsystem->OnSocketStateChange.Clear();
+		SocketSubsystem->OnSocketStreamProgress.Clear();
+		SocketSubsystem->OnSocketStreamComplete.Clear();
+		SocketSubsystem->CloseSocket();
+		UE_LOG(LogWit, Display, TEXT("BeginDestroy: WebSocket Cleanup"));
 	}
 }
 
@@ -164,12 +173,13 @@ void UWitTtsService::ConvertTextToSpeechWithSettingsInternal(const bool bNewRequ
 				*UEnum::GetValueAsString(AudioType));
 			AudioType = EWitRequestAudioFormat::Pcm;
 		}
-		if (SocketStatus == SocketState::Disconnected)
+		ESocketState SocketStatus = SocketSubsystem->GetSocketState();
+		if (SocketStatus == ESocketState::Disconnected)
 		{
 			UE_LOG(LogWit, Display, TEXT("ConvertTextToSpeechWithSettingsInternal: Socket disconnected, restarting"));
 			SocketSubsystem->CreateSocket(Configuration->Application.ClientAccessToken);
 		}
-		else if (SocketStatus != SocketState::Authenticated)
+		else if (SocketStatus != ESocketState::Authenticated)
 		{
 			UE_LOG(LogWit, Warning, TEXT("ConvertTextToSpeechWithSettingsInternal: Socket not yet connected, retrying"));
 			return;
@@ -383,7 +393,7 @@ void UWitTtsService::ConvertTextToSpeechWithSettingsInternal(const bool bNewRequ
 
 	if (bUseWebSocket)
 	{
-		SocketSubsystem->SendJsonData(RequestBody.ToSharedRef());
+		SocketSubsystem->SendJsonData(ERequestType::Synthesize, RequestBody.ToSharedRef());
 	}
 	else
 	{
@@ -502,17 +512,15 @@ void UWitTtsService::FetchAvailableVoices()
 
 /**
  * Called when the state of a WebSocket connection changes
- *
- * @param SocketStatus [in] updated status of the WebSocket connection
  */
-void UWitTtsService::OnSocketStateChange(SocketState ReturnedSocketStatus)
+void UWitTtsService::OnSocketStateChange()
 {
-	SocketStatus = ReturnedSocketStatus;
+	UWitSocketSubsystem* SocketSubsystem = GEngine->GetEngineSubsystem<UWitSocketSubsystem>();
+	ESocketState SocketStatus = SocketSubsystem->GetSocketState();
 	FString Status = *UEnum::GetValueAsString(SocketStatus);
 	UE_LOG(LogWit, Verbose, TEXT("OnSocketStateChange %s"), *Status);
 
-	UWitSocketSubsystem* SocketSubsystem = GEngine->GetEngineSubsystem<UWitSocketSubsystem>();
-	if (SocketStatus == SocketState::Authenticated)
+	if (SocketStatus == ESocketState::Authenticated)
 	{
 		if (bUseWebSocket && !SocketSubsystem->IsSynthesizeInProgress() && !QueuedSettings.IsEmpty())
 		{
@@ -521,7 +529,7 @@ void UWitTtsService::OnSocketStateChange(SocketState ReturnedSocketStatus)
 			ConvertTextToSpeechWithSettingsInternal(bNewRequest, bQueueAudio);
 		}
 	}
-	if (SocketStatus == SocketState::Disconnected && !QueuedSettings.IsEmpty())
+	if (SocketStatus == ESocketState::Disconnected && !QueuedSettings.IsEmpty())
 	{
 		SocketSubsystem->CreateSocket(Configuration->Application.ClientAccessToken);
 	}
