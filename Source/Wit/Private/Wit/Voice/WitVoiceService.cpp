@@ -358,14 +358,14 @@ bool UWitVoiceService::ActivateVoiceInput()
 	
 	if (SilenceDetectionThreshold != nullptr)
 	{
-		SilenceDetectionThreshold->Set(Configuration->Voice.MicNoiseThreshold);
+		SilenceDetectionThreshold->Set(Configuration->Voice.MicNoiseThreshold, ECVF_SetByCode);
 	}
 	
 	IConsoleVariable* NoiseGateThreshold = IConsoleManager::Get().FindConsoleVariable(TEXT("voice.MicNoiseGateThreshold"));
 	
 	if (NoiseGateThreshold != nullptr)
 	{
-		NoiseGateThreshold->Set(Configuration->Voice.MicNoiseThreshold);
+		NoiseGateThreshold->Set(Configuration->Voice.MicNoiseThreshold, ECVF_SetByCode);
 	}
 	
 	// We enable the tick in order to be able to handle auto-deactivation and reading data into the request
